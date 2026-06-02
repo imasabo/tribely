@@ -14,6 +14,10 @@ export const lessonsService = {
     return friendLessonActivity;
   },
 
+  async getFriendActivityById(id: string): Promise<FriendLessonActivity | null> {
+    return friendLessonActivity.find((activity) => activity.id === id) ?? null;
+  },
+
   async listFeatured(): Promise<Lesson[]> {
     return homeLessons.filter((lesson) => lesson.featured);
   },

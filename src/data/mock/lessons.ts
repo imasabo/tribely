@@ -183,6 +183,16 @@ export const friendLessonActivity: FriendLessonActivity[] = [
     lesson: homeLessons[1],
     ratingGiven: 5,
     reviewSnippet: 'Marcus nailed his first chord transitions — great session!',
+    likeCount: 3,
+    comments: [
+      {
+        id: 'comment-1',
+        authorName: 'Alex Kim',
+        authorAvatar: 'AK',
+        body: 'So inspiring — I need to book a guitar lesson too!',
+        createdAtLabel: '1 hour ago',
+      },
+    ],
   },
   {
     id: 'activity-2',
@@ -193,6 +203,8 @@ export const friendLessonActivity: FriendLessonActivity[] = [
     lesson: discoverLessons[0],
     ratingGiven: 5,
     reviewSnippet: 'Finally understand closures. Tom explains this so clearly.',
+    likeCount: 7,
+    likedByMe: true,
   },
   {
     id: 'activity-3',

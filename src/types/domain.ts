@@ -40,6 +40,15 @@ export interface UserProfile {
   };
 }
 
+/** A comment on a friend's completed-lesson activity. */
+export interface ActivityComment {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  body: string;
+  createdAtLabel: string;
+}
+
 /** A lesson a friend recently completed — shown on the home feed. */
 export interface FriendLessonActivity {
   id: string;
@@ -50,4 +59,7 @@ export interface FriendLessonActivity {
   lesson: Lesson;
   ratingGiven?: number;
   reviewSnippet?: string;
+  likeCount?: number;
+  likedByMe?: boolean;
+  comments?: ActivityComment[];
 }

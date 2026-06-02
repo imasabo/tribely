@@ -3,23 +3,31 @@ import { Pressable, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { colors } from '@/constants/theme';
+import { useActivityEngagement } from '@/providers/ActivityEngagementProvider';
 import type { FriendLessonActivity } from '@/types/domain';
 
 import { SlidePreview } from './SlidePreview';
 
 interface FriendActivityCardProps {
   activity: FriendLessonActivity;
-  onPress: () => void;
+  onLessonPress: () => void;
+  onCommentPress?: () => void;
+  /** Hide like/comment actions — use on the comments screen. */
+  showActions?: boolean;
 }
 
-export function FriendActivityCard({ activity, onPress }: FriendActivityCardProps) {
+export function FriendActivityCard({
+  activity,
+  onLessonPress,
+  onCommentPress,
+  showActions = true,
+}: FriendActivityCardProps) {
   const { friendName, friendAvatar, completedAtLabel, lesson, ratingGiven, reviewSnippet } =
     activity;
+  const { liked, toggleLike } = useActivityEngagement(activity.id);
 
   return (
-    <Pressable
-      onPress={onPress}
-      className="overflow-hidden rounded-2xl border border-border bg-card active:opacity-95">
+    <View className="overflow-hidden rounded-2xl border border-border bg-card">
       <View className="flex-row items-center gap-3 px-4 pt-4">
         <Avatar initials={friendAvatar} size="sm" />
         <View className="flex-1">
@@ -37,7 +45,9 @@ export function FriendActivityCard({ activity, onPress }: FriendActivityCardProp
         ) : null}
       </View>
 
-      <View className="m-4 overflow-hidden rounded-xl border border-border bg-muted/30">
+      <Pressable
+        onPress={onLessonPress}
+        className="m-4 overflow-hidden rounded-xl border border-border bg-muted/30 active:opacity-95">
         <View className="h-28 p-2">
           <SlidePreview colors={lesson.slidePreviewColors} />
         </View>
@@ -48,13 +58,37 @@ export function FriendActivityCard({ activity, onPress }: FriendActivityCardProp
           <Text className="mt-0.5 text-sm font-semibold text-foreground">{lesson.title}</Text>
           <Text className="mt-0.5 text-xs text-muted-foreground">with {lesson.teacherName}</Text>
         </View>
-      </View>
+      </Pressable>
 
       {reviewSnippet ? (
-        <Text className="px-4 pb-4 text-[13px] leading-relaxed text-muted-foreground">
+        <Text className="px-4 text-[13px] leading-relaxed text-muted-foreground">
           &ldquo;{reviewSnippet}&rdquo;
         </Text>
       ) : null}
-    </Pressable>
+
+      {showActions ? (
+        <View className="mt-3 flex-row items-center gap-5 border-t border-border px-4 py-3">
+          <Pressable
+            onPress={toggleLike}
+            accessibilityLabel={liked ? 'Unlike' : 'Like'}
+            className="active:opacity-70">
+            <Feather
+              name="heart"
+              size={20}
+              color={liked ? colors.destructive : colors.mutedForeground}
+            />
+          </Pressable>
+
+          {onCommentPress ? (
+            <Pressable
+              onPress={onCommentPress}
+              accessibilityLabel="Comment"
+              className="active:opacity-70">
+              <Feather name="message-circle" size={20} color={colors.mutedForeground} />
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
   );
 }
