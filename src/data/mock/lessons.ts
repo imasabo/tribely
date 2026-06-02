@@ -1,4 +1,4 @@
-import type { Lesson, LessonDurationMinutes } from '@/types/domain';
+import type { FriendLessonActivity, Lesson, LessonDurationMinutes } from '@/types/domain';
 
 /** Temporary seed data — replaced by Firestore in Phase 2 */
 
@@ -172,3 +172,55 @@ export const discoverFilters = [
 ];
 
 export const discoverSortOptions = ['Nearest', 'Rating', 'Soonest', 'Duration', 'New'];
+
+export const friendLessonActivity: FriendLessonActivity[] = [
+  {
+    id: 'activity-1',
+    friendId: 'friend-marcus',
+    friendName: 'Marcus Lee',
+    friendAvatar: 'ML',
+    completedAtLabel: '2 hours ago',
+    lesson: homeLessons[1],
+    ratingGiven: 5,
+    reviewSnippet: 'Marcus nailed his first chord transitions — great session!',
+  },
+  {
+    id: 'activity-2',
+    friendId: 'friend-jordan',
+    friendName: 'Jordan Park',
+    friendAvatar: 'JP',
+    completedAtLabel: 'Yesterday',
+    lesson: discoverLessons[0],
+    ratingGiven: 5,
+    reviewSnippet: 'Finally understand closures. Tom explains this so clearly.',
+  },
+  {
+    id: 'activity-3',
+    friendId: 'friend-sam',
+    friendName: 'Sam Rivera',
+    friendAvatar: 'SR',
+    completedAtLabel: 'Yesterday',
+    lesson: homeLessons[2],
+    ratingGiven: 4,
+    reviewSnippet: 'Relaxing watercolor session — learned wet-on-wet technique.',
+  },
+  {
+    id: 'activity-4',
+    friendId: 'friend-taylor',
+    friendName: 'Taylor Kim',
+    friendAvatar: 'TK',
+    completedAtLabel: '2 days ago',
+    lesson: discoverLessons[2],
+    ratingGiven: 5,
+  },
+  {
+    id: 'activity-5',
+    friendId: 'friend-riley',
+    friendName: 'Riley Chen',
+    friendAvatar: 'RC',
+    completedAtLabel: '3 days ago',
+    lesson: homeLessons[3],
+    ratingGiven: 5,
+    reviewSnippet: 'Best sourdough lesson in the city. Already booked a follow-up.',
+  },
+];

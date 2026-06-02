@@ -39,3 +39,15 @@ export interface UserProfile {
     reviews: number;
   };
 }
+
+/** A lesson a friend recently completed — shown on the home feed. */
+export interface FriendLessonActivity {
+  id: string;
+  friendId: string;
+  friendName: string;
+  friendAvatar: string;
+  completedAtLabel: string;
+  lesson: Lesson;
+  ratingGiven?: number;
+  reviewSnippet?: string;
+}

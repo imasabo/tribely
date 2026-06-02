@@ -3,7 +3,9 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LessonSection } from '@/components/lesson/LessonSection';
 import { SlidePreview } from '@/components/lesson/SlidePreview';
+import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { colors } from '@/constants/theme';
 import { discoverFilters, discoverSortOptions } from '@/data/mock/lessons';
@@ -12,18 +14,18 @@ import { formatPriceDollars } from '@/mappers/lesson.mapper';
 
 export function DiscoverScreen() {
   const insets = useSafeAreaInsets();
-  const { lessons, loading, error } = useDiscoverLessons();
+  const { featured, lessons, loading, error } = useDiscoverLessons();
+
+  const openLesson = (lessonId: string) => {
+    router.push(`/lesson/${lessonId}`);
+  };
 
   if (loading) {
     return <LoadingScreen message="Loading lessons…" />;
   }
 
   if (error) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background px-6">
-        <Text className="text-center text-muted-foreground">{error}</Text>
-      </View>
-    );
+    return <CenteredMessage message={error} />;
   }
 
   return (
@@ -35,11 +37,13 @@ export function DiscoverScreen() {
         <Text className="mb-4 text-[26px] font-bold tracking-tight text-foreground">Discover</Text>
 
         <View className="mb-3 flex-row gap-2">
-          <View className="flex-1 flex-row items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+          <Pressable
+            onPress={() => router.push('/search')}
+            className="flex-1 flex-row items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
             <Feather name="search" size={16} color={colors.mutedForeground} />
             <Text className="text-[15px] text-muted-foreground">Search any topic or teacher…</Text>
-          </View>
-          <Pressable className="h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-sm">
+          </Pressable>
+          <Pressable className="h-12 w-12 items-center justify-center rounded-xl bg-primary">
             <Feather name="sliders" size={17} color="#fff" />
           </Pressable>
         </View>
@@ -75,6 +79,16 @@ export function DiscoverScreen() {
         ))}
       </ScrollView>
 
+      {featured.length > 0 ? (
+        <LessonSection
+          title="Featured Today"
+          lessons={featured}
+          variant="featured"
+          onLessonPress={openLesson}
+          className="mb-6 px-5"
+        />
+      ) : null}
+
       <View className="mb-3 flex-row items-center justify-between px-5">
         <Text className="text-sm text-muted-foreground">{lessons.length} lessons found</Text>
         <Text className="text-sm text-muted-foreground">within 2 miles</Text>
@@ -84,7 +98,7 @@ export function DiscoverScreen() {
         {lessons.map((lesson) => (
           <Pressable
             key={lesson.id}
-            onPress={() => router.push(`/lesson/${lesson.id}`)}
+            onPress={() => openLesson(lesson.id)}
             className="flex-row overflow-hidden rounded-2xl border border-border bg-card p-3 active:opacity-95">
             <View className="mr-3 h-16 w-16 flex-shrink-0">
               <SlidePreview colors={lesson.slidePreviewColors} />

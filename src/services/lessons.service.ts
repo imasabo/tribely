@@ -1,16 +1,21 @@
 import {
   discoverLessons,
+  friendLessonActivity,
   homeLessons,
 } from '@/data/mock/lessons';
-import type { Lesson } from '@/types/domain';
+import type { FriendLessonActivity, Lesson } from '@/types/domain';
 
 /**
  * Lessons data access layer.
  * Phase 2: swap implementations to use Firestore queries.
  */
 export const lessonsService = {
-  async listNearby(): Promise<Lesson[]> {
-    return homeLessons;
+  async listFriendActivity(): Promise<FriendLessonActivity[]> {
+    return friendLessonActivity;
+  },
+
+  async listFeatured(): Promise<Lesson[]> {
+    return homeLessons.filter((lesson) => lesson.featured);
   },
 
   async listDiscover(): Promise<Lesson[]> {

@@ -1,22 +1,19 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ScrollView } from 'react-native';
+import { useMemo } from 'react';
+import { ScrollView, View } from 'react-native';
 
-import { LessonSection } from '@/components/lesson/LessonSection';
+import { FriendActivityCard } from '@/components/lesson/FriendActivityCard';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
-import { HorizontalChipList } from '@/components/ui/HorizontalChipList';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
-import { LocationLink } from '@/components/ui/LocationLink';
-import { homeCategories } from '@/data/mock/lessons';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import { HomeTopBar } from '@/features/home/components/HomeTopBar';
-import { useNearbyLessons } from '@/features/home/hooks/useNearbyLessons';
+import { useFriendActivity } from '@/features/home/hooks/useFriendActivity';
 import { getFirstName, getInitials, getTimeGreeting } from '@/lib/userDisplay';
 import { useAuth } from '@/providers/AuthProvider';
 
 export function HomeScreen() {
   const { user } = useAuth();
-  const { featured, nearby, loading, error } = useNearbyLessons();
-  const [selectedCategoryId, setSelectedCategoryId] = useState(homeCategories[0]?.label ?? '');
+  const { activities, loading, error } = useFriendActivity();
 
   const greeting = useMemo(
     () => getTimeGreeting(getFirstName(user?.displayName)),
@@ -24,22 +21,12 @@ export function HomeScreen() {
   );
   const avatarInitials = useMemo(() => getInitials(user?.displayName, 'AK'), [user?.displayName]);
 
-  const categoryItems = useMemo(
-    () =>
-      homeCategories.map((cat) => ({
-        id: cat.label,
-        label: cat.label,
-        emoji: cat.emoji,
-      })),
-    []
-  );
-
   const openLesson = (lessonId: string) => {
     router.push(`/lesson/${lessonId}`);
   };
 
   if (loading) {
-    return <LoadingScreen message="Finding lessons near you…" />;
+    return <LoadingScreen message="Loading your feed…" />;
   }
 
   if (error) {
@@ -53,34 +40,24 @@ export function HomeScreen() {
       showsVerticalScrollIndicator={false}>
       <HomeTopBar
         greeting={greeting}
-        title="Nearby Lessons"
+        title="Friends"
         avatarInitials={avatarInitials}
         onSearchPress={() => router.push('/search')}
         onAvatarPress={() => router.push('/(tabs)/profile')}
       />
 
-      <LocationLink label="San Francisco, CA" className="px-5 py-3" />
-
-      <HorizontalChipList
-        items={categoryItems}
-        selectedId={selectedCategoryId}
-        onSelect={setSelectedCategoryId}
-      />
-
-      <LessonSection
-        title="Featured Today"
-        lessons={featured}
-        variant="featured"
-        onLessonPress={openLesson}
-        className="mb-6 px-5"
-      />
-
-      <LessonSection
-        title="Lessons Near You"
-        lessons={nearby}
-        onLessonPress={openLesson}
-        className="px-5"
-      />
+      <View className="px-5">
+        <SectionHeader title="Recently Completed" className="mb-3" />
+        <View className="gap-4">
+          {activities.map((activity) => (
+            <FriendActivityCard
+              key={activity.id}
+              activity={activity}
+              onPress={() => openLesson(activity.lesson.id)}
+            />
+          ))}
+        </View>
+      </View>
     </ScrollView>
   );
 }
