@@ -1,0 +1,68 @@
+import type { AppNotification } from '@/types/domain';
+
+/** Temporary seed data — replaced by Firestore in Phase 2 */
+
+export const mockNotifications: AppNotification[] = [
+  {
+    id: 'notif-1',
+    type: 'comment',
+    title: 'New comment',
+    body: 'Jordan Park commented on Marcus Lee’s guitar lesson.',
+    createdAtLabel: '2m ago',
+    read: false,
+    actorName: 'Jordan Park',
+    actorAvatar: 'JP',
+    href: '/activity/activity-1',
+  },
+  {
+    id: 'notif-2',
+    type: 'like',
+    title: 'New like',
+    body: 'Sam Rivera liked your comment.',
+    createdAtLabel: '15m ago',
+    read: false,
+    actorName: 'Sam Rivera',
+    actorAvatar: 'SR',
+    href: '/activity/activity-1',
+  },
+  {
+    id: 'notif-3',
+    type: 'lesson_completed',
+    title: 'Friend activity',
+    body: 'Marcus Lee completed Intro to Guitar: First Chords.',
+    createdAtLabel: '2h ago',
+    read: false,
+    actorName: 'Marcus Lee',
+    actorAvatar: 'ML',
+    href: '/activity/activity-1',
+  },
+  {
+    id: 'notif-4',
+    type: 'booking_reminder',
+    title: 'Upcoming lesson',
+    body: 'Your Python lesson with Sarah Chen starts today at 2:30 PM.',
+    createdAtLabel: '1h ago',
+    read: true,
+    href: '/lesson/1',
+  },
+  {
+    id: 'notif-5',
+    type: 'lesson_nearby',
+    title: 'New near you',
+    body: 'Salsa Dancing for Beginners was just posted 0.8 mi away.',
+    createdAtLabel: 'Yesterday',
+    read: true,
+    href: '/lesson/d2',
+  },
+  {
+    id: 'notif-6',
+    type: 'lesson_completed',
+    title: 'Friend activity',
+    body: 'Jordan Park completed JavaScript Closures Deep Dive.',
+    createdAtLabel: 'Yesterday',
+    read: true,
+    actorName: 'Jordan Park',
+    actorAvatar: 'JP',
+    href: '/activity/activity-2',
+  },
+];

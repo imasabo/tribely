@@ -49,6 +49,27 @@ export interface ActivityComment {
   createdAtLabel: string;
 }
 
+export type NotificationType =
+  | 'lesson_completed'
+  | 'comment'
+  | 'like'
+  | 'booking_reminder'
+  | 'lesson_nearby';
+
+/** In-app notification shown in the notifications screen. */
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  createdAtLabel: string;
+  read: boolean;
+  actorName?: string;
+  actorAvatar?: string;
+  /** Route path, e.g. /activity/activity-1 or /lesson/1 */
+  href?: string;
+}
+
 /** A lesson a friend recently completed — shown on the home feed. */
 export interface FriendLessonActivity {
   id: string;

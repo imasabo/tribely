@@ -35,6 +35,7 @@ export function HomeScreen() {
       showsVerticalScrollIndicator={false}>
       <HomeTopBar
         avatarInitials={avatarInitials}
+        onNotificationsPress={() => router.push('/notifications')}
         onAvatarPress={() => router.push('/(tabs)/profile')}
       />
 

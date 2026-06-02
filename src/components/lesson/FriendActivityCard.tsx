@@ -62,7 +62,7 @@ export function FriendActivityCard({
 
       {reviewSnippet ? (
         <Text className="px-4 text-[13px] leading-relaxed text-muted-foreground">
-          &ldquo;{reviewSnippet}&rdquo;
+          {reviewSnippet}
         </Text>
       ) : null}
 

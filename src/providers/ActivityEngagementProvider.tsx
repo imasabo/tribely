@@ -15,6 +15,8 @@ type ActivityEngagementContextValue = {
   toggleLike: (activityId: string) => void;
   getComments: (activityId: string) => ActivityComment[];
   addComment: (activityId: string, comment: ActivityComment) => void;
+  isCommentLiked: (activityId: string, commentId: string) => boolean;
+  toggleCommentLike: (activityId: string, commentId: string) => void;
 };
 
 const ActivityEngagementContext = createContext<ActivityEngagementContextValue | null>(null);
@@ -34,6 +36,9 @@ function buildInitialComments() {
 export function ActivityEngagementProvider({ children }: { children: ReactNode }) {
   const [likes, setLikes] = useState<Record<string, boolean>>(buildInitialLikes);
   const [comments, setComments] = useState<Record<string, ActivityComment[]>>(buildInitialComments);
+  const [commentLikes, setCommentLikes] = useState<Record<string, boolean>>({});
+
+  const commentLikeKey = (activityId: string, commentId: string) => `${activityId}:${commentId}`;
 
   const isLiked = useCallback((activityId: string) => likes[activityId] ?? false, [likes]);
 
@@ -53,9 +58,27 @@ export function ActivityEngagementProvider({ children }: { children: ReactNode }
     }));
   }, []);
 
+  const isCommentLiked = useCallback(
+    (activityId: string, commentId: string) =>
+      commentLikes[commentLikeKey(activityId, commentId)] ?? false,
+    [commentLikes]
+  );
+
+  const toggleCommentLike = useCallback((activityId: string, commentId: string) => {
+    const key = commentLikeKey(activityId, commentId);
+    setCommentLikes((prev) => ({ ...prev, [key]: !(prev[key] ?? false) }));
+  }, []);
+
   const value = useMemo(
-    () => ({ isLiked, toggleLike, getComments, addComment }),
-    [isLiked, toggleLike, getComments, addComment]
+    () => ({
+      isLiked,
+      toggleLike,
+      getComments,
+      addComment,
+      isCommentLiked,
+      toggleCommentLike,
+    }),
+    [isLiked, toggleLike, getComments, addComment, isCommentLiked, toggleCommentLike]
   );
 
   return (
@@ -74,5 +97,7 @@ export function useActivityEngagement(activityId: string) {
     comments: ctx.getComments(activityId),
     toggleLike: () => ctx.toggleLike(activityId),
     addComment: (comment: ActivityComment) => ctx.addComment(activityId, comment),
+    isCommentLiked: (commentId: string) => ctx.isCommentLiked(activityId, commentId),
+    toggleCommentLike: (commentId: string) => ctx.toggleCommentLike(activityId, commentId),
   };
 }

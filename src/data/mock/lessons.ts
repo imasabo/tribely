@@ -182,7 +182,7 @@ export const friendLessonActivity: FriendLessonActivity[] = [
     completedAtLabel: '2 hours ago',
     lesson: homeLessons[1],
     ratingGiven: 5,
-    reviewSnippet: 'Marcus nailed his first chord transitions — great session!',
+    reviewSnippet: 'Nailed my first chord transitions — great session!',
     likeCount: 3,
     comments: [
       {
@@ -202,7 +202,7 @@ export const friendLessonActivity: FriendLessonActivity[] = [
     completedAtLabel: 'Yesterday',
     lesson: discoverLessons[0],
     ratingGiven: 5,
-    reviewSnippet: 'Finally understand closures. Tom explains this so clearly.',
+    reviewSnippet: 'Finally understand closures — Tom explains this so clearly.',
     likeCount: 7,
     likedByMe: true,
   },
@@ -214,7 +214,7 @@ export const friendLessonActivity: FriendLessonActivity[] = [
     completedAtLabel: 'Yesterday',
     lesson: homeLessons[2],
     ratingGiven: 4,
-    reviewSnippet: 'Relaxing watercolor session — learned wet-on-wet technique.',
+    reviewSnippet: 'Relaxing session — learned wet-on-wet technique.',
   },
   {
     id: 'activity-4',
@@ -233,6 +233,6 @@ export const friendLessonActivity: FriendLessonActivity[] = [
     completedAtLabel: '3 days ago',
     lesson: homeLessons[3],
     ratingGiven: 5,
-    reviewSnippet: 'Best sourdough lesson in the city. Already booked a follow-up.',
+    reviewSnippet: 'Best sourdough lesson in the city — already booked a follow-up.',
   },
 ];

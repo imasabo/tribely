@@ -116,7 +116,7 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
             No comments yet. Start the conversation.
           </Text>
         }
-        renderItem={({ item }) => <ActivityCommentItem comment={item} />}
+        renderItem={({ item }) => <ActivityCommentItem activityId={activityId} comment={item} />}
       />
 
       <View
