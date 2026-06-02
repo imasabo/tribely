@@ -41,7 +41,7 @@ export function SignInScreen() {
     setSubmitting(true);
     try {
       await signInWithGoogle();
-      // Navigation handled by auth gate in app/index.tsx
+      router.replace('/(tabs)');
     } catch (e) {
       Alert.alert(
         'Sign in failed',
