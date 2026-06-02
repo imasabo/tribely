@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 
-import type { Lesson } from '@/types/lesson';
+import { colors } from '@/constants/theme';
+import type { Lesson } from '@/types/domain';
 
 import { SlidePreview } from './SlidePreview';
 
@@ -27,8 +28,8 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
                 {lesson.categoryEmoji} {lesson.category}
               </Text>
             </View>
-            <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: '#FFFBEB' }}>
-              <Text className="text-xs font-medium text-accent">{lesson.duration} min</Text>
+            <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: colors.accentLight }}>
+              <Text className="text-xs font-medium text-accent">{lesson.durationMinutes} min</Text>
             </View>
           </View>
           <Text className="mb-2 text-base font-semibold text-foreground">{lesson.title}</Text>
@@ -36,21 +37,21 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
             <View className="h-6 w-6 items-center justify-center rounded-full bg-primary">
               <Text className="text-[10px] font-semibold text-white">{lesson.teacherAvatar}</Text>
             </View>
-            <Text className="text-[13px] text-muted-foreground">{lesson.teacher}</Text>
+            <Text className="text-[13px] text-muted-foreground">{lesson.teacherName}</Text>
             <View className="flex-row items-center gap-1">
-              <Feather name="star" size={12} color="#D97706" />
+              <Feather name="star" size={12} color={colors.accent} />
               <Text className="text-[13px] font-medium text-foreground">{lesson.rating}</Text>
-              <Text className="text-[13px] text-muted-foreground">({lesson.reviews})</Text>
+              <Text className="text-[13px] text-muted-foreground">({lesson.reviewCount})</Text>
             </View>
           </View>
           <View className="mt-3 flex-row gap-3 border-t border-border pt-3">
             <View className="flex-row items-center gap-1">
-              <Feather name="clock" size={12} color="#6B7280" />
-              <Text className="text-xs text-muted-foreground">{lesson.time}</Text>
+              <Feather name="clock" size={12} color={colors.mutedForeground} />
+              <Text className="text-xs text-muted-foreground">{lesson.scheduledAtLabel}</Text>
             </View>
             <View className="flex-row items-center gap-1">
-              <Feather name="map-pin" size={12} color="#6B7280" />
-              <Text className="text-xs text-muted-foreground">{lesson.distance}</Text>
+              <Feather name="map-pin" size={12} color={colors.mutedForeground} />
+              <Text className="text-xs text-muted-foreground">{lesson.distanceLabel}</Text>
             </View>
           </View>
         </View>
@@ -69,24 +70,24 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
         <View className="flex-row items-start justify-between">
           <View className="flex-1 pr-2">
             <Text className="mb-0.5 text-[11px] text-muted-foreground">
-              {lesson.categoryEmoji} {lesson.category} · {lesson.duration} min
+              {lesson.categoryEmoji} {lesson.category} · {lesson.durationMinutes} min
             </Text>
             <Text className="text-sm font-semibold leading-tight text-foreground">{lesson.title}</Text>
-            <Text className="mt-1 text-xs text-muted-foreground">{lesson.teacher}</Text>
+            <Text className="mt-1 text-xs text-muted-foreground">{lesson.teacherName}</Text>
           </View>
           <View className="flex-row items-center gap-0.5">
-            <Feather name="star" size={10} color="#D97706" />
+            <Feather name="star" size={10} color={colors.accent} />
             <Text className="text-[11px] text-muted-foreground">{lesson.rating}</Text>
           </View>
         </View>
         <View className="mt-2 flex-row gap-2">
           <View className="flex-row items-center gap-1">
-            <Feather name="clock" size={10} color="#6B7280" />
-            <Text className="text-[11px] text-muted-foreground">{lesson.time}</Text>
+            <Feather name="clock" size={10} color={colors.mutedForeground} />
+            <Text className="text-[11px] text-muted-foreground">{lesson.scheduledAtLabel}</Text>
           </View>
           <View className="flex-row items-center gap-1">
-            <Feather name="map-pin" size={10} color="#6B7280" />
-            <Text className="text-[11px] text-muted-foreground">{lesson.distance}</Text>
+            <Feather name="map-pin" size={10} color={colors.mutedForeground} />
+            <Text className="text-[11px] text-muted-foreground">{lesson.distanceLabel}</Text>
           </View>
         </View>
       </View>

@@ -1,3 +1,5 @@
+const { colors } = require('./src/constants/tokens.js');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./app/**/*.{js,ts,tsx}', './src/**/*.{js,ts,tsx}'],
@@ -5,19 +7,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#FAF9F6',
-        foreground: '#1F2937',
-        card: '#FFFFFF',
-        primary: '#0F766E',
-        'primary-foreground': '#FFFFFF',
-        secondary: '#F0FDF9',
-        'secondary-foreground': '#0F766E',
-        muted: '#F3F4F6',
-        'muted-foreground': '#6B7280',
-        accent: '#D97706',
-        'accent-foreground': '#FFFFFF',
-        destructive: '#EF4444',
-        border: 'rgba(31, 41, 55, 0.08)',
+        background: colors.background,
+        foreground: colors.foreground,
+        card: colors.card,
+        primary: colors.primary,
+        'primary-foreground': colors.primaryForeground,
+        secondary: colors.secondary,
+        'secondary-foreground': colors.secondaryForeground,
+        muted: colors.muted,
+        'muted-foreground': colors.mutedForeground,
+        accent: colors.accent,
+        'accent-foreground': colors.accentForeground,
+        destructive: colors.destructive,
+        border: colors.border,
       },
       borderRadius: {
         '2xl': '16px',
