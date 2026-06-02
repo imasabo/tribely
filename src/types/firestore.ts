@@ -23,7 +23,7 @@ export interface LessonDoc {
   location: LessonLocationDoc;
   scheduledAt: FirestoreTimestamp;
   status: LessonStatus;
-  deckStoragePath: string;
+  googleSlidesUrl: string;
   maxLearners: number;
   featured: boolean;
   createdAt: FirestoreTimestamp;

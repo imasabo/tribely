@@ -6,6 +6,5 @@ export const collections = {
 } as const;
 
 export const storagePaths = {
-  lessonDeck: (lessonId: string) => `lessons/${lessonId}/deck.pptx`,
   userAvatar: (userId: string) => `users/${userId}/avatar.jpg`,
 } as const;

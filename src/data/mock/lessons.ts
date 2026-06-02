@@ -1,13 +1,19 @@
+import { MOCK_GOOGLE_SLIDES_URL } from '@/lib/googleSlides';
 import type { FriendLessonActivity, Lesson, LessonDurationMinutes } from '@/types/domain';
 
 /** Temporary seed data — replaced by Firestore in Phase 2 */
 
 function lesson(
-  partial: Omit<Lesson, 'teacherId'> & { teacherId?: string; priceCents?: number }
+  partial: Omit<Lesson, 'teacherId' | 'googleSlidesUrl'> & {
+    teacherId?: string;
+    googleSlidesUrl?: string;
+    priceCents?: number;
+  }
 ): Lesson {
   const duration = partial.durationMinutes as LessonDurationMinutes;
   return {
     teacherId: partial.teacherId ?? `teacher-${partial.teacherAvatar.toLowerCase()}`,
+    googleSlidesUrl: partial.googleSlidesUrl ?? MOCK_GOOGLE_SLIDES_URL,
     ...partial,
     durationMinutes: duration,
   };

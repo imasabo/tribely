@@ -4,7 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/constants/theme';
 import type { Lesson } from '@/types/domain';
 
-import { SlidePreview } from './SlidePreview';
+import { GoogleSlidesCardPreview } from './GoogleSlidesCardPreview';
 
 interface LessonCardProps {
   lesson: Lesson;
@@ -19,7 +19,7 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
         onPress={onPress}
         className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm active:opacity-95">
         <View className="h-40 p-3">
-          <SlidePreview colors={lesson.slidePreviewColors} />
+          <GoogleSlidesCardPreview variant="featured" colors={lesson.slidePreviewColors} />
         </View>
         <View className="px-4 pb-4">
           <View className="mb-2 flex-row gap-2">
@@ -62,11 +62,11 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row overflow-hidden rounded-2xl border border-border bg-card active:opacity-95">
-      <View className="h-20 w-20 flex-shrink-0 p-2">
-        <SlidePreview colors={lesson.slidePreviewColors} />
+      className="flex-row overflow-hidden rounded-2xl border border-border bg-card p-3 active:opacity-95">
+      <View className="mr-3 h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl">
+        <GoogleSlidesCardPreview variant="compact" colors={lesson.slidePreviewColors} />
       </View>
-      <View className="flex-1 p-3">
+      <View className="flex-1 justify-center">
         <View className="flex-row items-start justify-between">
           <View className="flex-1 pr-2">
             <Text className="mb-0.5 text-[11px] text-muted-foreground">

@@ -1,15 +1,13 @@
 import { Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { GoogleSlidesEmbed } from '@/components/lesson/GoogleSlidesEmbed';
 import { Button } from '@/components/ui/Button';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { colors } from '@/constants/theme';
 import { useLesson } from '@/features/lessons/hooks/useLesson';
-import { formatPriceDollars } from '@/mappers/lesson.mapper';
-
 interface LessonDetailScreenProps {
   lessonId: string;
 }
@@ -33,52 +31,48 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
     );
   }
 
+  const openFullScreenSlides = () => {
+    router.push(`/lesson/${lessonId}/slides`);
+  };
+
   return (
     <View className="flex-1 bg-background">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        <View className="relative h-64">
-          <LinearGradient
-            colors={lesson.slidePreviewColors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text className="text-5xl">{lesson.categoryEmoji}</Text>
-            <View className="mt-2 rounded-full bg-white/20 px-4 py-1.5">
-              <Text className="text-[13px] font-medium text-white">{lesson.category}</Text>
-            </View>
-          </LinearGradient>
+        <View className="relative h-72">
+          <GoogleSlidesEmbed shareUrl={lesson.googleSlidesUrl} className="h-full" />
 
           <View
             className="absolute left-4 right-4 flex-row justify-between"
-            style={{ top: insets.top + 8 }}>
+            style={{ top: insets.top + 8 }}
+            pointerEvents="box-none">
             <Pressable
               onPress={() => router.back()}
-              className="h-9 w-9 items-center justify-center rounded-full bg-black/30">
+              className="h-9 w-9 items-center justify-center rounded-full bg-black/40">
               <Feather name="arrow-left" size={18} color="#fff" />
             </Pressable>
             <View className="flex-row gap-2">
-              <Pressable className="h-9 w-9 items-center justify-center rounded-full bg-black/30">
+              <Pressable className="h-9 w-9 items-center justify-center rounded-full bg-black/40">
                 <Feather name="heart" size={16} color="#fff" />
               </Pressable>
-              <Pressable className="h-9 w-9 items-center justify-center rounded-full bg-black/30">
+              <Pressable className="h-9 w-9 items-center justify-center rounded-full bg-black/40">
                 <Feather name="share-2" size={16} color="#fff" />
               </Pressable>
             </View>
           </View>
+
+          <Pressable
+            onPress={openFullScreenSlides}
+            className="absolute bottom-3 right-3 flex-row items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 active:opacity-80">
+            <Feather name="maximize-2" size={14} color="#fff" />
+            <Text className="text-xs font-medium text-white">Full screen</Text>
+          </Pressable>
         </View>
 
         <View className="px-5 pt-5">
-          <View className="mb-3 flex-row gap-2">
-            <View className="rounded-full bg-secondary px-2.5 py-1">
-              <Text className="text-xs font-medium text-primary">
-                {lesson.durationMinutes} min lesson
-              </Text>
-            </View>
-            <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: colors.accentLight }}>
-              <Text className="text-xs font-medium text-accent">
-                {formatPriceDollars(lesson.priceCents)}
-              </Text>
-            </View>
+          <View className="mb-3 self-start rounded-full bg-secondary px-2.5 py-1">
+            <Text className="text-xs font-medium text-primary">
+              {lesson.durationMinutes} min lesson
+            </Text>
           </View>
 
           <Text className="mb-4 text-[22px] font-bold leading-tight tracking-tight text-foreground">
@@ -115,33 +109,13 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
             </View>
           </View>
 
-          <Text className="mb-2 text-[17px] font-semibold text-foreground">Deck preview</Text>
+          <Text className="mb-2 text-[17px] font-semibold text-foreground">Slide deck</Text>
           <Text className="mb-4 text-sm leading-5 text-muted-foreground">
-            Preview the teacher&apos;s PowerPoint before requesting to join this lesson.
+            Swipe through the teacher&apos;s Google Slides before requesting to join. Tap the preview
+            above for full screen.
           </Text>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-            {[0, 1, 2].map((i) => (
-              <View
-                key={i}
-                className="mr-3 h-[140px] w-56 overflow-hidden rounded-2xl"
-                style={{ opacity: i === 0 ? 1 : 0.7 }}>
-                <LinearGradient
-                  colors={
-                    i === 0
-                      ? [lesson.slidePreviewColors[0], lesson.slidePreviewColors[1]]
-                      : ['#374151', '#1F2937']
-                  }
-                  style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
-                  <View>
-                    <Text className="text-xs text-white/50">SLIDE {i + 1}</Text>
-                    <View className="mt-2 h-2.5 w-4/5 rounded-full bg-white/90" />
-                    <View className="mt-1.5 h-1.5 w-3/5 rounded-full bg-white/50" />
-                  </View>
-                </LinearGradient>
-              </View>
-            ))}
-          </ScrollView>
+          <Button title="Open slides full screen" variant="outline" fullWidth onPress={openFullScreenSlides} />
         </View>
       </ScrollView>
 

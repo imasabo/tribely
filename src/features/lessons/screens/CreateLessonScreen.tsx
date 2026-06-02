@@ -1,14 +1,42 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/constants/theme';
+import { isValidGoogleSlidesUrl, parseGoogleSlidesUrl } from '@/lib/googleSlides';
 
-/** Phase 3: wire to useCreateLesson + Storage upload */
+/** Phase 3: wire to useCreateLesson + Firestore */
 export function CreateLessonScreen() {
   const insets = useSafeAreaInsets();
+  const [slidesUrl, setSlidesUrl] = useState('');
+  const [slidesError, setSlidesError] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
+
+  const validateSlides = (url: string) => {
+    const result = parseGoogleSlidesUrl(url);
+    if (!result.ok) {
+      setSlidesError(result.error);
+      return false;
+    }
+    setSlidesError(null);
+    return true;
+  };
+
+  const handleSlidesChange = (text: string) => {
+    setSlidesUrl(text);
+    if (touched) validateSlides(text);
+  };
+
+  const handlePublish = () => {
+    setTouched(true);
+    if (!validateSlides(slidesUrl)) return;
+    router.replace('/(tabs)');
+  };
+
+  const showValid = touched && slidesUrl.length > 0 && isValidGoogleSlidesUrl(slidesUrl);
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
@@ -46,15 +74,47 @@ export function CreateLessonScreen() {
           />
         </View>
 
-        <Pressable className="mb-6 flex-row items-center gap-3 rounded-2xl border border-dashed border-primary bg-secondary p-4">
-          <View className="h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <Feather name="upload" size={22} color="#fff" />
+        <View className="mb-6 gap-2">
+          <Text className="text-sm font-medium text-foreground">Google Slides link</Text>
+          <Text className="text-xs leading-5 text-muted-foreground">
+            Paste the share link from Google Slides (File → Share → Anyone with the link). Only
+            Google Slides are supported — no PowerPoint uploads.
+          </Text>
+          <View
+            className={`flex-row items-start gap-3 rounded-2xl border bg-card p-4 ${
+              slidesError ? 'border-destructive' : showValid ? 'border-primary' : 'border-border'
+            }`}>
+            <View className="mt-0.5 h-10 w-10 items-center justify-center rounded-xl bg-primary">
+              <Feather name="layout" size={20} color="#fff" />
+            </View>
+            <View className="flex-1 gap-2">
+              <TextInput
+                value={slidesUrl}
+                onChangeText={handleSlidesChange}
+                onBlur={() => {
+                  setTouched(true);
+                  validateSlides(slidesUrl);
+                }}
+                placeholder="https://docs.google.com/presentation/d/…/edit"
+                placeholderTextColor={colors.mutedForeground}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                className="text-base text-foreground"
+              />
+              {slidesError ? (
+                <Text className="text-xs text-destructive">{slidesError}</Text>
+              ) : showValid ? (
+                <View className="flex-row items-center gap-1">
+                  <Feather name="check-circle" size={14} color={colors.primary} />
+                  <Text className="text-xs text-primary">Valid Google Slides link</Text>
+                </View>
+              ) : (
+                <Text className="text-xs text-muted-foreground">Required</Text>
+              )}
+            </View>
           </View>
-          <View className="flex-1">
-            <Text className="font-semibold text-primary">Upload PowerPoint</Text>
-            <Text className="text-xs text-muted-foreground">Required · .pptx up to 50MB</Text>
-          </View>
-        </Pressable>
+        </View>
 
         <View className="mb-4 flex-row gap-3">
           {(['30 min', '45 min', '60 min'] as const).map((d, i) => (
@@ -69,7 +129,7 @@ export function CreateLessonScreen() {
           ))}
         </View>
 
-        <Button title="Publish Lesson" fullWidth onPress={() => router.replace('/(tabs)')} />
+        <Button title="Publish Lesson" fullWidth onPress={handlePublish} />
       </ScrollView>
     </View>
   );

@@ -4,14 +4,12 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LessonSection } from '@/components/lesson/LessonSection';
-import { SlidePreview } from '@/components/lesson/SlidePreview';
+import { GoogleSlidesCardPreview } from '@/components/lesson/GoogleSlidesCardPreview';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { colors } from '@/constants/theme';
 import { discoverFilters, discoverSortOptions } from '@/data/mock/lessons';
 import { useDiscoverLessons } from '@/features/discover/hooks/useDiscoverLessons';
-import { formatPriceDollars } from '@/mappers/lesson.mapper';
-
 export function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const { featured, lessons, loading, error } = useDiscoverLessons();
@@ -100,8 +98,11 @@ export function DiscoverScreen() {
             key={lesson.id}
             onPress={() => openLesson(lesson.id)}
             className="flex-row overflow-hidden rounded-2xl border border-border bg-card p-3 active:opacity-95">
-            <View className="mr-3 h-16 w-16 flex-shrink-0">
-              <SlidePreview colors={lesson.slidePreviewColors} />
+            <View className="mr-3 h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl">
+              <GoogleSlidesCardPreview
+                variant="compact"
+                colors={lesson.slidePreviewColors}
+              />
             </View>
             <View className="flex-1 justify-center">
               <Text className="text-[11px] text-muted-foreground">
@@ -111,20 +112,15 @@ export function DiscoverScreen() {
                 {lesson.title}
               </Text>
               <Text className="mt-0.5 text-xs text-muted-foreground">{lesson.teacherName}</Text>
-              <View className="mt-2 flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  <View className="flex-row items-center gap-1">
-                    <Feather name="clock" size={10} color={colors.mutedForeground} />
-                    <Text className="text-[11px] text-muted-foreground">{lesson.scheduledAtLabel}</Text>
-                  </View>
-                  <View className="flex-row items-center gap-1">
-                    <Feather name="map-pin" size={10} color={colors.mutedForeground} />
-                    <Text className="text-[11px] text-muted-foreground">{lesson.distanceLabel}</Text>
-                  </View>
+              <View className="mt-2 flex-row items-center gap-2">
+                <View className="flex-row items-center gap-1">
+                  <Feather name="clock" size={10} color={colors.mutedForeground} />
+                  <Text className="text-[11px] text-muted-foreground">{lesson.scheduledAtLabel}</Text>
                 </View>
-                <Text className="text-sm font-semibold text-primary">
-                  {formatPriceDollars(lesson.priceCents)}
-                </Text>
+                <View className="flex-row items-center gap-1">
+                  <Feather name="map-pin" size={10} color={colors.mutedForeground} />
+                  <Text className="text-[11px] text-muted-foreground">{lesson.distanceLabel}</Text>
+                </View>
               </View>
             </View>
           </Pressable>

@@ -18,6 +18,9 @@ export interface Lesson {
   scheduledAtLabel: string;
   locationName: string;
   featured?: boolean;
+  /** Google Slides share link (edit or view). Required for all lessons. */
+  googleSlidesUrl: string;
+  /** Card thumbnail accent when not rendering a live embed. */
   slidePreviewColors: [string, string, string];
   priceCents?: number;
 }

@@ -18,15 +18,21 @@ const TABS: { key: TabKey | 'teach'; label: string; icon: TabIcon }[] = [
 
 function TabIconView({ icon, active }: { icon: TabIcon; active: boolean }) {
   const color = active ? colors.primary : colors.mutedForeground;
+
   if (icon === 'teach') {
     return (
-      <View className="-mt-5 h-10 w-10 items-center justify-center rounded-2xl bg-primary shadow-md">
+      <View className="h-10 w-10 items-center justify-center rounded-2xl bg-primary">
         <Feather name="plus-square" size={20} color="#fff" />
       </View>
     );
   }
+
   const featherName = icon === 'index' ? 'home' : icon === 'discover' ? 'compass' : 'user';
-  return <Feather name={featherName} size={22} color={color} />;
+  return (
+    <View className="h-10 w-10 items-center justify-center">
+      <Feather name={featherName} size={22} color={color} />
+    </View>
+  );
 }
 
 export function TabBar({ state, navigation }: BottomTabBarProps) {
@@ -36,7 +42,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
     <View
       className="border-t border-border bg-background/95"
       style={{ paddingBottom: Math.max(insets.bottom, 12) }}>
-      <View className="flex-row items-center justify-around pt-2">
+      <View className="flex-row items-end pt-2">
         {TABS.map((tab) => {
           const isTeach = tab.key === 'teach';
           const routeIndex = isTeach ? -1 : state.routes.findIndex((r) => r.name === tab.key);
@@ -63,9 +69,9 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
             <Pressable
               key={tab.key}
               onPress={onPress}
-              className="relative items-center px-5 py-1.5">
+              className="relative flex-1 items-center pb-1">
               {active && (
-                <View className="absolute top-0 h-0.5 w-4 rounded-full bg-primary" />
+                <View className="absolute -top-2 h-0.5 w-4 rounded-full bg-primary" />
               )}
               <TabIconView icon={tab.icon} active={active || isTeach} />
               <Text

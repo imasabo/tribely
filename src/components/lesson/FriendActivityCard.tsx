@@ -6,7 +6,7 @@ import { colors } from '@/constants/theme';
 import { useActivityEngagement } from '@/providers/ActivityEngagementProvider';
 import type { FriendLessonActivity } from '@/types/domain';
 
-import { SlidePreview } from './SlidePreview';
+import { GoogleSlidesCardPreview } from './GoogleSlidesCardPreview';
 
 interface FriendActivityCardProps {
   activity: FriendLessonActivity;
@@ -49,7 +49,7 @@ export function FriendActivityCard({
         onPress={onLessonPress}
         className="m-4 overflow-hidden rounded-xl border border-border bg-muted/30 active:opacity-95">
         <View className="h-28 p-2">
-          <SlidePreview colors={lesson.slidePreviewColors} />
+          <GoogleSlidesCardPreview variant="featured" colors={lesson.slidePreviewColors} />
         </View>
         <View className="px-3 pb-3">
           <Text className="text-[11px] text-muted-foreground">

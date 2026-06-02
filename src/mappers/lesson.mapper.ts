@@ -22,6 +22,7 @@ export function lessonFromFirestore(
     scheduledAtLabel: doc.scheduledAt.toDate().toLocaleString(),
     locationName: doc.location.name,
     featured: doc.featured,
+    googleSlidesUrl: doc.googleSlidesUrl,
     slidePreviewColors: ['#0F766E', '#134E4A', '#1F2937'],
     priceCents: doc.priceCents,
   };
