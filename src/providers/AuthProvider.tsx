@@ -1,4 +1,3 @@
-import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import * as SecureStore from 'expo-secure-store';
 import {
   createContext,
@@ -10,15 +9,25 @@ import {
   type ReactNode,
 } from 'react';
 
-import { auth } from '@/lib/firebase';
+import { getAuth, isFirebaseNativeAvailable } from '@/lib/firebase';
+import type { AuthUser } from '@/types/auth';
 
 const ONBOARDING_KEY = 'tribely.has_seen_onboarding';
+const DEV_USER_KEY = 'tribely.dev_auth_user';
+
+const DEV_MOCK_USER: AuthUser = {
+  uid: 'dev-user-alex',
+  email: 'alex@example.com',
+  displayName: 'Alex Kim',
+};
 
 type AuthContextValue = {
-  user: FirebaseAuthTypes.User | null;
+  user: AuthUser | null;
   loading: boolean;
   hasSeenOnboarding: boolean;
   isAuthenticated: boolean;
+  /** True when using local mock auth (Expo Go). Firebase requires a dev build. */
+  isDevAuth: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
@@ -26,35 +35,61 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function mapFirebaseUser(fbUser: {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+}): AuthUser {
+  return {
+    uid: fbUser.uid,
+    email: fbUser.email,
+    displayName: fbUser.displayName,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
+  const isDevAuth = !isFirebaseNativeAvailable;
 
   useEffect(() => {
     let mounted = true;
+    let unsubscribe: (() => void) | undefined;
 
     async function bootstrap() {
       try {
         const seen = await SecureStore.getItemAsync(ONBOARDING_KEY);
         if (mounted) setHasSeenOnboarding(seen === 'true');
+
+        const auth = getAuth();
+
+        if (auth) {
+          unsubscribe = auth().onAuthStateChanged((fbUser) => {
+            if (!mounted) return;
+            setUser(fbUser ? mapFirebaseUser(fbUser) : null);
+            setLoading(false);
+          });
+          return;
+        }
+
+        // Expo Go: restore dev session if present
+        const stored = await SecureStore.getItemAsync(DEV_USER_KEY);
+        if (mounted && stored) {
+          setUser(JSON.parse(stored) as AuthUser);
+        }
+      } catch {
+        if (mounted) setUser(null);
       } finally {
-        // auth listener will set loading false
+        if (mounted) setLoading(false);
       }
     }
 
     bootstrap();
 
-    const unsubscribe = auth().onAuthStateChanged((nextUser) => {
-      if (mounted) {
-        setUser(nextUser);
-        setLoading(false);
-      }
-    });
-
     return () => {
       mounted = false;
-      unsubscribe();
+      unsubscribe?.();
     };
   }, []);
 
@@ -64,13 +99,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    // Phase 1: @react-native-google-signin + Firebase credential
-    // Temporary: anonymous sign-in to validate auth gate (enable in Firebase Console)
-    await auth().signInAnonymously();
+    const auth = getAuth();
+
+    if (auth) {
+      // Phase 1: Google Sign-In credential — anonymous for gate testing until then
+      await auth().signInAnonymously();
+      return;
+    }
+
+    // Expo Go: local dev session (UI / navigation testing only)
+    await SecureStore.setItemAsync(DEV_USER_KEY, JSON.stringify(DEV_MOCK_USER));
+    setUser(DEV_MOCK_USER);
   }, []);
 
   const signOut = useCallback(async () => {
-    await auth().signOut();
+    const auth = getAuth();
+    if (auth) {
+      await auth().signOut();
+      return;
+    }
+    await SecureStore.deleteItemAsync(DEV_USER_KEY);
+    setUser(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -79,11 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       hasSeenOnboarding,
       isAuthenticated: !!user,
+      isDevAuth,
       signInWithGoogle,
       signOut,
       completeOnboarding,
     }),
-    [user, loading, hasSeenOnboarding, signInWithGoogle, signOut, completeOnboarding]
+    [user, loading, hasSeenOnboarding, isDevAuth, signInWithGoogle, signOut, completeOnboarding]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -12,6 +12,10 @@ web-build/
 # expo router
 expo-env.d.ts
 
+# Firebase native config (keep local copies out of git if repo is public)
+GoogleService-Info.plist
+google-services.json
+
 
 
 ios

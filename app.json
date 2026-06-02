@@ -14,11 +14,26 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "forceStaticLinking": [
+              "RNFBApp",
+              "RNFBAuth",
+              "RNFBFirestore",
+              "RNFBStorage"
+            ]
+          }
+        }
+      ],
       "expo-router",
       "expo-dev-client",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withFirebaseIos.js"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -37,7 +52,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tribely.app"
+      "bundleIdentifier": "com.tribely.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.tribely.app",

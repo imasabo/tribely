@@ -34,7 +34,7 @@ function GoogleIcon() {
 
 export function SignInScreen() {
   const insets = useSafeAreaInsets();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, isDevAuth } = useAuth();
   const [submitting, setSubmitting] = useState(false);
 
   const handleSignIn = async () => {
@@ -45,7 +45,11 @@ export function SignInScreen() {
     } catch (e) {
       Alert.alert(
         'Sign in failed',
-        e instanceof Error ? e.message : 'Enable Anonymous Auth in Firebase Console for dev, or wait for Google Sign-In in Phase 1.'
+        e instanceof Error
+          ? e.message
+          : isDevAuth
+            ? 'Could not start a dev session.'
+            : 'Use a development build (npx expo run:ios) and enable Anonymous Auth in Firebase Console until Google Sign-In is added.'
       );
     } finally {
       setSubmitting(false);

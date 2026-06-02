@@ -1,8 +1,9 @@
-import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
-
 import type { LessonDurationMinutes, LessonStatus, UserRole } from './domain';
 
-export type FirestoreTimestamp = FirebaseFirestoreTypes.Timestamp;
+/** Use Firestore Timestamp when native SDK is available; Date for mocks/tests */
+export type FirestoreTimestamp = {
+  toDate: () => Date;
+};
 
 export interface LessonLocationDoc {
   name: string;
