@@ -21,4 +21,28 @@ export const lessonsService = {
     const all = [...homeLessons, ...discoverLessons];
     return all.find((l) => l.id === id) ?? null;
   },
+
+  async search(query: string): Promise<Lesson[]> {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return [];
+
+    const all = [...homeLessons, ...discoverLessons];
+    const seen = new Set<string>();
+
+    return all.filter((lesson) => {
+      if (seen.has(lesson.id)) return false;
+      seen.add(lesson.id);
+
+      const haystack = [
+        lesson.title,
+        lesson.teacherName,
+        lesson.category,
+        lesson.locationName,
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      return haystack.includes(normalized);
+    });
+  },
 };
