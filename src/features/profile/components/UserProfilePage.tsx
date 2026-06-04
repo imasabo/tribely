@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/constants/theme';
 
 import { ProfileCover } from '@/features/profile/components/ProfileCover';
+import { ProfileCoverHeaderOverlay } from '@/features/profile/components/ProfileCoverHeaderOverlay';
 import { ProfileFriendConnection } from '@/features/profile/components/ProfileFriendConnection';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { ProfileIdentity } from '@/features/profile/components/ProfileIdentity';
@@ -80,7 +81,8 @@ export function UserProfilePage({
 
   return (
     <View className="flex-1 bg-background">
-      <ProfileCover scrollY={scrollY} headerStart={headerStart} headerEnd={headerEnd} />
+      <ProfileCover scrollY={scrollY} />
+      <ProfileCoverHeaderOverlay headerStart={headerStart} headerEnd={headerEnd} />
 
       <Animated.ScrollView
         onScroll={onScroll}

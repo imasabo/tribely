@@ -1,6 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -19,14 +18,11 @@ export { PROFILE_GRADIENT_BODY_HEIGHT } from '@/features/profile/lib/profileCove
 
 interface ProfileCoverProps {
   scrollY: SharedValue<number>;
-  headerStart?: ReactNode;
-  headerEnd?: ReactNode;
 }
 
-export function ProfileCover({ scrollY, headerStart, headerEnd }: ProfileCoverProps) {
+export function ProfileCover({ scrollY }: ProfileCoverProps) {
   const insets = useSafeAreaInsets();
   const baseHeight = PROFILE_GRADIENT_BODY_HEIGHT + insets.top;
-  const hasHeaderControls = headerStart != null || headerEnd != null;
 
   const shellStyle = useAnimatedStyle(() => {
     const y = scrollY.value;
@@ -65,18 +61,8 @@ export function ProfileCover({ scrollY, headerStart, headerEnd }: ProfileCoverPr
       <Animated.View style={[styles.inner, { height: baseHeight }, innerStyle]}>
         <LinearGradient
           colors={[colors.primary, colors.primaryDark]}
-          style={[styles.gradient, { paddingTop: insets.top }]}>
-          {hasHeaderControls ? (
-            <View pointerEvents="box-none" style={styles.controlsRow}>
-              <View pointerEvents="auto" style={styles.controlSlot}>
-                {headerStart}
-              </View>
-              <View pointerEvents="auto" style={styles.controlSlot}>
-                {headerEnd}
-              </View>
-            </View>
-          ) : null}
-        </LinearGradient>
+          style={[styles.gradient, { paddingTop: insets.top }]}
+        />
       </Animated.View>
     </Animated.View>
   );
@@ -96,16 +82,5 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flex: 1,
-  },
-  controlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 44,
-    marginTop: 4,
-    paddingHorizontal: 20,
-  },
-  controlSlot: {
-    minWidth: 36,
   },
 });
