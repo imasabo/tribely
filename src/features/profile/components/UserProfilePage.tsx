@@ -1,5 +1,7 @@
-import { type ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { type ReactNode, useRef } from 'react';
+import { Animated, View } from 'react-native';
+
+import { colors } from '@/constants/theme';
 
 import { ProfileFriendConnection } from '@/features/profile/components/ProfileFriendConnection';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
@@ -56,18 +58,26 @@ export function UserProfilePage({
   const showLearn =
     profile.learnTopics.length > 0 || !hideEmptyTopicSections;
 
+  const scrollY = useRef(new Animated.Value(0)).current;
+
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerStyle={{ paddingBottom: 100 }}
-      showsVerticalScrollIndicator={false}>
+    <Animated.ScrollView
+      className="flex-1"
+      style={{ backgroundColor: colors.primary }}
+      contentContainerStyle={{ paddingBottom: 100, backgroundColor: colors.background }}
+      showsVerticalScrollIndicator={false}
+      scrollEventThrottle={16}
+      onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+        useNativeDriver: false,
+      })}>
       <ProfileHeader
         initials={initials}
         headerStart={headerStart}
         headerEnd={headerEnd}
         avatarAccessory={avatarAccessory}
         showEditBadge={showEditBadge}
-        onEditPress={onEditPress}>
+        onEditPress={onEditPress}
+        scrollY={scrollY}>
         <ProfileIdentity
           displayName={profile.displayName}
           metaLine={profile.metaLine}
@@ -103,6 +113,6 @@ export function UserProfilePage({
         {recentActivity ? <ProfileRecentActivity items={recentActivity} /> : null}
         {children}
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
   );
 }

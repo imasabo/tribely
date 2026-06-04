@@ -1,12 +1,13 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { type ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Animated, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/theme';
 
-const GRADIENT_BODY_HEIGHT = 128;
+export const PROFILE_GRADIENT_BODY_HEIGHT = 128;
+const OVERSCROLL_STRETCH_MAX = 280;
 
 interface ProfileHeaderProps {
   initials: string;
@@ -20,6 +21,8 @@ interface ProfileHeaderProps {
   /** Small edit badge on the avatar — own profile only. */
   showEditBadge?: boolean;
   onEditPress?: () => void;
+  /** Drives cover stretch when pulling down past the top of the scroll view. */
+  scrollY?: Animated.Value;
 }
 
 export function ProfileHeader({
@@ -30,29 +33,69 @@ export function ProfileHeader({
   avatarAccessory,
   showEditBadge = false,
   onEditPress,
+  scrollY,
 }: ProfileHeaderProps) {
   const insets = useSafeAreaInsets();
   const hasHeaderControls = headerStart != null || headerEnd != null;
+  const baseGradientHeight = PROFILE_GRADIENT_BODY_HEIGHT + insets.top;
+
+  const stretch =
+    scrollY != null
+      ? scrollY.interpolate({
+          inputRange: [-OVERSCROLL_STRETCH_MAX, 0],
+          outputRange: [OVERSCROLL_STRETCH_MAX, 0],
+          extrapolate: 'clamp',
+        })
+      : 0;
+
+  const gradientHeight =
+    scrollY != null
+      ? Animated.add(baseGradientHeight, stretch)
+      : baseGradientHeight;
+
+  const gradientBlock = (
+    <LinearGradient
+      colors={[colors.primary, colors.primaryDark]}
+      style={{
+        paddingTop: insets.top,
+        height: baseGradientHeight,
+      }}>
+      {hasHeaderControls ? (
+        <View
+          className="flex-row items-center justify-between px-5"
+          style={{ height: 44, marginTop: 4 }}>
+          <View className="min-w-9">{headerStart}</View>
+          <View className="min-w-9 items-end">{headerEnd}</View>
+        </View>
+      ) : null}
+    </LinearGradient>
+  );
 
   return (
     <>
-      <View className="relative">
-        <LinearGradient
-          colors={[colors.primary, colors.primaryDark]}
-          style={{
-            paddingTop: insets.top,
-            height: GRADIENT_BODY_HEIGHT + insets.top,
-          }}>
-          {hasHeaderControls ? (
-            <View
-              className="flex-row items-center justify-between px-5"
-              style={{ height: 44, marginTop: 4 }}>
-              <View className="min-w-9">{headerStart}</View>
-              <View className="min-w-9 items-end">{headerEnd}</View>
-            </View>
-          ) : null}
-        </LinearGradient>
-      </View>
+      {scrollY != null ? (
+        <Animated.View
+          className="relative overflow-hidden"
+          style={{ height: gradientHeight }}>
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: stretch,
+              backgroundColor: colors.primary,
+            }}
+          />
+          <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+            {gradientBlock}
+          </View>
+        </Animated.View>
+      ) : (
+        <View className="relative overflow-hidden" style={{ height: baseGradientHeight }}>
+          {gradientBlock}
+        </View>
+      )}
 
       <View className="bg-background px-5 pb-5">
         <View className="-mt-10 mb-4 flex-row items-end justify-between">
