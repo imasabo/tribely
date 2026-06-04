@@ -4,7 +4,6 @@ import { lessonsService } from '@/services/lessons.service';
 import type { Lesson } from '@/types/domain';
 
 export function useDiscoverLessons() {
-  const [featured, setFeatured] = useState<Lesson[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -13,11 +12,7 @@ export function useDiscoverLessons() {
     setLoading(true);
     setError(null);
     try {
-      const [featuredLessons, discoverLessons] = await Promise.all([
-        lessonsService.listFeatured(),
-        lessonsService.listDiscover(),
-      ]);
-      setFeatured(featuredLessons);
+      const discoverLessons = await lessonsService.listDiscover();
       setLessons(discoverLessons);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load lessons');
@@ -30,5 +25,5 @@ export function useDiscoverLessons() {
     load();
   }, [load]);
 
-  return { featured, lessons, loading, error, refetch: load };
+  return { lessons, loading, error, refetch: load };
 }

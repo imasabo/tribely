@@ -7,14 +7,18 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/theme';
 import { ActivityEngagementProvider } from '@/providers/ActivityEngagementProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
+import { DiscoverFiltersModal } from '@/features/discover/components/DiscoverFiltersModal';
+import { DiscoverFiltersProvider } from '@/providers/DiscoverFiltersProvider';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <ActivityEngagementProvider>
-          <StatusBar style="dark" />
-          <Stack
+        <DiscoverFiltersProvider>
+          <ActivityEngagementProvider>
+            <StatusBar style="dark" />
+            <DiscoverFiltersModal />
+            <Stack
             screenOptions={{
               headerShown: false,
               contentStyle: { backgroundColor: colors.background },
@@ -31,8 +35,9 @@ export default function RootLayout() {
               name="lesson/[id]/slides"
               options={{ presentation: 'fullScreenModal', animation: 'fade' }}
             />
-          </Stack>
-        </ActivityEngagementProvider>
+            </Stack>
+          </ActivityEngagementProvider>
+        </DiscoverFiltersProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
