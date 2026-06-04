@@ -4,13 +4,6 @@ export type ProfileStatIcon = 'star' | 'book-open' | 'users' | 'award';
 
 export type ProfileStatKey = 'rating' | 'taught' | 'students' | 'reviews';
 
-export interface ProfileStatItem {
-  label: string;
-  value: string;
-  icon: ProfileStatIcon;
-  statKey: ProfileStatKey;
-}
-
 export interface ProfileTaughtItem {
   id: string;
   title: string;
@@ -30,6 +23,9 @@ export interface ProfileStudentItem {
   lastSeenLabel: string;
 }
 
+/** Whether the review rates this member as a teacher or as a learner in the session. */
+export type ProfileReviewContext = 'as_teacher' | 'as_learner';
+
 export interface ProfileReviewItem {
   id: string;
   authorName: string;
@@ -38,6 +34,17 @@ export interface ProfileReviewItem {
   body: string;
   lessonTitle: string;
   createdAtLabel: string;
+  /** Who left the rating: students (as teacher) or teachers (as learner). */
+  context: ProfileReviewContext;
+}
+
+export interface ProfileStatItem {
+  label: string;
+  value: string;
+  icon: ProfileStatIcon;
+  statKey: ProfileStatKey;
+  /** Short line under the label (e.g. Rating clarifier). */
+  hint?: string;
 }
 
 export interface ProfileActivityItem {

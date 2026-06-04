@@ -56,7 +56,7 @@ export const MOCK_OWN_PROFILE_VIEW_MODEL: ProfileViewModel = {
     { label: 'Rating', value: '4.9', icon: 'star', statKey: 'rating' },
     { label: 'Taught', value: '12', icon: 'book-open', statKey: 'taught' },
     { label: 'Students', value: '34', icon: 'users', statKey: 'students' },
-    { label: 'Reviews', value: '28', icon: 'award', statKey: 'reviews' },
+    { label: 'Reviews', value: '30', icon: 'award', statKey: 'reviews' },
   ],
 };
 

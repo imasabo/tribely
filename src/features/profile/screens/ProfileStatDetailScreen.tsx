@@ -1,14 +1,24 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { colors } from '@/constants/theme';
+import { ProfileRatingsOverview } from '@/features/profile/components/ProfileRatingsOverview';
+import { PROFILE_REVIEW_TAB_OPTIONS } from '@/features/profile/lib/profileReviewLabels';
 import { resolveProfileStatsUserId } from '@/features/profile/lib/ownProfileStats';
+import {
+  buildProfileReviewSummary,
+  filterProfileReviews,
+  emptyMessageForReviewFilter,
+  type ProfileReviewFilter,
+  type ProfileReviewSummary,
+} from '@/features/profile/lib/profileReviewSummary';
 import type {
   ProfileReviewItem,
   ProfileStatKey,
@@ -18,12 +28,21 @@ import type {
 import { useAuth } from '@/providers/AuthProvider';
 import { profileStatsService } from '@/services/profileStats.service';
 
+export type ProfileReviewsScreenSource = 'rating' | 'reviews';
+
 interface ProfileStatDetailScreenProps {
   userId: string;
   statKey: Exclude<ProfileStatKey, 'rating'>;
+  initialReviewFilter?: ProfileReviewFilter;
+  reviewsSource?: ProfileReviewsScreenSource;
 }
 
-export function ProfileStatDetailScreen({ userId, statKey }: ProfileStatDetailScreenProps) {
+export function ProfileStatDetailScreen({
+  userId,
+  statKey,
+  initialReviewFilter = 'all',
+  reviewsSource = 'reviews',
+}: ProfileStatDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const statsUserId = resolveProfileStatsUserId(userId, user?.uid);
@@ -32,6 +51,11 @@ export function ProfileStatDetailScreen({ userId, statKey }: ProfileStatDetailSc
     ProfileTaughtItem[] | ProfileStudentItem[] | ProfileReviewItem[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [reviewFilter, setReviewFilter] = useState<ProfileReviewFilter>(initialReviewFilter);
+
+  useEffect(() => {
+    setReviewFilter(initialReviewFilter);
+  }, [initialReviewFilter]);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,12 +87,68 @@ export function ProfileStatDetailScreen({ userId, statKey }: ProfileStatDetailSc
     };
   }, [statsUserId, statKey]);
 
-  const title = profileStatsService.titleForStat(statKey);
-  const subtitle = displayName ? `${displayName}'s ${title.toLowerCase()}` : undefined;
+  const reviewItems = statKey === 'reviews' ? (items as ProfileReviewItem[]) : [];
+  const reviewSummary = useMemo(
+    (): ProfileReviewSummary => buildProfileReviewSummary(reviewItems),
+    [reviewItems]
+  );
+
+  const filteredReviews = useMemo(
+    () => filterProfileReviews(reviewItems, reviewFilter),
+    [reviewItems, reviewFilter]
+  );
+
+  const reviewTabOptions = useMemo(
+    () =>
+      PROFILE_REVIEW_TAB_OPTIONS.map((option) => ({
+        ...option,
+        badge:
+          option.id === 'all'
+            ? reviewItems.length
+            : reviewItems.filter((review) => review.context === option.id).length,
+      })),
+    [reviewItems]
+  );
+
+  const title =
+    statKey === 'reviews' && reviewsSource === 'rating'
+      ? 'Rating'
+      : profileStatsService.titleForStat(statKey);
+
+  const subtitle = displayName
+    ? reviewsSource === 'rating' && statKey === 'reviews'
+      ? `${displayName}'s overall lesson rating`
+      : `${displayName}'s ${title.toLowerCase()}`
+    : undefined;
 
   if (loading) {
     return <LoadingScreen message="Loading…" />;
   }
+
+  const listData = statKey === 'reviews' ? filteredReviews : items;
+  const emptyMessage =
+    statKey === 'reviews'
+      ? emptyMessageForReviewFilter(reviewFilter)
+      : profileStatsService.emptyMessageForStat(statKey);
+  const isReviewsScreen = statKey === 'reviews';
+  const showReviewTabs = isReviewsScreen && reviewItems.length > 0;
+
+  const listHeader = isReviewsScreen ? (
+    <View>
+      <ProfileRatingsOverview
+        summary={reviewSummary}
+        onSelectFilter={setReviewFilter}
+      />
+      {showReviewTabs ? (
+        <SegmentedTabs
+          options={reviewTabOptions}
+          value={reviewFilter}
+          onChange={setReviewFilter}
+          className="mb-4"
+        />
+      ) : null}
+    </View>
+  ) : null;
 
   return (
     <View className="flex-1 bg-background">
@@ -86,7 +166,7 @@ export function ProfileStatDetailScreen({ userId, statKey }: ProfileStatDetailSc
           <View className="flex-1">
             <Text className="text-[17px] font-semibold text-foreground">{title}</Text>
             {subtitle ? (
-              <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+              <Text className="text-xs text-muted-foreground" numberOfLines={2}>
                 {subtitle}
               </Text>
             ) : null}
@@ -94,11 +174,25 @@ export function ProfileStatDetailScreen({ userId, statKey }: ProfileStatDetailSc
         </View>
       </View>
 
-      {items.length === 0 ? (
-        <CenteredMessage message={profileStatsService.emptyMessageForStat(statKey)} />
+      {isReviewsScreen ? (
+        <FlatList
+          data={listData}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingVertical: 16,
+            flexGrow: listData.length === 0 ? 1 : undefined,
+          }}
+          ItemSeparatorComponent={() => <View className="h-3" />}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={<CenteredMessage message={emptyMessage} />}
+          renderItem={({ item }) => <ReviewRow item={item} />}
+        />
+      ) : listData.length === 0 ? (
+        <CenteredMessage message={emptyMessage} />
       ) : (
         <FlatList
-          data={items}
+          data={listData}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 16 }}
           ItemSeparatorComponent={() => <View className="h-3" />}
@@ -106,10 +200,7 @@ export function ProfileStatDetailScreen({ userId, statKey }: ProfileStatDetailSc
             if (statKey === 'taught') {
               return <TaughtRow item={item as ProfileTaughtItem} />;
             }
-            if (statKey === 'students') {
-              return <StudentRow item={item as ProfileStudentItem} />;
-            }
-            return <ReviewRow item={item as ProfileReviewItem} />;
+            return <StudentRow item={item as ProfileStudentItem} />;
           }}
         />
       )}

@@ -37,6 +37,7 @@ export interface UserProfile {
   teachTopics: string[];
   learnTopics: string[];
   stats: {
+    /** Average star rating from lesson feedback (as teacher and as learner). */
     rating: number;
     lessonsTaught: number;
     students: number;

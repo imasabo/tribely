@@ -44,6 +44,8 @@ export const profileStatsService = {
         return 'Students';
       case 'reviews':
         return 'Reviews';
+      case 'rating':
+        return 'Rating';
       default:
         return '';
     }

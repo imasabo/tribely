@@ -14,7 +14,7 @@ export function ProfileStatsRow({ stats, className, onStatPress }: ProfileStatsR
   return (
     <View className={`flex-row gap-2 ${className ?? ''}`}>
       {stats.map((stat) => {
-        const isPressable = stat.statKey !== 'rating' && onStatPress != null;
+        const isPressable = onStatPress != null;
 
         const content = (
           <>

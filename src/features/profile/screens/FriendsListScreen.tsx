@@ -16,11 +16,11 @@ export function FriendsListScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      void reload();
+      void reload({ background: true });
     }, [reload])
   );
 
-  if (loading) {
+  if (loading && friends.length === 0) {
     return <LoadingScreen message="Loading friends…" />;
   }
 

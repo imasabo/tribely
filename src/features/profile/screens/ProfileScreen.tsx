@@ -21,7 +21,7 @@ export function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      void reloadFriends();
+      void reloadFriends({ background: true });
     }, [reloadFriends])
   );
 

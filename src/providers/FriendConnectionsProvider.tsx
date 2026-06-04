@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -25,22 +26,33 @@ export function FriendConnectionsProvider({ children }: { children: ReactNode })
   const { user } = useAuth();
   const [friends, setFriends] = useState<FriendListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const hasLoadedRef = useRef(false);
 
-  const reload = useCallback(async () => {
-    if (!user?.uid) {
-      setFriends([]);
+  const reload = useCallback(
+    async (options?: ReloadOptions) => {
+      if (!user?.uid) {
+        setFriends([]);
+        setLoading(false);
+        hasLoadedRef.current = true;
+        return;
+      }
+
+      const background = options?.background ?? false;
+      if (!background && !hasLoadedRef.current) {
+        setLoading(true);
+      }
+
+      const ids = await friendsService.getFriendIds(user.uid);
+      const resolved = await friendsService.resolveFriends(ids);
+      setFriends(resolved);
       setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    const ids = await friendsService.getFriendIds(user.uid);
-    const resolved = await friendsService.resolveFriends(ids);
-    setFriends(resolved);
-    setLoading(false);
-  }, [user?.uid]);
+      hasLoadedRef.current = true;
+    },
+    [user?.uid]
+  );
 
   useEffect(() => {
+    hasLoadedRef.current = false;
     void reload();
   }, [reload]);
 

@@ -149,11 +149,15 @@ export function UserProfilePage({
               className="mt-4"
               onStatPress={handleStatPress}
             />
-            {friendsEntry ? <View className="mt-3">{friendsEntry}</View> : null}
           </ProfileHeader>
 
           <View className="gap-5 px-5 pb-8">
-            {showUpcomingLessons ? <ProfileUpcomingEntry /> : null}
+            {friendsEntry || showUpcomingLessons ? (
+              <View className="gap-2">
+                {friendsEntry}
+                {showUpcomingLessons ? <ProfileUpcomingEntry /> : null}
+              </View>
+            ) : null}
             {showInterestsCard ? (
               <ProfileInterestsCard
                 sectionTitle={interestsCardTitle}

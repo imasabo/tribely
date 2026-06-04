@@ -88,6 +88,7 @@ function reviewsForTeacher(teacherId: string, lessons: Lesson[], count: number):
       createdAtLabel: ['Jun 2, 2026', 'May 28, 2026', 'May 14, 2026', 'May 1, 2026', 'Apr 22, 2026'][
         i % 5
       ],
+      context: 'as_teacher',
     };
   });
 }
@@ -228,6 +229,7 @@ const alexReviews: ProfileReviewItem[] = [
     body: 'Alex explained pandas workflows clearly and left time for questions. Would book again.',
     lessonTitle: 'Python for Data Science',
     createdAtLabel: 'May 28, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'alex-review-2',
@@ -237,6 +239,7 @@ const alexReviews: ProfileReviewItem[] = [
     body: 'Great pace for beginners — the ML intuition section was especially helpful.',
     lessonTitle: 'ML Basics Workshop',
     createdAtLabel: 'May 14, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'alex-review-3',
@@ -246,6 +249,7 @@ const alexReviews: ProfileReviewItem[] = [
     body: 'Solid SQL lesson. A few more join examples would make it perfect.',
     lessonTitle: 'SQL for Analysts',
     createdAtLabel: 'May 1, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'alex-review-4',
@@ -255,6 +259,7 @@ const alexReviews: ProfileReviewItem[] = [
     body: 'The visualization walkthrough finally made matplotlib click for me.',
     lessonTitle: 'Pandas & Visualization Crash Course',
     createdAtLabel: 'Apr 15, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'alex-review-5',
@@ -264,6 +269,7 @@ const alexReviews: ProfileReviewItem[] = [
     body: 'Feature engineering felt approachable. Loved the small group format.',
     lessonTitle: 'Intro to Feature Engineering',
     createdAtLabel: 'Mar 24, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'alex-review-6',
@@ -273,6 +279,27 @@ const alexReviews: ProfileReviewItem[] = [
     body: 'Clear, patient, and practical. Best data lesson I have taken in the neighborhood.',
     lessonTitle: 'Python for Data Science',
     createdAtLabel: 'May 20, 2026',
+    context: 'as_teacher',
+  },
+  {
+    id: 'alex-review-7',
+    authorName: 'Sam Rivera',
+    authorInitials: 'SR',
+    rating: 5,
+    body: 'Attentive learner in the watercolor session — great questions and respectful of materials.',
+    lessonTitle: 'Watercolor Landscapes',
+    createdAtLabel: 'May 18, 2026',
+    context: 'as_learner',
+  },
+  {
+    id: 'alex-review-8',
+    authorName: 'Riley Chen',
+    authorInitials: 'RC',
+    rating: 5,
+    body: 'Showed up prepared for sourdough basics and helped the group with timing tips.',
+    lessonTitle: 'Sourdough Starter 101',
+    createdAtLabel: 'Apr 30, 2026',
+    context: 'as_learner',
   },
 ];
 
@@ -367,6 +394,7 @@ const rileyReviews: ProfileReviewItem[] = [
     body: 'Best sourdough walkthrough I have had — clear timing and troubleshooting tips.',
     lessonTitle: 'Sourdough Starter 101',
     createdAtLabel: 'Jun 1, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'riley-review-2',
@@ -376,6 +404,7 @@ const rileyReviews: ProfileReviewItem[] = [
     body: 'Riley is patient and organized. Left with croissants I was proud of.',
     lessonTitle: 'Weekend Pastry Basics',
     createdAtLabel: 'May 22, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'riley-review-3',
@@ -385,6 +414,7 @@ const rileyReviews: ProfileReviewItem[] = [
     body: 'Lamination finally made sense. Small class size was perfect.',
     lessonTitle: 'Croissant Lamination Lab',
     createdAtLabel: 'May 8, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'riley-review-4',
@@ -394,6 +424,7 @@ const rileyReviews: ProfileReviewItem[] = [
     body: 'Beautiful tarts and very clear steps. Great for beginners.',
     lessonTitle: 'Seasonal Fruit Tarts',
     createdAtLabel: 'Apr 16, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'riley-review-5',
@@ -403,6 +434,7 @@ const rileyReviews: ProfileReviewItem[] = [
     body: 'Warm, encouraging teacher. My starter is still alive!',
     lessonTitle: 'Sourdough Starter 101',
     createdAtLabel: 'May 30, 2026',
+    context: 'as_teacher',
   },
 ];
 
@@ -471,6 +503,7 @@ const marcusReviews: ProfileReviewItem[] = [
     body: 'Marcus made auto-layout click for me. Very practical examples.',
     lessonTitle: 'Figma for Product Teams',
     createdAtLabel: 'May 19, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'marcus-review-2',
@@ -480,6 +513,7 @@ const marcusReviews: ProfileReviewItem[] = [
     body: 'Constructive critique format — left with a clearer portfolio story.',
     lessonTitle: 'UI Critique Workshop',
     createdAtLabel: 'May 4, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'marcus-review-3',
@@ -489,6 +523,7 @@ const marcusReviews: ProfileReviewItem[] = [
     body: 'Great session. Would love one more week on design systems.',
     lessonTitle: 'Figma for Product Teams',
     createdAtLabel: 'Apr 28, 2026',
+    context: 'as_teacher',
   },
 ];
 
@@ -566,6 +601,7 @@ const samReviews: ProfileReviewItem[] = [
     body: 'Sam gave thoughtful feedback on color mixing. Loved the park session.',
     lessonTitle: 'Watercolor Landscapes',
     createdAtLabel: 'May 26, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'sam-review-2',
@@ -575,6 +611,7 @@ const samReviews: ProfileReviewItem[] = [
     body: 'Relaxed sketching walk with helpful demos. Perfect Sunday morning.',
     lessonTitle: 'Urban Sketching Walk',
     createdAtLabel: 'May 12, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'sam-review-3',
@@ -584,6 +621,7 @@ const samReviews: ProfileReviewItem[] = [
     body: 'Portrait proportions finally clicked. Sam is encouraging and precise.',
     lessonTitle: 'Drawing Faces from Life',
     createdAtLabel: 'Apr 22, 2026',
+    context: 'as_teacher',
   },
   {
     id: 'sam-review-4',
@@ -593,10 +631,11 @@ const samReviews: ProfileReviewItem[] = [
     body: 'Beautiful lesson — wish we had ten more minutes for drying tips.',
     lessonTitle: 'Watercolor Landscapes',
     createdAtLabel: 'May 18, 2026',
+    context: 'as_teacher',
   },
 ];
 
-/** Learners with reviews but no teaching stats */
+/** Learners rated by their teachers after attending sessions */
 const jordanReviews: ProfileReviewItem[] = [
   {
     id: 'jordan-review-1',
@@ -606,6 +645,7 @@ const jordanReviews: ProfileReviewItem[] = [
     body: 'Jordan asked great questions and helped the group stay engaged.',
     lessonTitle: 'Python for Data Science Fundamentals',
     createdAtLabel: 'May 25, 2026',
+    context: 'as_learner',
   },
   {
     id: 'jordan-review-2',
@@ -615,6 +655,7 @@ const jordanReviews: ProfileReviewItem[] = [
     body: 'Positive energy in class. Would pair well with any beginner group.',
     lessonTitle: 'Mindful Watercolor Painting',
     createdAtLabel: 'May 10, 2026',
+    context: 'as_learner',
   },
   {
     id: 'jordan-review-3',
@@ -624,6 +665,7 @@ const jordanReviews: ProfileReviewItem[] = [
     body: 'Prepared and on time. Conversational Spanish practice was fun.',
     lessonTitle: 'Spanish Conversation Practice',
     createdAtLabel: 'Apr 28, 2026',
+    context: 'as_learner',
   },
 ];
 
@@ -636,6 +678,7 @@ const taylorReviews: ProfileReviewItem[] = [
     body: 'Taylor brought thoughtful questions to the Figma session.',
     lessonTitle: 'Figma for Product Teams',
     createdAtLabel: 'May 19, 2026',
+    context: 'as_learner',
   },
   {
     id: 'taylor-review-2',
@@ -645,6 +688,7 @@ const taylorReviews: ProfileReviewItem[] = [
     body: 'Dedicated learner — stayed after to review the notebook examples.',
     lessonTitle: 'ML Basics Workshop',
     createdAtLabel: 'May 14, 2026',
+    context: 'as_learner',
   },
   {
     id: 'taylor-review-3',
@@ -654,6 +698,7 @@ const taylorReviews: ProfileReviewItem[] = [
     body: 'Quick learner on lead sheets. Great duet partner for practice.',
     lessonTitle: 'Piano: Reading Lead Sheets',
     createdAtLabel: 'Apr 30, 2026',
+    context: 'as_learner',
   },
 ];
 

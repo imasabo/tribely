@@ -6,6 +6,8 @@ export function getProfileStatHref(
   userId: string,
   statKey: ProfileStatKey
 ): Href | null {
-  if (statKey === 'rating') return null;
+  if (statKey === 'rating') {
+    return `/user/${userId}/reviews?source=rating` as Href;
+  }
   return `/user/${userId}/${statKey}` as Href;
 }
