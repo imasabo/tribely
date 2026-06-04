@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
 export interface OwnProfileData {
+  username: string;
   displayName: string;
   bio: string;
   teachTopics: string[];
@@ -24,6 +25,7 @@ export async function loadOwnProfile(
 
     const parsed = JSON.parse(raw) as Partial<OwnProfileData>;
     return {
+      username: typeof parsed.username === 'string' ? parsed.username : '',
       displayName: typeof parsed.displayName === 'string' ? parsed.displayName : '',
       bio: typeof parsed.bio === 'string' ? parsed.bio : '',
       teachTopics: Array.isArray(parsed.teachTopics) ? parsed.teachTopics : [],

@@ -1,10 +1,12 @@
 import { discoverLessons, homeLessons } from '@/data/mock/lessons';
 import type { PublicUserProfile } from '@/data/mock/users';
+import { usernameFromDisplayName } from '@/lib/username';
 import type { Lesson } from '@/types/domain';
 
 function profileFromLesson(lesson: Lesson): PublicUserProfile {
   return {
     id: lesson.teacherId,
+    username: usernameFromDisplayName(lesson.teacherName),
     displayName: lesson.teacherName,
     email: `${lesson.teacherId}@tribely.app`,
     role: 'teacher',

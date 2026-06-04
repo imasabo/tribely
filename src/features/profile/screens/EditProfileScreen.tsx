@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,14 +11,21 @@ import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles
 import {
   PROFILE_BIO_CHAR_LIMIT,
   PROFILE_NAME_CHAR_LIMIT,
+  PROFILE_USERNAME_CHAR_LIMIT,
 } from '@/features/profile/lib/profileLimits';
 import { ProfileTopicsEditor } from '@/features/profile/components/ProfileTopicsEditor';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
+import {
+  isValidUsername,
+  normalizeUsernameInput,
+  USERNAME_MIN_LENGTH,
+} from '@/lib/username';
 
 export function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const { profile, updateProfile } = useOwnProfile();
 
+  const [username, setUsername] = useState(profile.username);
   const [displayName, setDisplayName] = useState(profile.displayName);
   const [bio, setBio] = useState(profile.bio);
   const [teachTopics, setTeachTopics] = useState(profile.teachTopics);
@@ -26,19 +33,37 @@ export function EditProfileScreen() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    setUsername(profile.username);
     setDisplayName(profile.displayName);
     setBio(profile.bio);
     setTeachTopics(profile.teachTopics);
     setLearnTopics(profile.learnTopics);
   }, [profile]);
 
+  const usernameValid = isValidUsername(username);
+  const canSave = usernameValid && displayName.trim().length > 0 && !saving;
+
+  const usernameHint = useMemo(() => {
+    if (username.length === 0) return 'Username is required.';
+    if (username.length < USERNAME_MIN_LENGTH) {
+      return `At least ${USERNAME_MIN_LENGTH} characters (letters, numbers, underscores).`;
+    }
+    if (!usernameValid) return 'Use only lowercase letters, numbers, and underscores.';
+    return null;
+  }, [username.length, usernameValid]);
+
+  const handleUsernameChange = (value: string) => {
+    setUsername(normalizeUsernameInput(value));
+  };
+
   const handleSave = async () => {
     const name = displayName.trim();
-    if (!name) return;
+    if (!canSave || !name) return;
 
     setSaving(true);
     try {
       await updateProfile({
+        username,
         displayName: name,
         bio: bio.trim(),
         teachTopics,
@@ -69,6 +94,28 @@ export function EditProfileScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
+        <View className="mb-4 gap-1.5">
+          <Text className="text-sm font-medium text-foreground">Username</Text>
+          <View className="relative justify-center">
+            <Text className="absolute left-4 z-10 text-base text-muted-foreground">@</Text>
+            <FormTextField
+              value={username}
+              onChangeText={handleUsernameChange}
+              placeholder="username"
+              maxLength={PROFILE_USERNAME_CHAR_LIMIT}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={[
+                { paddingLeft: 28 },
+                charLimitOutlineStyle(username.length, PROFILE_USERNAME_CHAR_LIMIT),
+              ]}
+            />
+          </View>
+          {usernameHint ? (
+            <Text className="text-xs text-muted-foreground">{usernameHint}</Text>
+          ) : null}
+        </View>
+
         <View className="mb-4 gap-1.5">
           <Text className="text-sm font-medium text-foreground">Name</Text>
           <FormTextField
@@ -121,7 +168,7 @@ export function EditProfileScreen() {
           onPress={handleSave}
           loading={saving}
           fullWidth
-          disabled={!displayName.trim() || saving}
+          disabled={!canSave}
         />
       </View>
     </View>

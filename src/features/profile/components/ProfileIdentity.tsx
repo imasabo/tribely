@@ -1,18 +1,30 @@
 import { type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
+import { formatUsernameLabel } from '@/lib/username';
+
 interface ProfileIdentityProps {
   displayName: string;
+  username: string;
   metaLine: string;
   bio?: string;
   /** Slot below bio (friend action, etc.) */
   action?: ReactNode;
 }
 
-export function ProfileIdentity({ displayName, metaLine, bio, action }: ProfileIdentityProps) {
+export function ProfileIdentity({
+  displayName,
+  username,
+  metaLine,
+  bio,
+  action,
+}: ProfileIdentityProps) {
   return (
     <View>
       <Text className="text-[22px] font-bold tracking-tight text-foreground">{displayName}</Text>
+      <Text className="mt-0.5 text-sm font-medium text-primary">
+        {formatUsernameLabel(username)}
+      </Text>
       {metaLine ? (
         <Text className="mt-0.5 text-sm text-muted-foreground">{metaLine}</Text>
       ) : null}

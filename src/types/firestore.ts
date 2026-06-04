@@ -31,6 +31,7 @@ export interface LessonDoc {
 }
 
 export interface UserDoc {
+  username: string;
   displayName: string;
   email: string;
   photoURL?: string;

@@ -7,6 +7,7 @@ export interface PublicUserProfile extends UserProfile {
 export const mockPublicProfiles: Record<string, PublicUserProfile> = {
   'friend-marcus': {
     id: 'friend-marcus',
+    username: 'marcuslee',
     displayName: 'Marcus Lee',
     email: 'marcus@example.com',
     role: 'both',
@@ -19,6 +20,7 @@ export const mockPublicProfiles: Record<string, PublicUserProfile> = {
   },
   'friend-jordan': {
     id: 'friend-jordan',
+    username: 'jordanpark',
     displayName: 'Jordan Park',
     email: 'jordan@example.com',
     role: 'learner',
@@ -31,6 +33,7 @@ export const mockPublicProfiles: Record<string, PublicUserProfile> = {
   },
   'friend-sam': {
     id: 'friend-sam',
+    username: 'samrivera',
     displayName: 'Sam Rivera',
     email: 'sam@example.com',
     role: 'both',
@@ -43,6 +46,7 @@ export const mockPublicProfiles: Record<string, PublicUserProfile> = {
   },
   'friend-taylor': {
     id: 'friend-taylor',
+    username: 'taylorkim',
     displayName: 'Taylor Kim',
     email: 'taylor@example.com',
     role: 'learner',
@@ -55,6 +59,7 @@ export const mockPublicProfiles: Record<string, PublicUserProfile> = {
   },
   'friend-riley': {
     id: 'friend-riley',
+    username: 'rileychen',
     displayName: 'Riley Chen',
     email: 'riley@example.com',
     role: 'teacher',

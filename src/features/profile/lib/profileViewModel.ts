@@ -20,6 +20,7 @@ export function publicProfileToViewModel(profile: PublicUserProfile): ProfileVie
   const metaParts = [profile.city, profile.joinedAtLabel].filter(Boolean);
 
   return {
+    username: profile.username,
     displayName: profile.displayName,
     metaLine: metaParts.join(' · '),
     bio: profile.bio,
@@ -31,6 +32,7 @@ export function publicProfileToViewModel(profile: PublicUserProfile): ProfileVie
 
 /** Phase 4: replace with useProfile() + Firestore */
 export const MOCK_OWN_PROFILE_VIEW_MODEL: ProfileViewModel = {
+  username: 'alexkim',
   displayName: 'Alex Kim',
   metaLine: 'San Francisco, CA · Joined March 2025',
   bio: 'ML engineer at a startup. I love making complex tech topics approachable.',

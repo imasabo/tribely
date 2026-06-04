@@ -15,9 +15,11 @@ import {
   saveOwnProfile,
   type OwnProfileData,
 } from '@/lib/ownProfileStorage';
+import { isValidUsername, usernameFromDisplayName } from '@/lib/username';
 import { useAuth } from '@/providers/AuthProvider';
 
 const DEFAULT_OWN_PROFILE: OwnProfileData = {
+  username: MOCK_OWN_PROFILE_VIEW_MODEL.username,
   displayName: MOCK_OWN_PROFILE_VIEW_MODEL.displayName,
   bio: MOCK_OWN_PROFILE_VIEW_MODEL.bio ?? '',
   teachTopics: [...MOCK_OWN_PROFILE_VIEW_MODEL.teachTopics],
@@ -33,9 +35,15 @@ type OwnProfileContextValue = {
 
 const OwnProfileContext = createContext<OwnProfileContextValue | null>(null);
 
+function resolveUsername(stored: string, displayName: string): string {
+  if (isValidUsername(stored)) return stored;
+  return usernameFromDisplayName(displayName || MOCK_OWN_PROFILE_VIEW_MODEL.displayName);
+}
+
 function toViewModel(data: OwnProfileData): ProfileViewModel {
   return {
     ...MOCK_OWN_PROFILE_VIEW_MODEL,
+    username: resolveUsername(data.username, data.displayName),
     displayName: data.displayName,
     bio: data.bio,
     teachTopics: data.teachTopics,
@@ -67,6 +75,10 @@ export function OwnProfileProvider({ children }: { children: ReactNode }) {
       setProfile(
         stored
           ? {
+              username: resolveUsername(
+                stored.username,
+                stored.displayName || DEFAULT_OWN_PROFILE.displayName
+              ),
               displayName: stored.displayName || DEFAULT_OWN_PROFILE.displayName,
               bio: stored.bio || DEFAULT_OWN_PROFILE.bio,
               teachTopics:

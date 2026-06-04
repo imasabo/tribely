@@ -17,6 +17,7 @@ export interface ProfileActivityItem {
 
 /** Display model for the shared profile layout (self or another user). */
 export interface ProfileViewModel {
+  username: string;
   displayName: string;
   /** e.g. "San Francisco, CA · Joined March 2025" */
   metaLine: string;

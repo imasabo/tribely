@@ -80,6 +80,7 @@ export function UserProfilePage({
         scrollY={scrollY}>
         <ProfileIdentity
           displayName={profile.displayName}
+          username={profile.username}
           metaLine={profile.metaLine}
           bio={profile.bio}
           action={
