@@ -14,6 +14,7 @@ import { ProfileCoverHeaderOverlay } from '@/features/profile/components/Profile
 import { ProfileFriendConnection } from '@/features/profile/components/ProfileFriendConnection';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { ProfileIdentity } from '@/features/profile/components/ProfileIdentity';
+import { ProfileUpcomingEntry } from '@/features/profile/components/ProfileUpcomingEntry';
 import { ProfileRecentActivity } from '@/features/profile/components/ProfileRecentActivity';
 import { ProfileStatsRow } from '@/features/profile/components/ProfileStatsRow';
 import { ProfileTopicsSection } from '@/features/profile/components/ProfileTopicsSection';
@@ -52,6 +53,8 @@ export interface UserProfilePageProps {
   onEditPress?: () => void;
   hideEmptyTopicSections?: boolean;
   recentActivity?: ProfileActivityItem[];
+  /** Own profile: upcoming lessons entry card. */
+  showUpcomingLessons?: boolean;
   /** Extra sections below topics (own profile only, etc.) */
   children?: ReactNode;
 }
@@ -70,6 +73,7 @@ export function UserProfilePage({
   onEditPress,
   hideEmptyTopicSections = true,
   recentActivity,
+  showUpcomingLessons = false,
   children,
 }: UserProfilePageProps) {
   const insets = useSafeAreaInsets();
@@ -143,6 +147,7 @@ export function UserProfilePage({
           </ProfileHeader>
 
           <View className="gap-5 px-5 pb-8">
+            {showUpcomingLessons ? <ProfileUpcomingEntry /> : null}
             {showTeach ? (
               <ProfileTopicsSection
                 title={teachSectionTitle}

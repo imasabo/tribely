@@ -60,3 +60,28 @@ export interface ProfileViewModel {
 }
 
 export type ProfileTopicVariant = 'teach' | 'learn';
+
+export type UpcomingLessonRole = 'teaching' | 'attending';
+
+/** A lesson on the user's upcoming schedule. */
+export interface UpcomingLessonItem {
+  id: string;
+  lessonId: string;
+  role: UpcomingLessonRole;
+  title: string;
+  category: string;
+  categoryEmoji: string;
+  scheduledAtLabel: string;
+  locationName: string;
+  durationMinutes: number;
+  slidePreviewColors: [string, string, string];
+  teacherName?: string;
+  teacherAvatar?: string;
+  enrolledCount?: number;
+  maxLearners?: number;
+}
+
+export interface UpcomingLessonsBundle {
+  teaching: UpcomingLessonItem[];
+  attending: UpcomingLessonItem[];
+}

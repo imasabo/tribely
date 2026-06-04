@@ -26,6 +26,7 @@ export function ProfileScreen() {
       teachSectionTitle="I Teach"
       learnSectionTitle="I Want to Learn"
       hideEmptyTopicSections={false}
+      showUpcomingLessons
       recentActivity={MOCK_OWN_PROFILE_ACTIVITY}
       headerEnd={
         <ProfileHeaderIconButton

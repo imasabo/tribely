@@ -32,6 +32,7 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="create" options={{ presentation: 'card' }} />
             <Stack.Screen name="edit-profile" options={{ presentation: 'card' }} />
+            <Stack.Screen name="upcoming-lessons" options={{ presentation: 'card' }} />
             <Stack.Screen name="search" options={{ presentation: 'card' }} />
             <Stack.Screen name="notifications" options={{ presentation: 'card' }} />
             <Stack.Screen name="activity/[id]" options={{ presentation: 'card' }} />
