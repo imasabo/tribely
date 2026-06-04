@@ -14,7 +14,8 @@ interface DiscoverActiveFilterPillsProps {
 }
 
 export function DiscoverActiveFilterPills({ className }: DiscoverActiveFilterPillsProps) {
-  const { appliedSheetFilters, removeAppliedFilterPill } = useDiscoverFilters();
+  const { appliedSheetFilters, removeAppliedFilterPill, clearActiveSheetFilters } =
+    useDiscoverFilters();
   const { distanceFilteringEnabled } = useDiscoverLocationFeatures();
 
   const pills = getActiveDiscoverFilterPills(appliedSheetFilters, {
@@ -43,6 +44,14 @@ export function DiscoverActiveFilterPills({ className }: DiscoverActiveFilterPil
           </Pressable>
         ))}
       </ScrollView>
+      <Pressable
+        onPress={clearActiveSheetFilters}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Clear all active filters"
+        className="shrink-0 active:opacity-80">
+        <Text className="text-xs font-semibold text-primary">Clear all</Text>
+      </Pressable>
     </View>
   );
 }

@@ -38,6 +38,7 @@ interface DiscoverFiltersContextValue {
   applySheetFilters: () => void;
   resetDraftSheetFilters: () => void;
   resetAppliedSheetFilters: () => void;
+  clearActiveSheetFilters: () => void;
   removeAppliedFilterPill: (pillId: DiscoverFilterPillId) => void;
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
@@ -73,10 +74,14 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
     setDraftSheetFilters(cloneSheetFilters());
   }, []);
 
-  const resetAppliedSheetFilters = useCallback(() => {
+  const clearActiveSheetFilters = useCallback(() => {
     setAppliedSheetFilters(cloneSheetFilters());
-    setSelectedCategory(DEFAULT_DISCOVER_CATEGORY);
   }, []);
+
+  const resetAppliedSheetFilters = useCallback(() => {
+    clearActiveSheetFilters();
+    setSelectedCategory(DEFAULT_DISCOVER_CATEGORY);
+  }, [clearActiveSheetFilters]);
 
   const removeAppliedFilterPill = useCallback((pillId: DiscoverFilterPillId) => {
     setAppliedSheetFilters((prev) =>
@@ -97,6 +102,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
       applySheetFilters,
       resetDraftSheetFilters,
       resetAppliedSheetFilters,
+      clearActiveSheetFilters,
       removeAppliedFilterPill,
       selectedCategory,
       setSelectedCategory,
@@ -114,6 +120,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
       applySheetFilters,
       resetDraftSheetFilters,
       resetAppliedSheetFilters,
+      clearActiveSheetFilters,
       removeAppliedFilterPill,
       setSelectedCategory,
     ]

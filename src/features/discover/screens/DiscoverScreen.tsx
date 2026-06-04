@@ -13,6 +13,11 @@ import { ChooseCitySheet } from '@/features/discover/components/ChooseCitySheet'
 import { useDiscoverLocationFeatures } from '@/features/discover/hooks/useDiscoverLocationFeatures';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
 import { DiscoverListControls } from '@/features/discover/components/DiscoverListControls';
+import { DiscoverNoResultsCard } from '@/features/discover/components/DiscoverNoResultsCard';
+import {
+  getDiscoverNoResultsHint,
+  hasDiscoverListFilters,
+} from '@/features/discover/lib/discoverEmptyState';
 import { useDiscoverLessons } from '@/features/discover/hooks/useDiscoverLessons';
 import { useFilteredLessons } from '@/features/discover/hooks/useFilteredLessons';
 import { colors } from '@/constants/theme';
@@ -23,7 +28,7 @@ export function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const { lessons: allLessons, loading, refreshing, error, refetch, retry } =
     useDiscoverLessons();
-  const { resetAppliedSheetFilters } = useDiscoverFilters();
+  const { resetAppliedSheetFilters, selectedCategory } = useDiscoverFilters();
   const {
     needsCityPicker,
     ensureLocation,
@@ -45,7 +50,19 @@ export function DiscoverScreen() {
     showLessonDistance,
     locationLabel,
     locationTooltip,
+    activeFilterCount,
+    fallbackCity,
   } = useDiscoverLocationFeatures();
+
+  const noResultsContext = {
+    locationMode,
+    fallbackCity,
+    distanceFilteringEnabled: showLessonDistance,
+    selectedCategory,
+    activeSheetFilterCount: activeFilterCount,
+  };
+  const noResultsHint = getDiscoverNoResultsHint(noResultsContext);
+  const showClearAllFilters = hasDiscoverListFilters(noResultsContext);
 
   const openLesson = (lessonId: string) => {
     router.push(`/lesson/${lessonId}`);
@@ -122,18 +139,17 @@ export function DiscoverScreen() {
 
         <View className="gap-3 px-5">
           {displayedLessons.length === 0 ? (
-            <View className="items-center rounded-2xl border border-dashed border-border bg-card px-6 py-10">
-              <Feather name="sliders" size={28} color={colors.mutedForeground} />
-              <Text className="mt-3 text-center text-base font-semibold text-foreground">
-                No lessons match
-              </Text>
-              <Text className="mt-1 text-center text-sm text-muted-foreground">
-                Try adjusting filters or choosing a different category.
-              </Text>
-              <Pressable onPress={resetAppliedSheetFilters} className="mt-4 active:opacity-80">
-                <Text className="text-sm font-semibold text-primary">Clear filters</Text>
-              </Pressable>
-            </View>
+            <DiscoverNoResultsCard
+              hint={noResultsHint}
+              onClear={
+                locationMode === 'needs_city'
+                  ? openCityPicker
+                  : showClearAllFilters
+                    ? resetAppliedSheetFilters
+                    : undefined
+              }
+              clearLabel={locationMode === 'needs_city' ? 'Choose a city' : 'Clear all filters'}
+            />
           ) : (
             displayedLessons.map((lesson) => (
               <LessonCard

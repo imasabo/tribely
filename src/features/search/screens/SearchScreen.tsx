@@ -9,6 +9,11 @@ import { SearchField } from '@/components/ui/SearchBar';
 import { colors } from '@/constants/theme';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
 import { DiscoverListControls } from '@/features/discover/components/DiscoverListControls';
+import { DiscoverNoResultsCard } from '@/features/discover/components/DiscoverNoResultsCard';
+import {
+  getDiscoverNoResultsHint,
+  hasDiscoverListFilters,
+} from '@/features/discover/lib/discoverEmptyState';
 import { DiscoverCategoryChips } from '@/features/discover/components/DiscoverCategoryChips';
 import {
   applyDiscoverCategoryFilter,
@@ -33,6 +38,7 @@ export function SearchScreen() {
     locationLabel,
     activeFilterCount,
     distanceFilteringEnabled,
+    fallbackCity,
   } = useDiscoverLocationFeatures();
 
   const trimmedQuery = query.trim();
@@ -47,7 +53,17 @@ export function SearchScreen() {
     return sortDiscoverLessons(filtered, selectedSort);
   }, [results, appliedSheetFilters, selectedSort, selectedCategory, filterByDistance]);
 
-  const hasActiveFilters = activeFilterCount > 0 || selectedCategory !== 'All';
+  const noResultsContext = {
+    locationMode,
+    fallbackCity,
+    distanceFilteringEnabled,
+    selectedCategory,
+    activeSheetFilterCount: activeFilterCount,
+    searchQuery: trimmedQuery || undefined,
+    searchResultCount: results.length,
+  };
+  const filteredEmptyHint = getDiscoverNoResultsHint(noResultsContext);
+  const showClearAllFilters = hasDiscoverListFilters(noResultsContext);
 
   return (
     <>
@@ -89,24 +105,11 @@ export function SearchScreen() {
               No lessons found for &ldquo;{trimmedQuery}&rdquo;
             </Text>
           ) : displayedResults.length === 0 ? (
-            <View className="items-center rounded-2xl border border-dashed border-border bg-card px-6 py-10">
-              <Feather name="sliders" size={28} color={colors.mutedForeground} />
-              <Text className="mt-3 text-center text-base font-semibold text-foreground">
-                No lessons match your filters
-              </Text>
-              <Text className="mt-1 text-center text-sm text-muted-foreground">
-                {results.length} result{results.length === 1 ? '' : 's'} for &ldquo;{trimmedQuery}
-                &rdquo;
-                {distanceFilteringEnabled
-                  ? ' — try widening distance, when, or category.'
-                  : ' — try adjusting when, duration, or category.'}
-              </Text>
-              {hasActiveFilters ? (
-                <Pressable onPress={resetAppliedSheetFilters} className="mt-4 active:opacity-80">
-                  <Text className="text-sm font-semibold text-primary">Clear filters</Text>
-                </Pressable>
-              ) : null}
-            </View>
+            <DiscoverNoResultsCard
+              title="No lessons match your filters"
+              hint={filteredEmptyHint}
+              onClear={showClearAllFilters ? resetAppliedSheetFilters : undefined}
+            />
           ) : (
             <View className="gap-3">
               <View className="mb-1 flex-row items-center justify-between">
