@@ -46,6 +46,8 @@ export interface UserProfilePageProps {
   headerEnd?: ReactNode;
   /** Shown beside display name on own profile. */
   identityNameAccessory?: ReactNode;
+  /** Tappable friends card below stats (own profile). */
+  friendsEntry?: ReactNode;
   friendConnection?: ProfileFriendConnectionConfig;
   /** Replaces friend connection UI (e.g. blocked notice). */
   identityAction?: ReactNode;
@@ -68,6 +70,7 @@ export function UserProfilePage({
   headerStart,
   headerEnd,
   identityNameAccessory,
+  friendsEntry,
   friendConnection,
   identityAction,
   teachSectionTitle = 'Teaches',
@@ -146,6 +149,7 @@ export function UserProfilePage({
               className="mt-4"
               onStatPress={handleStatPress}
             />
+            {friendsEntry ? <View className="mt-3">{friendsEntry}</View> : null}
           </ProfileHeader>
 
           <View className="gap-5 px-5 pb-8">

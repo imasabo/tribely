@@ -9,6 +9,7 @@ import { ActivityEngagementProvider } from '@/providers/ActivityEngagementProvid
 import { AuthProvider } from '@/providers/AuthProvider';
 import { OwnProfileProvider } from '@/providers/OwnProfileProvider';
 import { BlockedUsersProvider } from '@/providers/BlockedUsersProvider';
+import { FriendConnectionsProvider } from '@/providers/FriendConnectionsProvider';
 import { SettingsProvider } from '@/providers/SettingsProvider';
 import { DiscoverFiltersModal } from '@/features/discover/components/DiscoverFiltersModal';
 import { DiscoverFiltersProvider } from '@/providers/DiscoverFiltersProvider';
@@ -21,6 +22,7 @@ export default function RootLayout() {
         <OwnProfileProvider>
         <SettingsProvider>
         <BlockedUsersProvider>
+        <FriendConnectionsProvider>
         <DiscoverFiltersProvider>
           <DiscoverLocationProvider>
           <ActivityEngagementProvider>
@@ -39,6 +41,7 @@ export default function RootLayout() {
             <Stack.Screen name="settings" options={{ presentation: 'card' }} />
             <Stack.Screen name="blocked-users" options={{ presentation: 'card' }} />
             <Stack.Screen name="report-user" options={{ presentation: 'card' }} />
+            <Stack.Screen name="friends" options={{ presentation: 'card' }} />
             <Stack.Screen name="upcoming-lessons" options={{ presentation: 'card' }} />
             <Stack.Screen name="search" options={{ presentation: 'card' }} />
             <Stack.Screen name="notifications" options={{ presentation: 'card' }} />
@@ -56,6 +59,7 @@ export default function RootLayout() {
           </ActivityEngagementProvider>
           </DiscoverLocationProvider>
         </DiscoverFiltersProvider>
+        </FriendConnectionsProvider>
         </BlockedUsersProvider>
         </SettingsProvider>
         </OwnProfileProvider>
