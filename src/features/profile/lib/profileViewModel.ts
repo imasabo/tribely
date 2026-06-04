@@ -61,6 +61,16 @@ export const MOCK_OWN_PROFILE_VIEW_MODEL: ProfileViewModel = {
 };
 
 export const MOCK_OWN_PROFILE_ACTIVITY = [
-  { title: 'Python for Data Science', subtitle: 'May 28, 2026 · Taught', rating: 5 },
-  { title: 'Intro to Guitar Chords', subtitle: 'May 15, 2026 · Learned', rating: 5 },
+  {
+    title: 'Python for Data Science',
+    subtitle: 'May 28, 2026',
+    role: 'taught',
+    rating: 5,
+  },
+  {
+    title: 'Intro to Guitar Chords',
+    subtitle: 'May 15, 2026',
+    role: 'learned',
+    rating: 5,
+  },
 ];

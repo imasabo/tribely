@@ -42,7 +42,9 @@ export interface ProfileReviewItem {
 
 export interface ProfileActivityItem {
   title: string;
+  /** Date or meta line; role may be embedded or set via `role`. */
   subtitle: string;
+  role?: 'taught' | 'learned';
   rating?: number;
 }
 
@@ -57,8 +59,6 @@ export interface ProfileViewModel {
   learnTopics: string[];
   stats: ProfileStatItem[];
 }
-
-export type ProfileTopicVariant = 'teach' | 'learn';
 
 export type UpcomingLessonRole = 'teaching' | 'attending';
 

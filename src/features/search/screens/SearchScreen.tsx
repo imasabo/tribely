@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { LessonCard } from '@/components/lesson/LessonCard';
 import { SearchField } from '@/components/ui/SearchBar';
 import { colors } from '@/constants/theme';
@@ -87,11 +88,13 @@ export function SearchScreen() {
 
         <DiscoverListControls className="mb-2" />
 
-        <ScrollView
-          className="flex-1 px-5"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+        <DismissKeyboard className="flex-1">
+          <ScrollView
+            className="flex-1 px-5"
+            contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+            keyboardShouldPersistTaps="never"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}>
           {!trimmedQuery ? (
             <Text className="text-center text-[15px] text-muted-foreground">
               Search by lesson title, teacher, category, or location
@@ -131,7 +134,8 @@ export function SearchScreen() {
               ))}
             </View>
           )}
-        </ScrollView>
+          </ScrollView>
+        </DismissKeyboard>
       </View>
     </>
   );

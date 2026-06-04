@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
+import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { colors } from '@/constants/theme';
 import { isValidGoogleSlidesUrl, parseGoogleSlidesUrl } from '@/lib/googleSlides';
 
@@ -50,7 +51,13 @@ export function CreateLessonScreen() {
         <View className="w-9" />
       </View>
 
-      <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 40 }}>
+      <DismissKeyboard className="flex-1">
+        <ScrollView
+          className="flex-1 px-5"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          keyboardShouldPersistTaps="never"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}>
         <Text className="mb-6 text-[22px] font-bold text-foreground">Share what you know</Text>
 
         <View className="mb-4 gap-1.5">
@@ -130,7 +137,8 @@ export function CreateLessonScreen() {
         </View>
 
         <Button title="Publish Lesson" fullWidth onPress={handlePublish} />
-      </ScrollView>
+        </ScrollView>
+      </DismissKeyboard>
     </View>
   );
 }

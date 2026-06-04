@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActivityCommentItem } from '@/components/activity/ActivityCommentItem';
 import { FriendActivityCard } from '@/components/lesson/FriendActivityCard';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
+import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { colors } from '@/constants/theme';
 import { getInitials } from '@/lib/userDisplay';
 import { useActivityEngagement } from '@/providers/ActivityEngagementProvider';
@@ -88,10 +89,11 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
   const nearLimit = charCount >= COMMENT_CHAR_LIMIT * 0.9;
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}>
+    <DismissKeyboard className="flex-1 bg-background">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}>
       <View
         className="flex-row items-center gap-3 border-b border-border px-4 pb-3"
         style={{ paddingTop: insets.top + 8 }}>
@@ -106,7 +108,8 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
       <FlatList
         data={comments}
         keyExtractor={(item) => item.id}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="never"
+        keyboardDismissMode="on-drag"
         contentContainerStyle={{ paddingBottom: 16 }}
         ListHeaderComponent={
           <View className="border-b border-border px-5 py-4">
@@ -177,7 +180,8 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
           </Pressable>
         </View>
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </DismissKeyboard>
   );
 }
 

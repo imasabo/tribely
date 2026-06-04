@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
 
+import { ProfileEditLink } from '@/features/profile/components/ProfileEditLink';
 import { UserProfilePage } from '@/features/profile/components/UserProfilePage';
 import { ProfileHeaderIconButton } from '@/features/profile/components/ProfileHeader';
 import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
@@ -21,28 +21,19 @@ export function ProfileScreen() {
       profile={viewModel}
       profileUserId={OWN_PROFILE_STATS_USER_ID}
       initials={initials}
-      showEditBadge
-      onEditPress={openEditProfile}
       teachSectionTitle="I Teach"
       learnSectionTitle="I Want to Learn"
       hideEmptyTopicSections={false}
       showUpcomingLessons
+      interestsCardTitle="Interests"
       recentActivity={MOCK_OWN_PROFILE_ACTIVITY}
+      identityNameAccessory={<ProfileEditLink onPress={openEditProfile} />}
       headerEnd={
         <ProfileHeaderIconButton
           icon="settings"
           accessibilityLabel="Settings"
           variant="onGradient"
         />
-      }
-      avatarAccessory={
-        <Pressable
-          onPress={openEditProfile}
-          accessibilityRole="button"
-          accessibilityLabel="Edit profile"
-          className="rounded-xl border border-border px-4 py-2 active:opacity-80">
-          <Text className="text-sm font-medium text-foreground">Edit Profile</Text>
-        </Pressable>
       }
     />
   );

@@ -15,9 +15,9 @@ import { ProfileFriendConnection } from '@/features/profile/components/ProfileFr
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { ProfileIdentity } from '@/features/profile/components/ProfileIdentity';
 import { ProfileUpcomingEntry } from '@/features/profile/components/ProfileUpcomingEntry';
+import { ProfileInterestsCard } from '@/features/profile/components/ProfileInterestsCard';
 import { ProfileRecentActivity } from '@/features/profile/components/ProfileRecentActivity';
 import { ProfileStatsRow } from '@/features/profile/components/ProfileStatsRow';
-import { ProfileTopicsSection } from '@/features/profile/components/ProfileTopicsSection';
 import { getProfileScrollTopInset } from '@/features/profile/lib/profileCoverMetrics';
 import { getProfileStatHref } from '@/features/profile/lib/profileStatNavigation';
 import type {
@@ -44,14 +44,14 @@ export interface UserProfilePageProps {
   initials?: string;
   headerStart?: ReactNode;
   headerEnd?: ReactNode;
-  avatarAccessory?: ReactNode;
-  showEditBadge?: boolean;
+  /** Shown beside display name on own profile. */
+  identityNameAccessory?: ReactNode;
   friendConnection?: ProfileFriendConnectionConfig;
   teachSectionTitle?: string;
   learnSectionTitle?: string;
-  /** Own profile: tap avatar badge to edit. */
-  onEditPress?: () => void;
   hideEmptyTopicSections?: boolean;
+  /** Heading for the combined teach/learn card (e.g. "Interests"). */
+  interestsCardTitle?: string;
   recentActivity?: ProfileActivityItem[];
   /** Own profile: upcoming lessons entry card. */
   showUpcomingLessons?: boolean;
@@ -65,13 +65,12 @@ export function UserProfilePage({
   initials: initialsOverride,
   headerStart,
   headerEnd,
-  avatarAccessory,
-  showEditBadge = false,
+  identityNameAccessory,
   friendConnection,
   teachSectionTitle = 'Teaches',
   learnSectionTitle = 'Wants to learn',
-  onEditPress,
   hideEmptyTopicSections = true,
+  interestsCardTitle,
   recentActivity,
   showUpcomingLessons = false,
   children,
@@ -82,9 +81,11 @@ export function UserProfilePage({
   const scrollTopInset = getProfileScrollTopInset(insets.top);
 
   const initials = initialsOverride ?? getInitials(profile.displayName);
-  const showTeach = profile.teachTopics.length > 0 || !hideEmptyTopicSections;
-  const showLearn =
-    profile.learnTopics.length > 0 || !hideEmptyTopicSections;
+  const showEmptyInterestSections = !hideEmptyTopicSections;
+  const showInterestsCard =
+    showEmptyInterestSections ||
+    profile.teachTopics.length > 0 ||
+    profile.learnTopics.length > 0;
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -119,16 +120,13 @@ export function UserProfilePage({
         <View style={{ height: scrollTopInset }} />
 
         <View className="flex-1 bg-background">
-          <ProfileHeader
-            initials={initials}
-            avatarAccessory={avatarAccessory}
-            showEditBadge={showEditBadge}
-            onEditPress={onEditPress}>
+          <ProfileHeader initials={initials}>
             <ProfileIdentity
               displayName={profile.displayName}
               username={profile.username}
               metaLine={profile.metaLine}
               bio={profile.bio}
+              nameAccessory={identityNameAccessory}
               action={
                 friendConnection ? (
                   <ProfileFriendConnection
@@ -148,18 +146,14 @@ export function UserProfilePage({
 
           <View className="gap-5 px-5 pb-8">
             {showUpcomingLessons ? <ProfileUpcomingEntry /> : null}
-            {showTeach ? (
-              <ProfileTopicsSection
-                title={teachSectionTitle}
-                topics={profile.teachTopics}
-                variant="teach"
-              />
-            ) : null}
-            {showLearn ? (
-              <ProfileTopicsSection
-                title={learnSectionTitle}
-                topics={profile.learnTopics}
-                variant="learn"
+            {showInterestsCard ? (
+              <ProfileInterestsCard
+                sectionTitle={interestsCardTitle}
+                teachTitle={teachSectionTitle}
+                learnTitle={learnSectionTitle}
+                teachTopics={profile.teachTopics}
+                learnTopics={profile.learnTopics}
+                showEmptySections={showEmptyInterestSections}
               />
             ) : null}
             {recentActivity ? <ProfileRecentActivity items={recentActivity} /> : null}

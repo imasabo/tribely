@@ -5,7 +5,9 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
+import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { FormTextField } from '@/components/ui/FormTextField';
+import { UsernameFormField } from '@/components/ui/UsernameFormField';
 import { colors } from '@/constants/theme';
 import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles';
 import {
@@ -13,7 +15,7 @@ import {
   PROFILE_NAME_CHAR_LIMIT,
   PROFILE_USERNAME_CHAR_LIMIT,
 } from '@/features/profile/lib/profileLimits';
-import { ProfileTopicsEditor } from '@/features/profile/components/ProfileTopicsEditor';
+import { ProfileInterestsEditor } from '@/features/profile/components/ProfileInterestsEditor';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
 import {
   isValidUsername,
@@ -89,28 +91,24 @@ export function EditProfileScreen() {
         <View className="w-9" />
       </View>
 
-      <ScrollView
-        className="flex-1 px-5"
-        contentContainerStyle={{ paddingBottom: 24 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
+      <DismissKeyboard className="flex-1">
+        <ScrollView
+          className="flex-1 px-5"
+          contentContainerStyle={{ paddingBottom: 24 }}
+          keyboardShouldPersistTaps="never"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}>
         <View className="mb-4 gap-1.5">
           <Text className="text-sm font-medium text-foreground">Username</Text>
-          <View className="relative justify-center">
-            <Text className="absolute left-4 z-10 text-base text-muted-foreground">@</Text>
-            <FormTextField
-              value={username}
-              onChangeText={handleUsernameChange}
-              placeholder="username"
-              maxLength={PROFILE_USERNAME_CHAR_LIMIT}
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={[
-                { paddingLeft: 28 },
-                charLimitOutlineStyle(username.length, PROFILE_USERNAME_CHAR_LIMIT),
-              ]}
-            />
-          </View>
+          <UsernameFormField
+            value={username}
+            onChangeText={handleUsernameChange}
+            maxLength={PROFILE_USERNAME_CHAR_LIMIT}
+            containerStyle={charLimitOutlineStyle(
+              username.length,
+              PROFILE_USERNAME_CHAR_LIMIT
+            )}
+          />
           {usernameHint ? (
             <Text className="text-xs text-muted-foreground">{usernameHint}</Text>
           ) : null}
@@ -144,21 +142,14 @@ export function EditProfileScreen() {
           />
         </View>
 
-        <View className="gap-6">
-          <ProfileTopicsEditor
-            title="I Teach"
-            topics={teachTopics}
-            variant="teach"
-            onChange={setTeachTopics}
-          />
-          <ProfileTopicsEditor
-            title="I Want to Learn"
-            topics={learnTopics}
-            variant="learn"
-            onChange={setLearnTopics}
-          />
-        </View>
-      </ScrollView>
+        <ProfileInterestsEditor
+          teachTopics={teachTopics}
+          learnTopics={learnTopics}
+          onTeachTopicsChange={setTeachTopics}
+          onLearnTopicsChange={setLearnTopics}
+        />
+        </ScrollView>
+      </DismissKeyboard>
 
       <View
         className="border-t border-border bg-background px-5 pt-3"

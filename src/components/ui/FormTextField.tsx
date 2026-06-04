@@ -69,17 +69,20 @@ export function FormTextField({
 }: FormTextFieldProps) {
   const isSingleLine = variant === 'singleLine';
   const baseStyle = isSingleLine ? styles.singleLine : styles.multiline;
+  const useMultiline = multilineProp ?? (isSingleLine ? true : true);
 
   return (
     <TextInput
       placeholderTextColor={placeholderTextColor}
       includeFontPadding={Platform.OS === 'android' ? false : undefined}
       {...props}
-      multiline={isSingleLine ? true : (multilineProp ?? true)}
-      scrollEnabled={isSingleLine ? false : scrollEnabledProp}
-      blurOnSubmit={isSingleLine ? true : blurOnSubmitProp}
+      multiline={useMultiline}
+      scrollEnabled={useMultiline ? scrollEnabledProp ?? false : scrollEnabledProp}
+      blurOnSubmit={isSingleLine && !useMultiline ? true : blurOnSubmitProp}
       returnKeyType={isSingleLine ? (returnKeyTypeProp ?? 'done') : returnKeyTypeProp}
-      textAlignVertical={textAlignVerticalProp ?? 'top'}
+      textAlignVertical={
+        textAlignVerticalProp ?? (useMultiline && isSingleLine ? 'top' : 'center')
+      }
       style={[baseStyle, style as StyleProp<TextStyle>]}
     />
   );

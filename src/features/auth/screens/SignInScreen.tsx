@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { Button } from '@/components/ui/Button';
+import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { colors } from '@/constants/theme';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -57,10 +58,13 @@ export function SignInScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top }}
-      keyboardShouldPersistTaps="handled">
+    <DismissKeyboard className="flex-1 bg-background">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top }}
+        keyboardShouldPersistTaps="never"
+        keyboardDismissMode="on-drag"
+        showsVerticalScrollIndicator={false}>
       <View className="px-4 pb-2">
         <Pressable
           onPress={() => router.back()}
@@ -130,6 +134,7 @@ export function SignInScreen() {
         <Text className="text-primary">Terms of Service</Text> and{' '}
         <Text className="text-primary">Privacy Policy</Text>
       </Text>
-    </ScrollView>
+      </ScrollView>
+    </DismissKeyboard>
   );
 }

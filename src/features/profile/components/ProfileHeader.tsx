@@ -9,43 +9,16 @@ export { PROFILE_GRADIENT_BODY_HEIGHT } from '@/features/profile/lib/profileCove
 interface ProfileHeaderProps {
   initials: string;
   children: ReactNode;
-  avatarAccessory?: ReactNode;
-  showEditBadge?: boolean;
-  onEditPress?: () => void;
 }
 
 /** Profile body below the fixed cover (avatar, identity, stats). */
-export function ProfileHeader({
-  initials,
-  children,
-  avatarAccessory,
-  showEditBadge = false,
-  onEditPress,
-}: ProfileHeaderProps) {
+export function ProfileHeader({ initials, children }: ProfileHeaderProps) {
   return (
     <View className="bg-background px-5 pb-5">
-      <View className="-mt-10 mb-4 flex-row items-end justify-between">
-        <View className="relative">
-          {showEditBadge && onEditPress ? (
-            <Pressable
-              onPress={onEditPress}
-              accessibilityRole="button"
-              accessibilityLabel="Edit profile"
-              className="active:opacity-90">
-              <View className="h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary shadow-lg">
-                <Text className="text-2xl font-bold text-white">{initials}</Text>
-              </View>
-              <View className="absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-accent">
-                <Feather name="edit-2" size={10} color="#fff" />
-              </View>
-            </Pressable>
-          ) : (
-            <View className="h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary shadow-lg">
-              <Text className="text-2xl font-bold text-white">{initials}</Text>
-            </View>
-          )}
+      <View className="-mt-10 mb-4">
+        <View className="h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary shadow-lg">
+          <Text className="text-2xl font-bold text-white">{initials}</Text>
         </View>
-        {avatarAccessory}
       </View>
       {children}
     </View>
