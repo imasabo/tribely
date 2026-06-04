@@ -23,11 +23,14 @@ export function useDiscoverLocation(): DiscoverLocationState {
   const { user } = useAuth();
   const userId = user?.uid ?? null;
   const resolvingRef = useRef(false);
+  const modeRef = useRef<DiscoverLocationMode>('idle');
 
   const [mode, setMode] = useState<DiscoverLocationMode>('idle');
   const [fallbackCity, setFallbackCity] = useState<string | undefined>();
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [needsCityPicker, setNeedsCityPicker] = useState(false);
+
+  modeRef.current = mode;
 
   const applySavedArea = useCallback((area: SavedUserArea) => {
     setFallbackCity(area.city);
@@ -109,8 +112,11 @@ export function useDiscoverLocation(): DiscoverLocationState {
     if (resolvingRef.current) return;
 
     resolvingRef.current = true;
-    setMode('loading');
-    setNeedsCityPicker(false);
+    const isInitialResolve = modeRef.current === 'idle';
+    if (isInitialResolve) {
+      setMode('loading');
+      setNeedsCityPicker(false);
+    }
 
     try {
       await resolvePermission();

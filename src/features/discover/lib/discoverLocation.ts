@@ -29,7 +29,7 @@ export function formatDiscoverLocationLabel(
   if (location.mode === 'device') {
     return formatWithinRadiusLabel(distanceMiles);
   }
-  if (location.mode === 'fallback' && location.fallbackCity) {
+  if (location.fallbackCity) {
     return location.fallbackCity;
   }
   if (location.mode === 'needs_city') {
@@ -48,6 +48,11 @@ export function getDiscoverLocationTooltip(
     return `Lessons shown are within ${distanceMiles} ${unit} of your current location.`;
   }
 
+  if (location.fallbackCity) {
+    const city = location.fallbackCity;
+    return `Showing lessons in ${city}. Enable location in Settings to filter by distance from you.`;
+  }
+
   if (location.mode === 'loading' || location.mode === 'idle') {
     return 'Finding your location…';
   }
@@ -56,6 +61,5 @@ export function getDiscoverLocationTooltip(
     return 'Choose a city to browse lessons, or enable location in Settings.';
   }
 
-  const city = location.fallbackCity ?? 'your selected city';
-  return `Showing lessons in ${city}. Enable location in Settings to filter by distance from you.`;
+  return 'Choose a city to browse lessons, or enable location in Settings.';
 }
