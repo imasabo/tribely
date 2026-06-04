@@ -4,15 +4,34 @@ import type { ProfileStatItem, ProfileViewModel } from '@/features/profile/types
 
 function defaultPublicStats(stats: PublicUserProfile['stats']): ProfileStatItem[] {
   return [
-    { label: 'Rating', value: stats.rating.toFixed(1), icon: 'star', color: colors.accent },
+    {
+      label: 'Rating',
+      value: stats.rating.toFixed(1),
+      icon: 'star',
+      color: colors.accent,
+      statKey: 'rating',
+    },
     {
       label: 'Taught',
       value: String(stats.lessonsTaught),
       icon: 'book-open',
       color: colors.primary,
+      statKey: 'taught',
     },
-    { label: 'Students', value: String(stats.students), icon: 'users', color: '#7C3AED' },
-    { label: 'Reviews', value: String(stats.reviews), icon: 'award', color: '#059669' },
+    {
+      label: 'Students',
+      value: String(stats.students),
+      icon: 'users',
+      color: '#7C3AED',
+      statKey: 'students',
+    },
+    {
+      label: 'Reviews',
+      value: String(stats.reviews),
+      icon: 'award',
+      color: '#059669',
+      statKey: 'reviews',
+    },
   ];
 }
 
@@ -39,10 +58,10 @@ export const MOCK_OWN_PROFILE_VIEW_MODEL: ProfileViewModel = {
   teachTopics: ['Python', 'Data Science', 'ML Basics', 'SQL'],
   learnTopics: ['Guitar', 'Watercolor', 'Spanish', 'Bread Baking'],
   stats: [
-    { label: 'Rating', value: '4.9', icon: 'star', color: colors.accent },
-    { label: 'Taught', value: '12', icon: 'book-open', color: colors.primary },
-    { label: 'Students', value: '34', icon: 'users', color: '#7C3AED' },
-    { label: 'Reviews', value: '28', icon: 'award', color: '#059669' },
+    { label: 'Rating', value: '4.9', icon: 'star', color: colors.accent, statKey: 'rating' },
+    { label: 'Taught', value: '12', icon: 'book-open', color: colors.primary, statKey: 'taught' },
+    { label: 'Students', value: '34', icon: 'users', color: '#7C3AED', statKey: 'students' },
+    { label: 'Reviews', value: '28', icon: 'award', color: '#059669', statKey: 'reviews' },
   ],
 };
 

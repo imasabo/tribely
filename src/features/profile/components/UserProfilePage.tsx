@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { type ReactNode } from 'react';
 import { View, useWindowDimensions } from 'react-native';
 import Animated, {
@@ -17,7 +18,12 @@ import { ProfileRecentActivity } from '@/features/profile/components/ProfileRece
 import { ProfileStatsRow } from '@/features/profile/components/ProfileStatsRow';
 import { ProfileTopicsSection } from '@/features/profile/components/ProfileTopicsSection';
 import { getProfileScrollTopInset } from '@/features/profile/lib/profileCoverMetrics';
-import type { ProfileActivityItem, ProfileViewModel } from '@/features/profile/types';
+import { getProfileStatHref } from '@/features/profile/lib/profileStatNavigation';
+import type {
+  ProfileActivityItem,
+  ProfileStatKey,
+  ProfileViewModel,
+} from '@/features/profile/types';
 import { getInitials } from '@/lib/userDisplay';
 import type { FriendConnectionStatus } from '@/types/social';
 
@@ -31,6 +37,8 @@ export interface ProfileFriendConnectionConfig {
 
 export interface UserProfilePageProps {
   profile: ProfileViewModel;
+  /** User id for stat detail routes (own profile + public profiles). */
+  profileUserId: string;
   /** Override initials; defaults to profile display name. */
   initials?: string;
   headerStart?: ReactNode;
@@ -50,6 +58,7 @@ export interface UserProfilePageProps {
 
 export function UserProfilePage({
   profile,
+  profileUserId,
   initials: initialsOverride,
   headerStart,
   headerEnd,
@@ -78,6 +87,11 @@ export function UserProfilePage({
       scrollY.value = event.contentOffset.y;
     },
   });
+
+  const handleStatPress = (statKey: ProfileStatKey) => {
+    const href = getProfileStatHref(profileUserId, statKey);
+    if (href) router.push(href);
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -121,7 +135,11 @@ export function UserProfilePage({
                 ) : undefined
               }
             />
-            <ProfileStatsRow stats={profile.stats} className="mt-4" />
+            <ProfileStatsRow
+              stats={profile.stats}
+              className="mt-4"
+              onStatPress={handleStatPress}
+            />
           </ProfileHeader>
 
           <View className="gap-5 px-5 pb-8">

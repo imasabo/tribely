@@ -37,6 +37,7 @@ export function PublicProfileScreen({ userId }: PublicProfileScreenProps) {
   return (
     <UserProfilePage
       profile={publicProfileToViewModel(profile)}
+      profileUserId={userId}
       headerStart={
         <ProfileHeaderIconButton
           icon="arrow-left"

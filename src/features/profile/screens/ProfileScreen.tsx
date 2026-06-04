@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import { UserProfilePage } from '@/features/profile/components/UserProfilePage';
 import { ProfileHeaderIconButton } from '@/features/profile/components/ProfileHeader';
+import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
 import { MOCK_OWN_PROFILE_ACTIVITY } from '@/features/profile/lib/profileViewModel';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
 import { useAuth } from '@/providers/AuthProvider';
@@ -18,6 +19,7 @@ export function ProfileScreen() {
   return (
     <UserProfilePage
       profile={viewModel}
+      profileUserId={OWN_PROFILE_STATS_USER_ID}
       initials={initials}
       showEditBadge
       onEditPress={openEditProfile}
