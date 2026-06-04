@@ -8,7 +8,6 @@ export interface ProfileStatItem {
   label: string;
   value: string;
   icon: ProfileStatIcon;
-  color?: string;
   statKey: ProfileStatKey;
 }
 

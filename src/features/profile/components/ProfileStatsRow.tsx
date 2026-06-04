@@ -18,7 +18,7 @@ export function ProfileStatsRow({ stats, className, onStatPress }: ProfileStatsR
 
         const content = (
           <>
-            <Feather name={stat.icon} size={16} color={stat.color ?? colors.primary} />
+            <Feather name={stat.icon} size={16} color={colors.primary} />
             <Text className="text-[17px] font-bold text-foreground">{stat.value}</Text>
             <Text className="text-[10px] text-muted-foreground">{stat.label}</Text>
           </>
