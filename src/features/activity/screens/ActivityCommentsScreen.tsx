@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -15,7 +16,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActivityCommentItem } from '@/components/activity/ActivityCommentItem';
 import { FriendActivityCard } from '@/components/lesson/FriendActivityCard';
-import { Avatar } from '@/components/ui/Avatar';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { colors } from '@/constants/theme';
 import { getInitials } from '@/lib/userDisplay';
@@ -23,6 +23,8 @@ import { useActivityEngagement } from '@/providers/ActivityEngagementProvider';
 import { useAuth } from '@/providers/AuthProvider';
 import { lessonsService } from '@/services/lessons.service';
 import type { FriendLessonActivity } from '@/types/domain';
+
+const COMMENT_CHAR_LIMIT = 200;
 
 interface ActivityCommentsScreenProps {
   activityId: string;
@@ -81,6 +83,10 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
     return <CenteredMessage message="Activity not found" />;
   }
 
+  const charCount = draftComment.length;
+  const limitProgress = Math.min(charCount / COMMENT_CHAR_LIMIT, 1);
+  const nearLimit = charCount >= COMMENT_CHAR_LIMIT * 0.9;
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-background"
@@ -119,32 +125,88 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
         renderItem={({ item }) => <ActivityCommentItem activityId={activityId} comment={item} />}
       />
 
-      <View
-        className="flex-row items-end gap-2 border-t border-border bg-background px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}>
-        <Avatar initials={authorInitials} size="sm" />
-        <TextInput
-          value={draftComment}
-          onChangeText={setDraftComment}
-          placeholder="Add a comment…"
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          className="max-h-24 min-h-[40px] flex-1 rounded-2xl bg-muted px-4 py-2.5 text-[15px] text-foreground"
-        />
-        <Pressable
-          onPress={postComment}
-          disabled={!draftComment.trim()}
-          accessibilityLabel="Post comment"
-          className={`mb-0.5 h-10 w-10 items-center justify-center rounded-full ${
-            draftComment.trim() ? 'bg-primary active:opacity-90' : 'bg-muted'
-          }`}>
-          <Feather
-            name="arrow-up"
-            size={18}
-            color={draftComment.trim() ? colors.primaryForeground : colors.mutedForeground}
+      <View style={[styles.composer, { paddingBottom: insets.bottom + 8 }]}>
+        <View
+          style={styles.limitBarTrack}
+          accessibilityLabel={`${charCount} of ${COMMENT_CHAR_LIMIT} characters`}
+          accessibilityRole="progressbar"
+          accessibilityValue={{
+            min: 0,
+            max: COMMENT_CHAR_LIMIT,
+            now: charCount,
+          }}>
+          <View
+            style={[
+              styles.limitBarFill,
+              {
+                width: `${limitProgress * 100}%`,
+                backgroundColor: nearLimit ? colors.accent : colors.primary,
+              },
+            ]}
           />
-        </Pressable>
+        </View>
+
+        <View className="flex-row items-end gap-2 px-4 pt-3">
+          <TextInput
+            value={draftComment}
+            onChangeText={setDraftComment}
+            placeholder="Add a comment…"
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            scrollEnabled
+            maxLength={COMMENT_CHAR_LIMIT}
+            style={styles.commentInput}
+            {...Platform.select({
+              android: { includeFontPadding: false, textAlignVertical: 'center' },
+              default: {},
+            })}
+          />
+          <Pressable
+            onPress={postComment}
+            disabled={!draftComment.trim()}
+            accessibilityLabel="Post comment"
+            className={`mb-0.5 h-10 w-10 items-center justify-center rounded-full ${
+              draftComment.trim() ? 'bg-primary active:opacity-90' : 'bg-muted'
+            }`}>
+            <Feather
+              name="arrow-up"
+              size={18}
+              color={draftComment.trim() ? colors.primaryForeground : colors.mutedForeground}
+            />
+          </Pressable>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
+
+const INPUT_FONT_SIZE = 15;
+const INPUT_LINE_HEIGHT = 20;
+const INPUT_MIN_HEIGHT = 40;
+
+const styles = StyleSheet.create({
+  composer: {
+    backgroundColor: colors.background,
+  },
+  limitBarTrack: {
+    height: 2,
+    width: '100%',
+    backgroundColor: colors.border,
+  },
+  limitBarFill: {
+    height: '100%',
+  },
+  commentInput: {
+    flex: 1,
+    minHeight: INPUT_MIN_HEIGHT,
+    maxHeight: 96,
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 11 : (INPUT_MIN_HEIGHT - INPUT_LINE_HEIGHT) / 2,
+    paddingBottom: Platform.OS === 'ios' ? 9 : (INPUT_MIN_HEIGHT - INPUT_LINE_HEIGHT) / 2,
+    fontSize: INPUT_FONT_SIZE,
+    lineHeight: INPUT_LINE_HEIGHT,
+    color: colors.foreground,
+    backgroundColor: colors.muted,
+    borderRadius: 16,
+  },
+});
