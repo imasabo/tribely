@@ -11,6 +11,7 @@ import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { LocationLink } from '@/components/ui/LocationLink';
 import { ChooseCitySheet } from '@/features/discover/components/ChooseCitySheet';
 import { useDiscoverLocationFeatures } from '@/features/discover/hooks/useDiscoverLocationFeatures';
+import { DiscoverActiveFilterPills } from '@/features/discover/components/DiscoverActiveFilterPills';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
 import { DiscoverSortChips } from '@/features/discover/components/DiscoverSortChips';
 import { useDiscoverLessons } from '@/features/discover/hooks/useDiscoverLessons';
@@ -104,6 +105,8 @@ export function DiscoverScreen() {
 
           <DiscoverSortChips />
         </View>
+
+        <DiscoverActiveFilterPills className="mb-3" />
 
         <ScrollView
           horizontal

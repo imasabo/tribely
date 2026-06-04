@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LessonCard } from '@/components/lesson/LessonCard';
 import { SearchField } from '@/components/ui/SearchBar';
 import { colors } from '@/constants/theme';
+import { DiscoverActiveFilterPills } from '@/features/discover/components/DiscoverActiveFilterPills';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
 import { DiscoverSortChips } from '@/features/discover/components/DiscoverSortChips';
 import {
@@ -67,6 +68,8 @@ export function SearchScreen() {
         <View className="mb-3 px-5">
           <DiscoverSortChips />
         </View>
+
+        <DiscoverActiveFilterPills className="mb-3" />
 
         <ScrollView
           className="flex-1 px-5"

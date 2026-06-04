@@ -8,6 +8,10 @@ import {
 } from 'react';
 
 import {
+  removeDiscoverFilterPill,
+  type DiscoverFilterPillId,
+} from '@/features/discover/lib/discoverFilterPills';
+import {
   countActiveSheetFilters,
   DEFAULT_DISCOVER_SHEET_FILTERS,
   type DiscoverSheetFilters,
@@ -33,6 +37,7 @@ interface DiscoverFiltersContextValue {
   applySheetFilters: () => void;
   resetDraftSheetFilters: () => void;
   resetAppliedSheetFilters: () => void;
+  removeAppliedFilterPill: (pillId: DiscoverFilterPillId) => void;
   setSelectedSort: (sort: DiscoverSortOption) => void;
 }
 
@@ -68,6 +73,12 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
     setAppliedSheetFilters(cloneSheetFilters());
   }, []);
 
+  const removeAppliedFilterPill = useCallback((pillId: DiscoverFilterPillId) => {
+    setAppliedSheetFilters((prev) =>
+      cloneSheetFilters(removeDiscoverFilterPill(prev, pillId))
+    );
+  }, []);
+
   const value = useMemo(
     () => ({
       appliedSheetFilters,
@@ -81,6 +92,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
       applySheetFilters,
       resetDraftSheetFilters,
       resetAppliedSheetFilters,
+      removeAppliedFilterPill,
       setSelectedSort,
     }),
     [
@@ -94,6 +106,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
       applySheetFilters,
       resetDraftSheetFilters,
       resetAppliedSheetFilters,
+      removeAppliedFilterPill,
     ]
   );
 
