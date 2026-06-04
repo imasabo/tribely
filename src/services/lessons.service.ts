@@ -1,9 +1,11 @@
+import { discoverLessons, friendLessonActivity } from '@/data/mock/lessons';
 import {
-  discoverLessons,
-  friendLessonActivity,
-  homeLessons,
-} from '@/data/mock/lessons';
+  lessonCatalogStore,
+  type PublishLessonInput,
+} from '@/data/lessonCatalogStore';
 import type { FriendLessonActivity, Lesson } from '@/types/domain';
+
+export type { PublishLessonInput };
 
 /**
  * Lessons data access layer.
@@ -19,19 +21,24 @@ export const lessonsService = {
   },
 
   async listDiscover(): Promise<Lesson[]> {
-    return discoverLessons;
+    const runtime = lessonCatalogStore.listAll();
+    const discoverIds = new Set(discoverLessons.map((l) => l.id));
+    const merged = [
+      ...runtime.filter((l) => !discoverIds.has(l.id)),
+      ...discoverLessons.map((seed) => lessonCatalogStore.getById(seed.id) ?? seed),
+    ];
+    return merged;
   },
 
   async getById(id: string): Promise<Lesson | null> {
-    const all = [...homeLessons, ...discoverLessons];
-    return all.find((l) => l.id === id) ?? null;
+    return lessonCatalogStore.getById(id) ?? null;
   },
 
   async search(query: string): Promise<Lesson[]> {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return [];
 
-    const all = [...homeLessons, ...discoverLessons];
+    const all = lessonCatalogStore.listAll();
     const seen = new Set<string>();
 
     return all.filter((lesson) => {
@@ -49,5 +56,9 @@ export const lessonsService = {
 
       return haystack.includes(normalized);
     });
+  },
+
+  async publish(input: PublishLessonInput): Promise<{ lessonId: string }> {
+    return lessonCatalogStore.publish(input);
   },
 };

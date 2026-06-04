@@ -2,6 +2,12 @@ export type LessonDurationMinutes = 30 | 45 | 60;
 export type LessonStatus = 'draft' | 'published' | 'completed' | 'cancelled';
 export type UserRole = 'teacher' | 'learner' | 'both';
 
+/** A single scheduled run of a lesson (same lesson id, many sessions over time). */
+export interface LessonSession {
+  id: string;
+  scheduledAtLabel: string;
+}
+
 /** View model consumed by UI components */
 export interface Lesson {
   id: string;
@@ -15,14 +21,22 @@ export interface Lesson {
   durationMinutes: LessonDurationMinutes;
   rating: number;
   reviewCount: number;
+  /** All scheduled runs; normalized to at least one session in the catalog. */
+  sessions?: LessonSession[];
+  /** Primary display time — next upcoming session, or last past session. */
   scheduledAtLabel: string;
   locationName: string;
+  description?: string;
   featured?: boolean;
   /** Google Slides share link (edit or view). Required for all lessons. */
   googleSlidesUrl: string;
   /** Card thumbnail accent when not rendering a live embed. */
   slidePreviewColors: [string, string, string];
   priceCents?: number;
+  /** Cap on learners for the next upcoming session. */
+  maxLearners?: number;
+  /** Current learners signed up for the next upcoming session. */
+  enrolledCount?: number;
 }
 
 export interface UserProfile {

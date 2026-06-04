@@ -42,6 +42,7 @@ export default function RootLayout() {
             <Stack.Screen name="blocked-users" options={{ presentation: 'card' }} />
             <Stack.Screen name="report-user" options={{ presentation: 'card' }} />
             <Stack.Screen name="friends" options={{ presentation: 'card' }} />
+            <Stack.Screen name="taught-lesson/[lessonId]" options={{ presentation: 'card' }} />
             <Stack.Screen name="upcoming-lessons" options={{ presentation: 'card' }} />
             <Stack.Screen name="search" options={{ presentation: 'card' }} />
             <Stack.Screen name="notifications" options={{ presentation: 'card' }} />
@@ -51,6 +52,7 @@ export default function RootLayout() {
             <Stack.Screen name="user/[id]/students" options={{ presentation: 'card' }} />
             <Stack.Screen name="user/[id]/reviews" options={{ presentation: 'card' }} />
             <Stack.Screen name="lesson/[id]/index" options={{ presentation: 'card' }} />
+            <Stack.Screen name="lesson/[id]/chat" options={{ presentation: 'card' }} />
             <Stack.Screen
               name="lesson/[id]/slides"
               options={{ presentation: 'fullScreenModal', animation: 'fade' }}

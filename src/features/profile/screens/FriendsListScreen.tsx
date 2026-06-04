@@ -12,7 +12,7 @@ import { useFriendConnections } from '@/providers/FriendConnectionsProvider';
 
 export function FriendsListScreen() {
   const insets = useSafeAreaInsets();
-  const { friends, loading, reload } = useFriendConnections();
+  const { friends, friendCount, loading, reload } = useFriendConnections();
 
   useFocusEffect(
     useCallback(() => {
@@ -37,6 +37,7 @@ export function FriendsListScreen() {
           <Feather name="arrow-left" size={18} color={colors.foreground} />
         </Pressable>
         <Text className="flex-1 text-[17px] font-semibold text-foreground">Friends</Text>
+        <Text className="text-[15px] font-semibold text-muted-foreground">{friendCount}</Text>
       </View>
 
       {friends.length === 0 ? (

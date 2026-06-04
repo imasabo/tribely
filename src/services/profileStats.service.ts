@@ -1,7 +1,9 @@
+import { lessonCatalogStore } from '@/data/lessonCatalogStore';
 import { mockProfileStatDetails } from '@/data/mock/profileStatDetails';
 import { mockTeacherProfiles } from '@/data/mock/teacherProfiles';
 import { mockPublicProfiles } from '@/data/mock/users';
 import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
+import { getPastSessions } from '@/lib/lessonSessions';
 import type {
   ProfileReviewItem,
   ProfileStatKey,
@@ -19,13 +21,48 @@ function displayNameFor(userId: string): string | null {
   return profile?.displayName ?? null;
 }
 
+function enrichTaughtItem(item: ProfileTaughtItem): ProfileTaughtItem {
+  const lesson = lessonCatalogStore.getById(item.lessonId);
+  if (!lesson) return item;
+
+  const past = getPastSessions(lesson.sessions ?? []);
+  const lastPast = past[past.length - 1];
+  const lastLabel = lastPast?.scheduledAtLabel ?? lesson.scheduledAtLabel;
+  const displayLast = lastLabel.includes('·')
+    ? lastLabel.split('·').pop()?.trim() ?? lastLabel
+    : lastLabel;
+
+  return {
+    ...item,
+    title: lesson.title,
+    sessionCount: lesson.sessions?.length ?? item.sessionCount,
+    completedAtLabel: `Last session · ${displayLast}`,
+  };
+}
+
+function mergeTaughtLists(userId: string, base: ProfileTaughtItem[]): ProfileTaughtItem[] {
+  const extras = lessonCatalogStore.getExtraTaughtForTeacher(userId);
+  const extraIds = new Set(extras.map((item) => item.lessonId));
+  const merged = [...extras.map(enrichTaughtItem), ...base.filter((item) => !extraIds.has(item.lessonId))];
+  return merged.map(enrichTaughtItem);
+}
+
 export const profileStatsService = {
   async getDisplayName(userId: string): Promise<string | null> {
     return displayNameFor(userId);
   },
 
   async getTaught(userId: string): Promise<ProfileTaughtItem[]> {
-    return resolveBundle(userId)?.taught ?? [];
+    const base = resolveBundle(userId)?.taught ?? [];
+    return mergeTaughtLists(userId, base);
+  },
+
+  async findTaughtByLessonId(
+    userId: string,
+    lessonId: string
+  ): Promise<ProfileTaughtItem | null> {
+    const taught = await this.getTaught(userId);
+    return taught.find((item) => item.lessonId === lessonId) ?? null;
   },
 
   async getStudents(userId: string): Promise<ProfileStudentItem[]> {

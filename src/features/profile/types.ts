@@ -6,6 +6,7 @@ export type ProfileStatKey = 'rating' | 'taught' | 'students' | 'reviews';
 
 export interface ProfileTaughtItem {
   id: string;
+  lessonId: string;
   title: string;
   category: string;
   categoryEmoji: string;
@@ -16,6 +17,8 @@ export interface ProfileTaughtItem {
 
 export interface ProfileStudentItem {
   id: string;
+  /** Tribely member id when the student is a known profile. */
+  userId?: string;
   displayName: string;
   initials: string;
   lessonsCompleted: number;

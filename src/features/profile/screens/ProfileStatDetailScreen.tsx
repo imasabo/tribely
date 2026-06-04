@@ -26,6 +26,7 @@ import type {
   ProfileTaughtItem,
 } from '@/features/profile/types';
 import { useAuth } from '@/providers/AuthProvider';
+import { useFriendConnections } from '@/providers/FriendConnectionsProvider';
 import { profileStatsService } from '@/services/profileStats.service';
 
 export type ProfileReviewsScreenSource = 'rating' | 'reviews';
@@ -45,7 +46,9 @@ export function ProfileStatDetailScreen({
 }: ProfileStatDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { friends } = useFriendConnections();
   const statsUserId = resolveProfileStatsUserId(userId, user?.uid);
+  const friendUserIds = useMemo(() => new Set(friends.map((f) => f.userId)), [friends]);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [items, setItems] = useState<
     ProfileTaughtItem[] | ProfileStudentItem[] | ProfileReviewItem[]
@@ -132,6 +135,7 @@ export function ProfileStatDetailScreen({
       : profileStatsService.emptyMessageForStat(statKey);
   const isReviewsScreen = statKey === 'reviews';
   const showReviewTabs = isReviewsScreen && reviewItems.length > 0;
+  const headerCount = isReviewsScreen ? reviewItems.length : items.length;
 
   const listHeader = isReviewsScreen ? (
     <View>
@@ -171,6 +175,7 @@ export function ProfileStatDetailScreen({
               </Text>
             ) : null}
           </View>
+          <Text className="text-[15px] font-semibold text-muted-foreground">{headerCount}</Text>
         </View>
       </View>
 
@@ -198,9 +203,27 @@ export function ProfileStatDetailScreen({
           ItemSeparatorComponent={() => <View className="h-3" />}
           renderItem={({ item }) => {
             if (statKey === 'taught') {
-              return <TaughtRow item={item as ProfileTaughtItem} />;
+              return (
+                <TaughtRow
+                  item={item as ProfileTaughtItem}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/taught-lesson/[lessonId]',
+                      params: { lessonId: (item as ProfileTaughtItem).lessonId, userId: statsUserId },
+                    })
+                  }
+                />
+              );
             }
-            return <StudentRow item={item as ProfileStudentItem} />;
+            const student = item as ProfileStudentItem;
+            return (
+              <StudentRow
+                item={student}
+                isFriend={
+                  student.userId != null && friendUserIds.has(student.userId)
+                }
+              />
+            );
           }}
         />
       )}
@@ -208,40 +231,78 @@ export function ProfileStatDetailScreen({
   );
 }
 
-function TaughtRow({ item }: { item: ProfileTaughtItem }) {
+function TaughtRow({ item, onPress }: { item: ProfileTaughtItem; onPress: () => void }) {
   return (
-    <View className="rounded-2xl border border-border bg-card p-4">
-      <Text className="text-[11px] text-muted-foreground">
-        {item.categoryEmoji} {item.category}
-      </Text>
-      <Text className="mt-1 text-base font-semibold text-foreground">{item.title}</Text>
-      <Text className="mt-1 text-xs text-muted-foreground">{item.completedAtLabel}</Text>
-      <View className="mt-3 flex-row items-center gap-4">
-        <Text className="text-xs text-muted-foreground">
-          {item.sessionCount} session{item.sessionCount === 1 ? '' : 's'}
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`View ${item.title}`}
+      className="flex-row items-center rounded-2xl border border-border bg-card p-4 active:opacity-80">
+      <View className="min-w-0 flex-1">
+        <Text className="text-[11px] text-muted-foreground">
+          {item.categoryEmoji} {item.category}
         </Text>
-        <View className="flex-row items-center gap-1">
-          <Feather name="star" size={12} color={colors.accent} />
-          <Text className="text-xs font-medium text-foreground">{item.rating.toFixed(1)}</Text>
+        <Text className="mt-1 text-base font-semibold text-foreground">{item.title}</Text>
+        <Text className="mt-1 text-xs text-muted-foreground">{item.completedAtLabel}</Text>
+        <View className="mt-3 flex-row items-center gap-4">
+          <Text className="text-xs text-muted-foreground">
+            {item.sessionCount} session{item.sessionCount === 1 ? '' : 's'}
+          </Text>
+          <View className="flex-row items-center gap-1">
+            <Feather name="star" size={12} color={colors.accent} />
+            <Text className="text-xs font-medium text-foreground">{item.rating.toFixed(1)}</Text>
+          </View>
         </View>
       </View>
-    </View>
+      <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
+    </Pressable>
   );
 }
 
-function StudentRow({ item }: { item: ProfileStudentItem }) {
-  return (
-    <View className="flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4">
+function StudentRow({ item, isFriend }: { item: ProfileStudentItem; isFriend: boolean }) {
+  const canOpenProfile = item.userId != null;
+
+  const content = (
+    <>
       <Avatar initials={item.initials} size="md" />
-      <View className="flex-1">
-        <Text className="text-sm font-semibold text-foreground">{item.displayName}</Text>
+      <View className="min-w-0 flex-1">
+        <View className="flex-row flex-wrap items-center gap-2">
+          <Text className="text-sm font-semibold text-foreground">{item.displayName}</Text>
+          {isFriend ? (
+            <View className="flex-row items-center gap-1 rounded-full bg-secondary px-2 py-0.5">
+              <Feather name="user-check" size={10} color={colors.primary} />
+              <Text className="text-[10px] font-semibold text-primary">Friend</Text>
+            </View>
+          ) : null}
+        </View>
         <Text className="mt-0.5 text-xs text-muted-foreground">
           {item.lessonsCompleted} lesson{item.lessonsCompleted === 1 ? '' : 's'} ·{' '}
           {item.lastLessonTitle}
         </Text>
         <Text className="mt-1 text-[11px] text-muted-foreground">{item.lastSeenLabel}</Text>
       </View>
-    </View>
+      {canOpenProfile ? (
+        <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
+      ) : null}
+    </>
+  );
+
+  if (!canOpenProfile) {
+    return (
+      <View className="flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4">
+        {content}
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      onPress={() => router.push(`/user/${item.userId}`)}
+      accessibilityRole="button"
+      accessibilityLabel={`View ${item.displayName}'s profile`}
+      className="flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4 active:opacity-80">
+      {content}
+    </Pressable>
   );
 }
 

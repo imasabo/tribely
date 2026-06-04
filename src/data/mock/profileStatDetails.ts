@@ -1,4 +1,5 @@
 import { discoverLessons, homeLessons } from '@/data/mock/lessons';
+import { mockPublicProfiles } from '@/data/mock/users';
 import type {
   ProfileReviewItem,
   ProfileStudentItem,
@@ -32,6 +33,11 @@ const REVIEW_BODIES = [
   'Left feeling confident about the basics. Five stars.',
 ];
 
+function userIdForDisplayName(displayName: string): string | undefined {
+  if (displayName === 'Alex Kim') return 'dev-user-alex';
+  return Object.values(mockPublicProfiles).find((p) => p.displayName === displayName)?.id;
+}
+
 const STUDENT_NAMES = [
   'Jordan Park',
   'Taylor Kim',
@@ -46,14 +52,14 @@ const STUDENT_NAMES = [
 ];
 
 function taughtFromLesson(lesson: Lesson, index: number): ProfileTaughtItem {
-  const sessions = Math.max(1, Math.round(lesson.reviewCount / 3));
   return {
     id: `${lesson.teacherId}-taught-${lesson.id}`,
+    lessonId: lesson.id,
     title: lesson.title,
     category: lesson.category,
     categoryEmoji: lesson.categoryEmoji,
     completedAtLabel: SESSION_LABELS[index % SESSION_LABELS.length] ?? SESSION_LABELS[0],
-    sessionCount: sessions,
+    sessionCount: 1,
     rating: lesson.rating,
   };
 }
@@ -64,6 +70,7 @@ function studentsForTeacher(teacherId: string, lesson: Lesson, count: number): P
     const name = STUDENT_NAMES[i];
     return {
       id: `${teacherId}-student-${i}`,
+      userId: userIdForDisplayName(name),
       displayName: name,
       initials: getInitials(name),
       lessonsCompleted: Math.max(1, (i % 4) + 1),
@@ -124,6 +131,7 @@ function buildTeacherBundles(): Record<string, ProfileStatDetailBundle> {
 const alexTaught: ProfileTaughtItem[] = [
   {
     id: 'alex-taught-1',
+    lessonId: 'alex-l1',
     title: 'Python for Data Science',
     category: 'Programming',
     categoryEmoji: '🐍',
@@ -133,6 +141,7 @@ const alexTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'alex-taught-2',
+    lessonId: 'alex-l2',
     title: 'ML Basics Workshop',
     category: 'Tech',
     categoryEmoji: '🤖',
@@ -142,6 +151,7 @@ const alexTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'alex-taught-3',
+    lessonId: 'alex-l3',
     title: 'SQL for Analysts',
     category: 'Programming',
     categoryEmoji: '📊',
@@ -151,6 +161,7 @@ const alexTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'alex-taught-4',
+    lessonId: 'alex-l4',
     title: 'Pandas & Visualization Crash Course',
     category: 'Programming',
     categoryEmoji: '📈',
@@ -160,6 +171,7 @@ const alexTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'alex-taught-5',
+    lessonId: 'alex-l5',
     title: 'Intro to Feature Engineering',
     category: 'Tech',
     categoryEmoji: '⚙️',
@@ -172,6 +184,7 @@ const alexTaught: ProfileTaughtItem[] = [
 const alexStudents: ProfileStudentItem[] = [
   {
     id: 'alex-student-1',
+    userId: 'friend-jordan',
     displayName: 'Jordan Park',
     initials: 'JP',
     lessonsCompleted: 3,
@@ -180,6 +193,7 @@ const alexStudents: ProfileStudentItem[] = [
   },
   {
     id: 'alex-student-2',
+    userId: 'friend-taylor',
     displayName: 'Taylor Kim',
     initials: 'TK',
     lessonsCompleted: 2,
@@ -188,6 +202,7 @@ const alexStudents: ProfileStudentItem[] = [
   },
   {
     id: 'alex-student-3',
+    userId: 'friend-marcus',
     displayName: 'Marcus Lee',
     initials: 'ML',
     lessonsCompleted: 5,
@@ -196,6 +211,7 @@ const alexStudents: ProfileStudentItem[] = [
   },
   {
     id: 'alex-student-4',
+    userId: 'friend-sam',
     displayName: 'Sam Rivera',
     initials: 'SR',
     lessonsCompleted: 4,
@@ -204,6 +220,7 @@ const alexStudents: ProfileStudentItem[] = [
   },
   {
     id: 'alex-student-5',
+    userId: 'friend-riley',
     displayName: 'Riley Chen',
     initials: 'RC',
     lessonsCompleted: 1,
@@ -212,6 +229,7 @@ const alexStudents: ProfileStudentItem[] = [
   },
   {
     id: 'alex-student-6',
+    userId: 'friend-priya',
     displayName: 'Priya Nair',
     initials: 'PN',
     lessonsCompleted: 2,
@@ -306,6 +324,7 @@ const alexReviews: ProfileReviewItem[] = [
 const rileyTaught: ProfileTaughtItem[] = [
   {
     id: 'riley-taught-1',
+    lessonId: 'riley-l1',
     title: 'Sourdough Starter 101',
     category: 'Cooking',
     categoryEmoji: '🍞',
@@ -315,6 +334,7 @@ const rileyTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'riley-taught-2',
+    lessonId: 'riley-l2',
     title: 'Weekend Pastry Basics',
     category: 'Cooking',
     categoryEmoji: '🥐',
@@ -324,6 +344,7 @@ const rileyTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'riley-taught-3',
+    lessonId: 'riley-l3',
     title: 'Croissant Lamination Lab',
     category: 'Cooking',
     categoryEmoji: '🥐',
@@ -333,6 +354,7 @@ const rileyTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'riley-taught-4',
+    lessonId: 'riley-l4',
     title: 'Seasonal Fruit Tarts',
     category: 'Cooking',
     categoryEmoji: '🍓',
@@ -345,6 +367,7 @@ const rileyTaught: ProfileTaughtItem[] = [
 const rileyStudents: ProfileStudentItem[] = [
   {
     id: 'riley-student-1',
+    userId: 'dev-user-alex',
     displayName: 'Alex Kim',
     initials: 'AK',
     lessonsCompleted: 2,
@@ -353,6 +376,7 @@ const rileyStudents: ProfileStudentItem[] = [
   },
   {
     id: 'riley-student-2',
+    userId: 'friend-sam',
     displayName: 'Sam Rivera',
     initials: 'SR',
     lessonsCompleted: 4,
@@ -361,6 +385,7 @@ const rileyStudents: ProfileStudentItem[] = [
   },
   {
     id: 'riley-student-3',
+    userId: 'friend-marcus',
     displayName: 'Marcus Lee',
     initials: 'ML',
     lessonsCompleted: 3,
@@ -369,6 +394,7 @@ const rileyStudents: ProfileStudentItem[] = [
   },
   {
     id: 'riley-student-4',
+    userId: 'friend-taylor',
     displayName: 'Taylor Kim',
     initials: 'TK',
     lessonsCompleted: 1,
@@ -377,6 +403,7 @@ const rileyStudents: ProfileStudentItem[] = [
   },
   {
     id: 'riley-student-5',
+    userId: 'friend-jordan',
     displayName: 'Jordan Park',
     initials: 'JP',
     lessonsCompleted: 2,
@@ -441,6 +468,7 @@ const rileyReviews: ProfileReviewItem[] = [
 const marcusTaught: ProfileTaughtItem[] = [
   {
     id: 'marcus-taught-1',
+    lessonId: 'marcus-l1',
     title: 'Figma for Product Teams',
     category: 'Design',
     categoryEmoji: '🎨',
@@ -450,6 +478,7 @@ const marcusTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'marcus-taught-2',
+    lessonId: 'marcus-l2',
     title: 'UI Critique Workshop',
     category: 'Design',
     categoryEmoji: '✏️',
@@ -462,6 +491,7 @@ const marcusTaught: ProfileTaughtItem[] = [
 const marcusStudents: ProfileStudentItem[] = [
   {
     id: 'marcus-student-1',
+    userId: 'friend-taylor',
     displayName: 'Taylor Kim',
     initials: 'TK',
     lessonsCompleted: 2,
@@ -470,6 +500,7 @@ const marcusStudents: ProfileStudentItem[] = [
   },
   {
     id: 'marcus-student-2',
+    userId: 'friend-jordan',
     displayName: 'Jordan Park',
     initials: 'JP',
     lessonsCompleted: 3,
@@ -478,6 +509,7 @@ const marcusStudents: ProfileStudentItem[] = [
   },
   {
     id: 'marcus-student-3',
+    userId: 'dev-user-alex',
     displayName: 'Alex Kim',
     initials: 'AK',
     lessonsCompleted: 1,
@@ -486,6 +518,7 @@ const marcusStudents: ProfileStudentItem[] = [
   },
   {
     id: 'marcus-student-4',
+    userId: 'friend-sam',
     displayName: 'Sam Rivera',
     initials: 'SR',
     lessonsCompleted: 2,
@@ -530,6 +563,7 @@ const marcusReviews: ProfileReviewItem[] = [
 const samTaught: ProfileTaughtItem[] = [
   {
     id: 'sam-taught-1',
+    lessonId: 'sam-l1',
     title: 'Watercolor Landscapes',
     category: 'Art',
     categoryEmoji: '🎨',
@@ -539,6 +573,7 @@ const samTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'sam-taught-2',
+    lessonId: 'sam-l2',
     title: 'Urban Sketching Walk',
     category: 'Art',
     categoryEmoji: '✏️',
@@ -548,6 +583,7 @@ const samTaught: ProfileTaughtItem[] = [
   },
   {
     id: 'sam-taught-3',
+    lessonId: 'sam-l3',
     title: 'Drawing Faces from Life',
     category: 'Art',
     categoryEmoji: '🖌️',
@@ -560,6 +596,7 @@ const samTaught: ProfileTaughtItem[] = [
 const samStudents: ProfileStudentItem[] = [
   {
     id: 'sam-student-1',
+    userId: 'friend-jordan',
     displayName: 'Jordan Park',
     initials: 'JP',
     lessonsCompleted: 2,
@@ -568,6 +605,7 @@ const samStudents: ProfileStudentItem[] = [
   },
   {
     id: 'sam-student-2',
+    userId: 'friend-taylor',
     displayName: 'Taylor Kim',
     initials: 'TK',
     lessonsCompleted: 1,
@@ -576,6 +614,7 @@ const samStudents: ProfileStudentItem[] = [
   },
   {
     id: 'sam-student-3',
+    userId: 'friend-marcus',
     displayName: 'Marcus Lee',
     initials: 'ML',
     lessonsCompleted: 3,
@@ -584,6 +623,7 @@ const samStudents: ProfileStudentItem[] = [
   },
   {
     id: 'sam-student-4',
+    userId: 'dev-user-alex',
     displayName: 'Alex Kim',
     initials: 'AK',
     lessonsCompleted: 1,

@@ -10,6 +10,8 @@ import { getNativeWebView } from '@/lib/nativeWebView';
 interface GoogleSlidesEmbedProps {
   shareUrl: string;
   className?: string;
+  /** When embedded in a parent ScrollView, disable WebView scrolling so the page scrolls. */
+  nestedInScrollView?: boolean;
 }
 
 function WebViewUnavailableFallback({
@@ -41,7 +43,11 @@ function WebViewUnavailableFallback({
   );
 }
 
-export function GoogleSlidesEmbed({ shareUrl, className }: GoogleSlidesEmbedProps) {
+export function GoogleSlidesEmbed({
+  shareUrl,
+  className,
+  nestedInScrollView = false,
+}: GoogleSlidesEmbedProps) {
   const embedUrl = getGoogleSlidesEmbedUrl(shareUrl);
   const WebView = getNativeWebView();
 
@@ -64,6 +70,7 @@ export function GoogleSlidesEmbed({ shareUrl, className }: GoogleSlidesEmbedProp
       <WebView
         source={{ uri: embedUrl }}
         style={{ flex: 1, backgroundColor: '#000' }}
+        scrollEnabled={!nestedInScrollView}
         allowsFullscreenVideo
         allowsInlineMediaPlayback
         javaScriptEnabled

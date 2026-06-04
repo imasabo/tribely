@@ -70,4 +70,17 @@ export const mockPublicProfiles: Record<string, PublicUserProfile> = {
     learnTopics: ['Marketing'],
     stats: { rating: 5.0, lessonsTaught: 22, students: 58, reviews: 47 },
   },
+  'friend-priya': {
+    id: 'friend-priya',
+    username: 'priyanair',
+    displayName: 'Priya Nair',
+    email: 'priya@example.com',
+    role: 'teacher',
+    bio: 'Vocal coach and choir director — warmups, technique, and confidence for beginners.',
+    city: 'San Francisco, CA',
+    joinedAtLabel: 'Joined April 2025',
+    teachTopics: ['Vocal Technique', 'Music'],
+    learnTopics: ['Piano', 'Music Theory'],
+    stats: { rating: 4.9, lessonsTaught: 11, students: 26, reviews: 19 },
+  },
 };

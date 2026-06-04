@@ -20,6 +20,7 @@ function lesson(
 }
 
 export const homeLessons: Lesson[] = [
+  /** Mock: upcoming session is full — learners cannot join. */
   lesson({
     id: '1',
     title: 'Python for Data Science Fundamentals',
@@ -36,6 +37,10 @@ export const homeLessons: Lesson[] = [
     featured: true,
     slidePreviewColors: ['#0F766E', '#134E4A', '#1F2937'],
     priceCents: 5000,
+    maxLearners: 6,
+    enrolledCount: 6,
+    description:
+      'A practical intro to pandas and plotting. This afternoon’s session is at capacity.',
   }),
   lesson({
     id: '2',
@@ -155,6 +160,7 @@ export const discoverLessons: Lesson[] = [
   lesson({
     id: 'd5',
     title: 'Vocal Warmups for Beginners',
+    teacherId: 'friend-priya',
     teacherName: 'Priya Nair',
     teacherAvatar: 'PN',
     category: 'Music',
