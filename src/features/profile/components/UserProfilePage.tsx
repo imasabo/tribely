@@ -28,8 +28,8 @@ export interface UserProfilePageProps {
   friendConnection?: ProfileFriendConnectionConfig;
   teachSectionTitle?: string;
   learnSectionTitle?: string;
-  /** Own profile: always show teach row with + Add. Public: hide empty sections. */
-  showAddTeachChip?: boolean;
+  /** Own profile: tap avatar badge to edit. */
+  onEditPress?: () => void;
   hideEmptyTopicSections?: boolean;
   recentActivity?: ProfileActivityItem[];
   /** Extra sections below topics (own profile only, etc.) */
@@ -46,14 +46,13 @@ export function UserProfilePage({
   friendConnection,
   teachSectionTitle = 'Teaches',
   learnSectionTitle = 'Wants to learn',
-  showAddTeachChip = false,
+  onEditPress,
   hideEmptyTopicSections = true,
   recentActivity,
   children,
 }: UserProfilePageProps) {
   const initials = initialsOverride ?? getInitials(profile.displayName);
-  const showTeach =
-    profile.teachTopics.length > 0 || showAddTeachChip || !hideEmptyTopicSections;
+  const showTeach = profile.teachTopics.length > 0 || !hideEmptyTopicSections;
   const showLearn =
     profile.learnTopics.length > 0 || !hideEmptyTopicSections;
 
@@ -67,7 +66,8 @@ export function UserProfilePage({
         headerStart={headerStart}
         headerEnd={headerEnd}
         avatarAccessory={avatarAccessory}
-        showEditBadge={showEditBadge}>
+        showEditBadge={showEditBadge}
+        onEditPress={onEditPress}>
         <ProfileIdentity
           displayName={profile.displayName}
           metaLine={profile.metaLine}
@@ -91,7 +91,6 @@ export function UserProfilePage({
             title={teachSectionTitle}
             topics={profile.teachTopics}
             variant="teach"
-            showAddChip={showAddTeachChip}
           />
         ) : null}
         {showLearn ? (

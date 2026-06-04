@@ -19,6 +19,7 @@ interface ProfileHeaderProps {
   avatarAccessory?: ReactNode;
   /** Small edit badge on the avatar — own profile only. */
   showEditBadge?: boolean;
+  onEditPress?: () => void;
 }
 
 export function ProfileHeader({
@@ -28,6 +29,7 @@ export function ProfileHeader({
   headerEnd,
   avatarAccessory,
   showEditBadge = false,
+  onEditPress,
 }: ProfileHeaderProps) {
   const insets = useSafeAreaInsets();
   const hasHeaderControls = headerStart != null || headerEnd != null;
@@ -55,14 +57,24 @@ export function ProfileHeader({
       <View className="bg-background px-5 pb-5">
         <View className="-mt-10 mb-4 flex-row items-end justify-between">
           <View className="relative">
-            <View className="h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary shadow-lg">
-              <Text className="text-2xl font-bold text-white">{initials}</Text>
-            </View>
-            {showEditBadge ? (
-              <View className="absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-accent">
-                <Feather name="edit-2" size={10} color="#fff" />
+            {showEditBadge && onEditPress ? (
+              <Pressable
+                onPress={onEditPress}
+                accessibilityRole="button"
+                accessibilityLabel="Edit profile"
+                className="active:opacity-90">
+                <View className="h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary shadow-lg">
+                  <Text className="text-2xl font-bold text-white">{initials}</Text>
+                </View>
+                <View className="absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-accent">
+                  <Feather name="edit-2" size={10} color="#fff" />
+                </View>
+              </Pressable>
+            ) : (
+              <View className="h-20 w-20 items-center justify-center rounded-2xl border-4 border-background bg-primary shadow-lg">
+                <Text className="text-2xl font-bold text-white">{initials}</Text>
               </View>
-            ) : null}
+            )}
           </View>
           {avatarAccessory}
         </View>

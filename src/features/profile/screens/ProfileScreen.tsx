@@ -1,21 +1,28 @@
-import { Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, Text, View } from 'react-native';
 
 import { UserProfilePage } from '@/features/profile/components/UserProfilePage';
 import { ProfileHeaderIconButton } from '@/features/profile/components/ProfileHeader';
-import {
-  MOCK_OWN_PROFILE_ACTIVITY,
-  MOCK_OWN_PROFILE_VIEW_MODEL,
-} from '@/features/profile/lib/profileViewModel';
+import { MOCK_OWN_PROFILE_ACTIVITY } from '@/features/profile/lib/profileViewModel';
+import { useOwnProfile } from '@/providers/OwnProfileProvider';
+import { useAuth } from '@/providers/AuthProvider';
+import { getInitials } from '@/lib/userDisplay';
 
 export function ProfileScreen() {
+  const { user } = useAuth();
+  const { viewModel } = useOwnProfile();
+  const initials = getInitials(viewModel.displayName || user?.displayName || '');
+
+  const openEditProfile = () => router.push('/edit-profile');
+
   return (
     <UserProfilePage
-      profile={MOCK_OWN_PROFILE_VIEW_MODEL}
-      initials="AK"
+      profile={viewModel}
+      initials={initials}
       showEditBadge
+      onEditPress={openEditProfile}
       teachSectionTitle="I Teach"
       learnSectionTitle="I Want to Learn"
-      showAddTeachChip
       hideEmptyTopicSections={false}
       recentActivity={MOCK_OWN_PROFILE_ACTIVITY}
       headerEnd={
@@ -26,9 +33,13 @@ export function ProfileScreen() {
         />
       }
       avatarAccessory={
-        <View className="rounded-xl border border-border px-4 py-2">
+        <Pressable
+          onPress={openEditProfile}
+          accessibilityRole="button"
+          accessibilityLabel="Edit profile"
+          className="rounded-xl border border-border px-4 py-2 active:opacity-80">
           <Text className="text-sm font-medium text-foreground">Edit Profile</Text>
-        </View>
+        </Pressable>
       }
     />
   );
