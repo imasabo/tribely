@@ -26,8 +26,10 @@ export function DiscoverSortChips({ className }: DiscoverSortChipsProps) {
         <Pressable
           key={opt}
           onPress={() => setSelectedSort(opt as DiscoverSortOption)}
-          className={`mr-2 rounded-full border px-3.5 py-1.5 ${
-            selectedSort === opt ? 'border-primary bg-secondary' : 'border-border bg-card'
+          className={`mr-1.5 rounded-full border px-3 py-1.5 ${
+            selectedSort === opt
+              ? 'border-primary/30 bg-secondary'
+              : 'border-transparent bg-muted'
           }`}>
           <Text
             className={`text-xs ${

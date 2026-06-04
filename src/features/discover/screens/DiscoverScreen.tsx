@@ -1,23 +1,21 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { GoogleSlidesCardPreview } from '@/components/lesson/GoogleSlidesCardPreview';
+import { LessonCard } from '@/components/lesson/LessonCard';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { LocationLink } from '@/components/ui/LocationLink';
 import { ChooseCitySheet } from '@/features/discover/components/ChooseCitySheet';
 import { useDiscoverLocationFeatures } from '@/features/discover/hooks/useDiscoverLocationFeatures';
-import { DiscoverActiveFilterPills } from '@/features/discover/components/DiscoverActiveFilterPills';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
-import { DiscoverSortChips } from '@/features/discover/components/DiscoverSortChips';
+import { DiscoverListControls } from '@/features/discover/components/DiscoverListControls';
 import { useDiscoverLessons } from '@/features/discover/hooks/useDiscoverLessons';
 import { useFilteredLessons } from '@/features/discover/hooks/useFilteredLessons';
 import { colors } from '@/constants/theme';
-import { discoverFilters } from '@/data/mock/lessons';
 import { useDiscoverFilters } from '@/providers/DiscoverFiltersProvider';
 import { useDiscoverLocationContext } from '@/providers/DiscoverLocationProvider';
 
@@ -25,7 +23,6 @@ export function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const { lessons: allLessons, loading, refreshing, error, refetch, retry } =
     useDiscoverLessons();
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const { resetAppliedSheetFilters } = useDiscoverFilters();
   const {
     needsCityPicker,
@@ -42,7 +39,7 @@ export function DiscoverScreen() {
     }, [ensureLocation])
   );
 
-  const displayedLessons = useFilteredLessons(allLessons, { category: selectedCategory });
+  const displayedLessons = useFilteredLessons(allLessons);
   const {
     mode: locationMode,
     showLessonDistance,
@@ -103,36 +100,11 @@ export function DiscoverScreen() {
             <DiscoverFilterButton />
           </View>
 
-          <DiscoverSortChips />
         </View>
 
-        <DiscoverActiveFilterPills className="mb-3" />
+        <DiscoverListControls />
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mb-4 px-5"
-          contentContainerStyle={{ paddingRight: 20 }}>
-          {discoverFilters.map((f) => (
-            <Pressable
-              key={f}
-              onPress={() => setSelectedCategory(f)}
-              className={`mr-2 rounded-full border px-4 py-2 ${
-                selectedCategory === f
-                  ? 'border-primary bg-primary'
-                  : 'border-border bg-card'
-              }`}>
-              <Text
-                className={`text-[13px] font-medium ${
-                  selectedCategory === f ? 'text-white' : 'text-foreground'
-                }`}>
-                {f}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <View className="mb-3 flex-row items-center justify-between px-5">
+        <View className="mb-3 mt-1 flex-row items-center justify-between px-5">
           <Text className="text-sm text-muted-foreground">
             {displayedLessons.length} lesson{displayedLessons.length === 1 ? '' : 's'} found
           </Text>
@@ -158,53 +130,18 @@ export function DiscoverScreen() {
               <Text className="mt-1 text-center text-sm text-muted-foreground">
                 Try adjusting filters or choosing a different category.
               </Text>
-              <Pressable
-                onPress={() => {
-                  resetAppliedSheetFilters();
-                  setSelectedCategory('All');
-                }}
-                className="mt-4 active:opacity-80">
+              <Pressable onPress={resetAppliedSheetFilters} className="mt-4 active:opacity-80">
                 <Text className="text-sm font-semibold text-primary">Clear filters</Text>
               </Pressable>
             </View>
           ) : (
             displayedLessons.map((lesson) => (
-              <Pressable
+              <LessonCard
                 key={lesson.id}
+                lesson={lesson}
+                showDistance={showLessonDistance}
                 onPress={() => openLesson(lesson.id)}
-                className="flex-row overflow-hidden rounded-2xl border border-border bg-card p-3 active:opacity-95">
-                <View className="mr-3 h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl">
-                  <GoogleSlidesCardPreview
-                    variant="compact"
-                    colors={lesson.slidePreviewColors}
-                  />
-                </View>
-                <View className="flex-1 justify-center">
-                  <Text className="text-[11px] text-muted-foreground">
-                    {lesson.categoryEmoji} {lesson.category} · {lesson.durationMinutes} min
-                  </Text>
-                  <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>
-                    {lesson.title}
-                  </Text>
-                  <Text className="mt-0.5 text-xs text-muted-foreground">{lesson.teacherName}</Text>
-                  <View className="mt-2 flex-row items-center gap-2">
-                    <View className="flex-row items-center gap-1">
-                      <Feather name="clock" size={10} color={colors.mutedForeground} />
-                      <Text className="text-[11px] text-muted-foreground">
-                        {lesson.scheduledAtLabel}
-                      </Text>
-                    </View>
-                    {showLessonDistance ? (
-                      <View className="flex-row items-center gap-1">
-                        <Feather name="map-pin" size={10} color={colors.mutedForeground} />
-                        <Text className="text-[11px] text-muted-foreground">
-                          {lesson.distanceLabel}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-              </Pressable>
+              />
             ))
           )}
         </View>

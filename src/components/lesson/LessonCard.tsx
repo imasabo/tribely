@@ -80,7 +80,11 @@ export function LessonCard({
             <Text className="mb-0.5 text-[11px] text-muted-foreground">
               {lesson.categoryEmoji} {lesson.category} · {lesson.durationMinutes} min
             </Text>
-            <Text className="text-sm font-semibold leading-tight text-foreground">{lesson.title}</Text>
+            <Text
+              className="text-sm font-semibold leading-tight text-foreground"
+              numberOfLines={2}>
+              {lesson.title}
+            </Text>
             <Text className="mt-1 text-xs text-muted-foreground">{lesson.teacherName}</Text>
           </View>
           <View className="flex-row items-center gap-0.5">

@@ -10,21 +10,17 @@ import { useDiscoverFilters } from '@/providers/DiscoverFiltersProvider';
 import { useDiscoverLocationContext } from '@/providers/DiscoverLocationProvider';
 import type { Lesson } from '@/types/domain';
 
-export function useFilteredLessons(
-  lessons: Lesson[],
-  options?: { category?: string }
-) {
-  const { appliedSheetFilters, selectedSort } = useDiscoverFilters();
+export function useFilteredLessons(lessons: Lesson[]) {
+  const { appliedSheetFilters, selectedSort, selectedCategory } = useDiscoverFilters();
   const { mode: locationMode } = useDiscoverLocationContext();
   const filterByDistance = canFilterLessonsByDistance(locationMode);
 
   return useMemo(() => {
-    const category = options?.category ?? 'All';
     const filtered = applyDiscoverSheetFilters(
-      applyDiscoverCategoryFilter(lessons, category),
+      applyDiscoverCategoryFilter(lessons, selectedCategory),
       appliedSheetFilters,
       { filterByDistance }
     );
     return sortDiscoverLessons(filtered, selectedSort);
-  }, [lessons, appliedSheetFilters, selectedSort, options?.category, filterByDistance]);
+  }, [lessons, appliedSheetFilters, selectedSort, selectedCategory, filterByDistance]);
 }

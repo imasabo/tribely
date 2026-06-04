@@ -13,6 +13,7 @@ import {
 } from '@/features/discover/lib/discoverFilterPills';
 import {
   countActiveSheetFilters,
+  DEFAULT_DISCOVER_CATEGORY,
   DEFAULT_DISCOVER_SHEET_FILTERS,
   type DiscoverSheetFilters,
   type DiscoverSortOption,
@@ -38,6 +39,8 @@ interface DiscoverFiltersContextValue {
   resetDraftSheetFilters: () => void;
   resetAppliedSheetFilters: () => void;
   removeAppliedFilterPill: (pillId: DiscoverFilterPillId) => void;
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
   setSelectedSort: (sort: DiscoverSortOption) => void;
 }
 
@@ -47,6 +50,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
   const [appliedSheetFilters, setAppliedSheetFilters] = useState(cloneSheetFilters);
   const [draftSheetFilters, setDraftSheetFilters] = useState(cloneSheetFilters);
   const [selectedSort, setSelectedSort] = useState<DiscoverSortOption>('Nearest');
+  const [selectedCategory, setSelectedCategory] = useState(DEFAULT_DISCOVER_CATEGORY);
   const [sheetVisible, setSheetVisible] = useState(false);
 
   const activeFilterCount = countActiveSheetFilters(appliedSheetFilters);
@@ -71,6 +75,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
 
   const resetAppliedSheetFilters = useCallback(() => {
     setAppliedSheetFilters(cloneSheetFilters());
+    setSelectedCategory(DEFAULT_DISCOVER_CATEGORY);
   }, []);
 
   const removeAppliedFilterPill = useCallback((pillId: DiscoverFilterPillId) => {
@@ -93,11 +98,14 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
       resetDraftSheetFilters,
       resetAppliedSheetFilters,
       removeAppliedFilterPill,
+      selectedCategory,
+      setSelectedCategory,
       setSelectedSort,
     }),
     [
       appliedSheetFilters,
       selectedSort,
+      selectedCategory,
       activeFilterCount,
       sheetVisible,
       draftSheetFilters,
@@ -107,6 +115,7 @@ export function DiscoverFiltersProvider({ children }: { children: ReactNode }) {
       resetDraftSheetFilters,
       resetAppliedSheetFilters,
       removeAppliedFilterPill,
+      setSelectedCategory,
     ]
   );
 

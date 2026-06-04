@@ -7,10 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LessonCard } from '@/components/lesson/LessonCard';
 import { SearchField } from '@/components/ui/SearchBar';
 import { colors } from '@/constants/theme';
-import { DiscoverActiveFilterPills } from '@/features/discover/components/DiscoverActiveFilterPills';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
-import { DiscoverSortChips } from '@/features/discover/components/DiscoverSortChips';
+import { DiscoverListControls } from '@/features/discover/components/DiscoverListControls';
+import { DiscoverCategoryChips } from '@/features/discover/components/DiscoverCategoryChips';
 import {
+  applyDiscoverCategoryFilter,
   applyDiscoverSheetFilters,
   sortDiscoverLessons,
 } from '@/features/discover/lib/applyDiscoverFilters';
@@ -24,7 +25,8 @@ export function SearchScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const { results, loading } = useLessonSearch(query);
-  const { appliedSheetFilters, selectedSort, resetAppliedSheetFilters } = useDiscoverFilters();
+  const { appliedSheetFilters, selectedSort, selectedCategory, resetAppliedSheetFilters } =
+    useDiscoverFilters();
   const { mode: locationMode } = useDiscoverLocationContext();
   const {
     showLessonDistance,
@@ -37,13 +39,15 @@ export function SearchScreen() {
   const filterByDistance = canFilterLessonsByDistance(locationMode);
 
   const displayedResults = useMemo(() => {
-    const filtered = applyDiscoverSheetFilters(results, appliedSheetFilters, {
-      filterByDistance,
-    });
+    const filtered = applyDiscoverSheetFilters(
+      applyDiscoverCategoryFilter(results, selectedCategory),
+      appliedSheetFilters,
+      { filterByDistance }
+    );
     return sortDiscoverLessons(filtered, selectedSort);
-  }, [results, appliedSheetFilters, selectedSort, filterByDistance]);
+  }, [results, appliedSheetFilters, selectedSort, selectedCategory, filterByDistance]);
 
-  const hasActiveFilters = activeFilterCount > 0;
+  const hasActiveFilters = activeFilterCount > 0 || selectedCategory !== 'All';
 
   return (
     <>
@@ -65,11 +69,7 @@ export function SearchScreen() {
           <DiscoverFilterButton />
         </View>
 
-        <View className="mb-3 px-5">
-          <DiscoverSortChips />
-        </View>
-
-        <DiscoverActiveFilterPills className="mb-3" />
+        <DiscoverListControls className="mb-2" />
 
         <ScrollView
           className="flex-1 px-5"
@@ -98,8 +98,8 @@ export function SearchScreen() {
                 {results.length} result{results.length === 1 ? '' : 's'} for &ldquo;{trimmedQuery}
                 &rdquo;
                 {distanceFilteringEnabled
-                  ? ' — try widening distance or when.'
-                  : ' — try adjusting when or duration.'}
+                  ? ' — try widening distance, when, or category.'
+                  : ' — try adjusting when, duration, or category.'}
               </Text>
               {hasActiveFilters ? (
                 <Pressable onPress={resetAppliedSheetFilters} className="mt-4 active:opacity-80">

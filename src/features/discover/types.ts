@@ -13,6 +13,8 @@ export interface DiscoverSheetFilters {
   durations: LessonDurationMinutes[];
 }
 
+export const DEFAULT_DISCOVER_CATEGORY = 'All';
+
 export const DEFAULT_DISCOVER_SHEET_FILTERS: DiscoverSheetFilters = {
   distanceMiles: 2,
   when: 'any',
