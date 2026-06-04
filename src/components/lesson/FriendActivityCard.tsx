@@ -61,9 +61,9 @@ export function FriendActivityCard({
       </Pressable>
 
       {reviewSnippet ? (
-        <Text className="px-4 text-[13px] leading-relaxed text-muted-foreground">
-          {reviewSnippet}
-        </Text>
+        <View className={`px-4 ${showActions ? 'pb-1' : 'pb-4'}`}>
+          <Text className="text-[13px] leading-relaxed text-muted-foreground">{reviewSnippet}</Text>
+        </View>
       ) : null}
 
       {showActions ? (
@@ -88,6 +88,8 @@ export function FriendActivityCard({
             </Pressable>
           ) : null}
         </View>
+      ) : !reviewSnippet ? (
+        <View className="pb-4" />
       ) : null}
     </View>
   );
