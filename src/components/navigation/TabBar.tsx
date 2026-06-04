@@ -1,9 +1,13 @@
 import { Feather } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ChatTabIcon } from '@/components/icons/ChatTabIcon';
+import { DiscoverTabIcon } from '@/components/icons/DiscoverTabIcon';
+import { HomeTabIcon } from '@/components/icons/HomeTabIcon';
+import { ProfileTabIcon } from '@/components/icons/ProfileTabIcon';
 import { colors } from '@/constants/theme';
 
 type TabKey = 'index' | 'discover' | 'messages' | 'profile';
@@ -28,17 +32,33 @@ function TabIconView({ icon, active }: { icon: TabIcon; active: boolean }) {
     );
   }
 
-  const featherName =
-    icon === 'index'
-      ? 'home'
-      : icon === 'discover'
-        ? 'compass'
-        : icon === 'messages'
-          ? 'message-circle'
-          : 'user';
+  if (icon === 'index') {
+    return (
+      <View className="h-10 w-10 items-center justify-center">
+        <HomeTabIcon color={color} active={active} size={22} />
+      </View>
+    );
+  }
+
+  if (icon === 'messages') {
+    return (
+      <View className="h-10 w-10 items-center justify-center">
+        <ChatTabIcon color={color} active={active} size={22} />
+      </View>
+    );
+  }
+
+  if (icon === 'discover') {
+    return (
+      <View className="h-10 w-10 items-center justify-center">
+        <DiscoverTabIcon color={color} active={active} size={22} />
+      </View>
+    );
+  }
+
   return (
     <View className="h-10 w-10 items-center justify-center">
-      <Feather name={featherName} size={22} color={color} />
+      <ProfileTabIcon color={color} active={active} size={22} />
     </View>
   );
 }
@@ -50,7 +70,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
     <View
       className="border-t border-border bg-background/95"
       style={{ paddingBottom: Math.max(insets.bottom, 12) }}>
-      <View className="flex-row items-end pt-2">
+      <View className="min-h-[52px] flex-row items-end justify-center pb-2 pt-1">
         {TABS.map((tab) => {
           const isTeach = tab.key === 'teach';
           const routeIndex = isTeach ? -1 : state.routes.findIndex((r) => r.name === tab.key);
@@ -77,15 +97,14 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
             <Pressable
               key={tab.key}
               onPress={onPress}
-              className="relative flex-1 items-center pb-1">
+              accessibilityRole="button"
+              accessibilityLabel={tab.label}
+              accessibilityState={{ selected: active }}
+              className="relative flex-1 items-center justify-end pb-1">
               {active && (
-                <View className="absolute -top-2 h-0.5 w-4 rounded-full bg-primary" />
+                <View className="absolute top-0 h-0.5 w-4 rounded-full bg-primary" />
               )}
               <TabIconView icon={tab.icon} active={active || isTeach} />
-              <Text
-                className={`mt-1 text-[10px] ${active || isTeach ? 'font-semibold text-primary' : 'text-muted-foreground'}`}>
-                {tab.label}
-              </Text>
             </Pressable>
           );
         })}
