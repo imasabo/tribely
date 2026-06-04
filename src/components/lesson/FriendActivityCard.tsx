@@ -11,6 +11,7 @@ import { GoogleSlidesCardPreview } from './GoogleSlidesCardPreview';
 interface FriendActivityCardProps {
   activity: FriendLessonActivity;
   onLessonPress: () => void;
+  onProfilePress?: () => void;
   onCommentPress?: () => void;
   /** Hide like/comment actions — use on the comments screen. */
   showActions?: boolean;
@@ -19,6 +20,7 @@ interface FriendActivityCardProps {
 export function FriendActivityCard({
   activity,
   onLessonPress,
+  onProfilePress,
   onCommentPress,
   showActions = true,
 }: FriendActivityCardProps) {
@@ -31,10 +33,21 @@ export function FriendActivityCard({
       <View className="flex-row items-center gap-3 px-4 pt-4">
         <Avatar initials={friendAvatar} size="sm" />
         <View className="flex-1">
-          <Text className="text-sm text-foreground">
-            <Text className="font-semibold">{friendName}</Text>
-            <Text className="text-muted-foreground"> completed a lesson</Text>
-          </Text>
+          <View className="flex-row flex-wrap items-center">
+            {onProfilePress ? (
+              <Pressable
+                onPress={onProfilePress}
+                hitSlop={6}
+                accessibilityRole="link"
+                accessibilityLabel={`View ${friendName}'s profile`}
+                className="active:opacity-70">
+                <Text className="text-sm font-semibold text-foreground">{friendName}</Text>
+              </Pressable>
+            ) : (
+              <Text className="text-sm font-semibold text-foreground">{friendName}</Text>
+            )}
+            <Text className="text-sm text-muted-foreground"> completed a lesson</Text>
+          </View>
           <Text className="text-xs text-muted-foreground">{completedAtLabel}</Text>
         </View>
         {ratingGiven ? (

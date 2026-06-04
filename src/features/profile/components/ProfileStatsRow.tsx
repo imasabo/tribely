@@ -1,0 +1,26 @@
+import { Feather } from '@expo/vector-icons';
+import { Text, View } from 'react-native';
+
+import { colors } from '@/constants/theme';
+import type { ProfileStatItem } from '@/features/profile/types';
+
+interface ProfileStatsRowProps {
+  stats: ProfileStatItem[];
+  className?: string;
+}
+
+export function ProfileStatsRow({ stats, className }: ProfileStatsRowProps) {
+  return (
+    <View className={`flex-row gap-2 ${className ?? ''}`}>
+      {stats.map((stat) => (
+        <View
+          key={stat.label}
+          className="flex-1 items-center gap-1 rounded-2xl border border-border bg-card p-3">
+          <Feather name={stat.icon} size={16} color={stat.color ?? colors.primary} />
+          <Text className="text-[17px] font-bold text-foreground">{stat.value}</Text>
+          <Text className="text-[10px] text-muted-foreground">{stat.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}

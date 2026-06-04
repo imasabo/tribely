@@ -1,0 +1,68 @@
+import type { UserProfile } from '@/types/domain';
+
+export interface PublicUserProfile extends UserProfile {
+  joinedAtLabel: string;
+}
+
+export const mockPublicProfiles: Record<string, PublicUserProfile> = {
+  'friend-marcus': {
+    id: 'friend-marcus',
+    displayName: 'Marcus Lee',
+    email: 'marcus@example.com',
+    role: 'both',
+    bio: 'Product designer learning guitar on the side. Always up for a neighborhood lesson swap.',
+    city: 'San Francisco, CA',
+    joinedAtLabel: 'Joined January 2025',
+    teachTopics: ['UI Design', 'Figma'],
+    learnTopics: ['Guitar', 'Music Theory'],
+    stats: { rating: 4.8, lessonsTaught: 6, students: 18, reviews: 14 },
+  },
+  'friend-jordan': {
+    id: 'friend-jordan',
+    displayName: 'Jordan Park',
+    email: 'jordan@example.com',
+    role: 'learner',
+    bio: 'Software engineer exploring creative skills after work.',
+    city: 'Oakland, CA',
+    joinedAtLabel: 'Joined February 2025',
+    teachTopics: [],
+    learnTopics: ['JavaScript', 'Watercolor', 'Spanish'],
+    stats: { rating: 4.6, lessonsTaught: 0, students: 0, reviews: 9 },
+  },
+  'friend-sam': {
+    id: 'friend-sam',
+    displayName: 'Sam Rivera',
+    email: 'sam@example.com',
+    role: 'both',
+    bio: 'Illustrator and weekend yoga teacher in the Mission.',
+    city: 'San Francisco, CA',
+    joinedAtLabel: 'Joined December 2024',
+    teachTopics: ['Watercolor', 'Drawing'],
+    learnTopics: ['Photography', 'Bread Baking'],
+    stats: { rating: 4.9, lessonsTaught: 14, students: 41, reviews: 32 },
+  },
+  'friend-taylor': {
+    id: 'friend-taylor',
+    displayName: 'Taylor Kim',
+    email: 'taylor@example.com',
+    role: 'learner',
+    bio: 'Grad student — language lessons and study groups are my jam.',
+    city: 'Berkeley, CA',
+    joinedAtLabel: 'Joined March 2025',
+    teachTopics: [],
+    learnTopics: ['French', 'Piano', 'Data Science'],
+    stats: { rating: 4.5, lessonsTaught: 0, students: 0, reviews: 6 },
+  },
+  'friend-riley': {
+    id: 'friend-riley',
+    displayName: 'Riley Chen',
+    email: 'riley@example.com',
+    role: 'teacher',
+    bio: 'Home baker teaching sourdough and pastry basics to small groups.',
+    city: 'San Francisco, CA',
+    joinedAtLabel: 'Joined November 2024',
+    teachTopics: ['Sourdough', 'Pastry', 'Cooking'],
+    learnTopics: ['Marketing'],
+    stats: { rating: 5.0, lessonsTaught: 22, students: 58, reviews: 47 },
+  },
+};

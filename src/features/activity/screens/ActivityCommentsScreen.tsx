@@ -114,6 +114,7 @@ export function ActivityCommentsScreen({ activityId }: ActivityCommentsScreenPro
               activity={activity}
               showActions={false}
               onLessonPress={() => router.push(`/lesson/${activity.lesson.id}`)}
+              onProfilePress={() => router.push(`/user/${activity.friendId}`)}
             />
           </View>
         }

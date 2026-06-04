@@ -20,6 +20,10 @@ export function HomeScreen() {
     router.push(`/lesson/${lessonId}`);
   };
 
+  const openProfile = (friendId: string) => {
+    router.push(`/user/${friendId}`);
+  };
+
   if (loading) {
     return <LoadingScreen message="Loading your feed…" />;
   }
@@ -45,6 +49,7 @@ export function HomeScreen() {
             key={activity.id}
             activity={activity}
             onLessonPress={() => openLesson(activity.lesson.id)}
+            onProfilePress={() => openProfile(activity.friendId)}
             onCommentPress={() => router.push(`/activity/${activity.id}`)}
           />
         ))}

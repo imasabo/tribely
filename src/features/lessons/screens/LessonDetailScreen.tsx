@@ -35,6 +35,10 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
     router.push(`/lesson/${lessonId}/slides`);
   };
 
+  const openTeacherProfile = () => {
+    router.push(`/user/${lesson.teacherId}`);
+  };
+
   return (
     <View className="flex-1 bg-background">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
@@ -79,7 +83,11 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
             {lesson.title}
           </Text>
 
-          <View className="mb-5 flex-row items-center gap-3">
+          <Pressable
+            onPress={openTeacherProfile}
+            accessibilityRole="link"
+            accessibilityLabel={`View ${lesson.teacherName}'s profile`}
+            className="mb-5 flex-row items-center gap-3 rounded-2xl border border-border bg-card p-3 active:opacity-90">
             <View className="h-11 w-11 items-center justify-center rounded-full bg-primary">
               <Text className="font-semibold text-white">{lesson.teacherAvatar}</Text>
             </View>
@@ -91,8 +99,10 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
                   {lesson.rating} · {lesson.reviewCount} reviews
                 </Text>
               </View>
+              <Text className="mt-0.5 text-xs text-muted-foreground">View profile</Text>
             </View>
-          </View>
+            <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
+          </Pressable>
 
           <View className="mb-5 gap-3 rounded-2xl border border-border bg-card p-4">
             <View className="flex-row items-center gap-3">
