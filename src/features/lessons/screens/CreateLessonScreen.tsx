@@ -1,13 +1,27 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
-import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
+import { LimitedTextField } from '@/components/ui/LimitedTextField';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { ScheduleDateTimeFields } from '@/components/ui/ScheduleDateTimeFields';
 import { colors } from '@/constants/theme';
+import {
+  combineDateAndTime,
+  defaultSessionDate,
+  formatScheduledAtLabel,
+} from '@/lib/lessonSchedule';
 import { useLesson } from '@/features/lessons/hooks/useLesson';
 import { isValidGoogleSlidesUrl, parseGoogleSlidesUrl } from '@/lib/googleSlides';
 import { useAuth } from '@/providers/AuthProvider';
@@ -20,8 +34,10 @@ const DURATION_OPTIONS: { label: string; minutes: LessonDurationMinutes }[] = [
   { label: '60 min', minutes: 60 },
 ];
 
-const MAX_LEARNER_OPTIONS = [2, 4, 6, 8, 10, 12] as const;
+const MAX_LEARNER_OPTIONS = [1, 2, 4, 6, 8, 10] as const;
 const DEFAULT_MAX_LEARNERS = 6;
+const LESSON_TITLE_CHAR_LIMIT = 80;
+const LESSON_DESCRIPTION_CHAR_LIMIT = 500;
 
 /** Phase 3: wire to useCreateLesson + Firestore */
 export function CreateLessonScreen() {
@@ -40,7 +56,10 @@ export function CreateLessonScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [scheduledAt, setScheduledAt] = useState('');
+  const defaultSchedule = defaultSessionDate();
+  const [sessionDate, setSessionDate] = useState<Date | null>(null);
+  const [sessionTime, setSessionTime] = useState(defaultSchedule);
+  const [scheduleDateError, setScheduleDateError] = useState<string | null>(null);
   const [durationMinutes, setDurationMinutes] = useState<LessonDurationMinutes>(60);
   const [maxLearners, setMaxLearners] = useState<number>(DEFAULT_MAX_LEARNERS);
   const [slidesUrl, setSlidesUrl] = useState('');
@@ -61,7 +80,9 @@ export function CreateLessonScreen() {
     setDurationMinutes(templateLesson.durationMinutes);
     setSlidesUrl(templateLesson.googleSlidesUrl);
     setMaxLearners(templateLesson.maxLearners ?? DEFAULT_MAX_LEARNERS);
-    setScheduledAt('');
+    setSessionDate(null);
+    setSessionTime(defaultSessionDate());
+    setScheduleDateError(null);
     setTemplateApplied(true);
   }, [templateLesson, templateApplied]);
 
@@ -83,7 +104,12 @@ export function CreateLessonScreen() {
   const handlePublish = async () => {
     setTouched(true);
     if (!title.trim()) return;
-    if (!scheduledAt.trim()) return;
+    if (!sessionDate) {
+      setScheduleDateError('Select a date for this session.');
+      return;
+    }
+    setScheduleDateError(null);
+    const scheduledAt = combineDateAndTime(sessionDate, sessionTime);
     if (!validateSlides(slidesUrl)) return;
 
     const teacherId = user?.uid ?? 'dev-user-alex';
@@ -99,7 +125,7 @@ export function CreateLessonScreen() {
         locationName: location.trim(),
         durationMinutes,
         googleSlidesUrl: slidesUrl,
-        scheduledAtLabel: scheduledAt.trim(),
+        scheduledAtLabel: formatScheduledAtLabel(scheduledAt),
         templateLessonId: resolvedTemplateId,
         category: templateLesson?.category,
         categoryEmoji: templateLesson?.categoryEmoji,
@@ -134,12 +160,16 @@ export function CreateLessonScreen() {
         <View className="w-9" />
       </View>
 
-      <DismissKeyboard className="flex-1">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}>
         <ScrollView
-          className="flex-1 px-5"
-          contentContainerStyle={{ paddingBottom: 40 }}
-          keyboardShouldPersistTaps="never"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          nestedScrollEnabled
           showsVerticalScrollIndicator={false}>
           {isDuplicate && templateLesson ? (
             <View className="mb-5 rounded-2xl border border-primary/30 bg-secondary px-4 py-3">
@@ -152,39 +182,40 @@ export function CreateLessonScreen() {
             <Text className="mb-6 text-[22px] font-bold text-foreground">Share what you know</Text>
           )}
 
-          <View className="mb-4 gap-1.5">
-            <Text className="text-sm font-medium text-foreground">Lesson title</Text>
-            <TextInput
+          <View className="mb-4">
+            <LimitedTextField
+              label="Lesson title"
               value={title}
               onChangeText={setTitle}
+              maxLength={LESSON_TITLE_CHAR_LIMIT}
               placeholder="e.g. Intro to Python for Beginners"
-              placeholderTextColor={colors.mutedForeground}
-              className="rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
             />
           </View>
 
-          <View className="mb-4 gap-1.5">
-            <Text className="text-sm font-medium text-foreground">Description</Text>
-            <TextInput
+          <View className="mb-4">
+            <LimitedTextField
+              label="Description"
               value={description}
               onChangeText={setDescription}
+              maxLength={LESSON_DESCRIPTION_CHAR_LIMIT}
               placeholder="What will learners take away?"
-              placeholderTextColor={colors.mutedForeground}
               multiline
-              numberOfLines={4}
-              className="min-h-[100px] rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
-              textAlignVertical="top"
             />
           </View>
 
-          <View className="mb-4 gap-1.5">
-            <Text className="text-sm font-medium text-foreground">When</Text>
-            <TextInput
-              value={scheduledAt}
-              onChangeText={setScheduledAt}
-              placeholder="e.g. Jun 15, 2026 · 2:30 PM"
-              placeholderTextColor={colors.mutedForeground}
-              className="rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
+          <View className="mb-4">
+            <Text className="mb-3 text-sm font-medium text-foreground">When</Text>
+            <ScheduleDateTimeFields
+              date={sessionDate}
+              time={sessionTime}
+              onDateChange={(next) => {
+                setSessionDate(next);
+                setScheduleDateError(null);
+              }}
+              onTimeChange={setSessionTime}
+              dateError={
+                scheduleDateError ?? (touched && !sessionDate ? 'Select a date' : undefined)
+              }
             />
           </View>
 
@@ -246,14 +277,14 @@ export function CreateLessonScreen() {
             <Text className="text-xs text-muted-foreground">
               How many learners can join this session?
             </Text>
-            <View className="flex-row flex-wrap gap-2">
+            <View className="flex-row gap-2">
               {MAX_LEARNER_OPTIONS.map((count) => {
                 const selected = maxLearners === count;
                 return (
                   <Pressable
                     key={count}
                     onPress={() => setMaxLearners(count)}
-                    className={`min-w-[52px] rounded-xl border px-4 py-3 ${
+                    className={`flex-1 rounded-xl border py-3 ${
                       selected ? 'border-primary bg-secondary' : 'border-border bg-card'
                     }`}>
                     <Text
@@ -296,7 +327,7 @@ export function CreateLessonScreen() {
             onPress={() => void handlePublish()}
           />
         </ScrollView>
-      </DismissKeyboard>
+      </KeyboardAvoidingView>
     </View>
   );
 }

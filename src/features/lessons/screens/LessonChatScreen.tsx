@@ -218,9 +218,6 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
               </Text>
             </Pressable>
           </View>
-          <View className="h-9 w-9 items-center justify-center rounded-full bg-secondary">
-            <Feather name="message-circle" size={18} color={colors.primary} />
-          </View>
         </View>
 
         <FlatList

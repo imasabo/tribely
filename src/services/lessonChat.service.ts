@@ -2,7 +2,9 @@ import { mockLessonChatMessages } from '@/data/mock/lessonChatMessages';
 import { canAccessLessonChat, getLessonForChat } from '@/lib/lessonChatAccess';
 import { getInitials } from '@/lib/userDisplay';
 import { lessonJoinRequestsService } from '@/services/lessonJoinRequests.service';
-import type { LessonChatMessage } from '@/types/lessonChat';
+import { isLessonOwner } from '@/lib/lessonEnrollment';
+import { lessonCatalogStore } from '@/data/lessonCatalogStore';
+import type { LessonChatInboxItem, LessonChatMessage } from '@/types/lessonChat';
 
 const CHAT_SEED_VERSION = 1;
 
@@ -39,6 +41,34 @@ export const lessonChatService = {
 
   async listMessages(lessonId: string): Promise<LessonChatMessage[]> {
     return listForLesson(lessonId);
+  },
+
+  async listInbox(viewerUid: string | undefined): Promise<LessonChatInboxItem[]> {
+    const lessons = lessonCatalogStore.listAll();
+    const items: LessonChatInboxItem[] = [];
+
+    for (const lesson of lessons) {
+      const accepted = await lessonJoinRequestsService.listAcceptedByLesson(lesson.id);
+      if (!canAccessLessonChat(lesson, viewerUid, accepted)) continue;
+
+      const thread = listForLesson(lesson.id);
+      const last = thread[thread.length - 1];
+
+      items.push({
+        lessonId: lesson.id,
+        title: lesson.title,
+        teacherName: lesson.teacherName,
+        teacherAvatar: lesson.teacherAvatar,
+        scheduledAtLabel: lesson.scheduledAtLabel,
+        lastMessageBody: last?.body,
+        lastMessageSender: last?.senderName,
+        lastMessageAtLabel: last?.sentAtLabel,
+        lastSentAt: last?.sentAt,
+        isHost: isLessonOwner(lesson, viewerUid),
+      });
+    }
+
+    return items.sort((a, b) => (b.lastSentAt ?? 0) - (a.lastSentAt ?? 0));
   },
 
   async sendMessage(params: {

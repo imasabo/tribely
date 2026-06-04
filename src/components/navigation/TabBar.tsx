@@ -6,13 +6,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/theme';
 
-type TabKey = 'index' | 'discover' | 'profile';
+type TabKey = 'index' | 'discover' | 'messages' | 'profile';
 type TabIcon = TabKey | 'teach';
 
 const TABS: { key: TabKey | 'teach'; label: string; icon: TabIcon }[] = [
   { key: 'index', label: 'Home', icon: 'index' },
   { key: 'discover', label: 'Discover', icon: 'discover' },
   { key: 'teach', label: 'Teach', icon: 'teach' },
+  { key: 'messages', label: 'Messages', icon: 'messages' },
   { key: 'profile', label: 'Profile', icon: 'profile' },
 ];
 
@@ -27,7 +28,14 @@ function TabIconView({ icon, active }: { icon: TabIcon; active: boolean }) {
     );
   }
 
-  const featherName = icon === 'index' ? 'home' : icon === 'discover' ? 'compass' : 'user';
+  const featherName =
+    icon === 'index'
+      ? 'home'
+      : icon === 'discover'
+        ? 'compass'
+        : icon === 'messages'
+          ? 'message-circle'
+          : 'user';
   return (
     <View className="h-10 w-10 items-center justify-center">
       <Feather name={featherName} size={22} color={color} />

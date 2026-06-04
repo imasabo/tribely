@@ -1,3 +1,16 @@
+export interface LessonChatInboxItem {
+  lessonId: string;
+  title: string;
+  teacherName: string;
+  teacherAvatar: string;
+  scheduledAtLabel: string;
+  lastMessageBody?: string;
+  lastMessageSender?: string;
+  lastMessageAtLabel?: string;
+  lastSentAt?: number;
+  isHost: boolean;
+}
+
 export interface LessonChatMessage {
   id: string;
   lessonId: string;

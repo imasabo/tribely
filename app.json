@@ -39,7 +39,8 @@
           "locationWhenInUsePermission": "Tribely uses your location to show lessons near you."
         }
       ],
-      "./plugins/withFirebaseIos.js"
+      "./plugins/withFirebaseIos.js",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
