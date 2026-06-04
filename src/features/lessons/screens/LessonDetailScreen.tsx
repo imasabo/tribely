@@ -313,25 +313,6 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
             </View>
           ) : null}
 
-          {canAccessChat ? (
-            <Pressable
-              onPress={openLessonChat}
-              className="mb-5 flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4 active:opacity-90">
-              <View className="h-11 w-11 items-center justify-center rounded-full bg-secondary">
-                <Feather name="message-circle" size={20} color={colors.primary} />
-              </View>
-              <View className="flex-1">
-                <Text className="font-semibold text-foreground">Lesson chat</Text>
-                <Text className="mt-0.5 text-xs text-muted-foreground">
-                  {isOwner
-                    ? 'Message accepted learners before your session'
-                    : 'Chat with the teacher and other learners'}
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
-            </Pressable>
-          ) : null}
-
           <Text className="mb-2 text-[17px] font-semibold text-foreground">
             {isOwner ? 'Your slide deck' : 'Slide deck'}
           </Text>

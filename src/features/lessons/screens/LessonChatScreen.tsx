@@ -17,6 +17,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { LessonChatMessageBubble } from '@/features/lessons/components/LessonChatMessageBubble';
+import {
+  LessonChatMembersSheet,
+  type LessonChatMember,
+} from '@/features/lessons/components/LessonChatMembersSheet';
 import { colors } from '@/constants/theme';
 import { chatMemberCount } from '@/lib/lessonChatAccess';
 import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
@@ -25,7 +29,11 @@ import { useLesson } from '@/features/lessons/hooks/useLesson';
 import { useAuth } from '@/providers/AuthProvider';
 import { lessonChatService } from '@/services/lessonChat.service';
 import { lessonJoinRequestsService } from '@/services/lessonJoinRequests.service';
+import type { Lesson } from '@/types/domain';
+import type { LessonJoinRequest } from '@/types/lessonJoinRequest';
 import type { LessonChatMessage } from '@/types/lessonChat';
+
+const CHAT_CHAR_LIMIT = 400;
 
 interface LessonChatScreenProps {
   lessonId: string;
@@ -56,6 +64,23 @@ function resolveViewerSenderId(viewerUid: string | undefined): string {
   return viewerUid;
 }
 
+function buildChatMembers(lesson: Lesson, acceptedMembers: LessonJoinRequest[]): LessonChatMember[] {
+  return [
+    {
+      id: lesson.teacherId,
+      name: lesson.teacherName,
+      initials: lesson.teacherAvatar,
+      role: 'host',
+    },
+    ...acceptedMembers.map((request) => ({
+      id: request.requesterId,
+      name: request.requesterName,
+      initials: request.requesterInitials,
+      role: 'learner' as const,
+    })),
+  ];
+}
+
 export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -63,11 +88,12 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
   const listRef = useRef<FlatList<ChatListItem>>(null);
 
   const [messages, setMessages] = useState<LessonChatMessage[]>([]);
-  const [acceptedCount, setAcceptedCount] = useState(0);
+  const [acceptedMembers, setAcceptedMembers] = useState<LessonJoinRequest[]>([]);
   const [canAccess, setCanAccess] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [membersSheetVisible, setMembersSheetVisible] = useState(false);
 
   const viewerSenderId = resolveViewerSenderId(user?.uid);
   const viewerName = user?.displayName ?? 'Alex Kim';
@@ -81,7 +107,7 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
     ]);
     setCanAccess(allowed);
     setMessages(list);
-    setAcceptedCount(accepted.length);
+    setAcceptedMembers(accepted);
     setLoading(false);
   }, [lessonId, user?.uid]);
 
@@ -147,9 +173,18 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
     );
   }
 
-  const members = chatMemberCount(lesson, acceptedCount);
+  const chatMembers = buildChatMembers(lesson, acceptedMembers);
+  const members = chatMemberCount(lesson, acceptedMembers.length);
   const listItems = buildChatListItems(messages);
   const isOwner = isLessonOwner(lesson, user?.uid);
+
+  const openMemberProfile = (member: LessonChatMember) => {
+    setMembersSheetVisible(false);
+    router.push(`/user/${member.id}`);
+  };
+  const charCount = draft.length;
+  const limitProgress = Math.min(charCount / CHAT_CHAR_LIMIT, 1);
+  const nearLimit = charCount >= CHAT_CHAR_LIMIT * 0.9;
 
   return (
     <DismissKeyboard className="flex-1 bg-muted">
@@ -169,9 +204,19 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
             <Text className="text-[17px] font-semibold text-foreground" numberOfLines={1}>
               {lesson.title}
             </Text>
-            <Text className="text-xs text-muted-foreground">
-              {members} members · {isOwner ? 'You\'re hosting' : 'Accepted learner'}
-            </Text>
+            <Pressable
+              onPress={() => setMembersSheetVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={`${members} members, view member list`}
+              className="flex-row items-center gap-1 self-start active:opacity-70">
+              <Text className="text-xs font-medium text-primary">
+                {members} members
+              </Text>
+              <Feather name="chevron-down" size={14} color={colors.primary} />
+              <Text className="text-xs text-muted-foreground">
+                · {isOwner ? "You're hosting" : 'Accepted learner'}
+              </Text>
+            </Pressable>
           </View>
           <View className="h-9 w-9 items-center justify-center rounded-full bg-secondary">
             <Feather name="message-circle" size={18} color={colors.primary} />
@@ -224,9 +269,26 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
           }}
         />
 
-        <View
-          className="border-t border-border bg-card"
-          style={{ paddingBottom: insets.bottom + 8 }}>
+        <View className="bg-card" style={{ paddingBottom: insets.bottom + 8 }}>
+          <View
+            style={styles.limitBarTrack}
+            accessibilityLabel={`${charCount} of ${CHAT_CHAR_LIMIT} characters`}
+            accessibilityRole="progressbar"
+            accessibilityValue={{
+              min: 0,
+              max: CHAT_CHAR_LIMIT,
+              now: charCount,
+            }}>
+            <View
+              style={[
+                styles.limitBarFill,
+                {
+                  width: `${limitProgress * 100}%`,
+                  backgroundColor: nearLimit ? colors.accent : colors.primary,
+                },
+              ]}
+            />
+          </View>
           <View className="flex-row items-end gap-2 px-4 py-3">
             <TextInput
               value={draft}
@@ -234,7 +296,7 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
               placeholder="Message…"
               placeholderTextColor={colors.mutedForeground}
               multiline
-              maxLength={2000}
+              maxLength={CHAT_CHAR_LIMIT}
               style={styles.input}
               {...Platform.select({
                 android: { textAlignVertical: 'center' },
@@ -261,6 +323,13 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      <LessonChatMembersSheet
+        visible={membersSheetVisible}
+        members={chatMembers}
+        onClose={() => setMembersSheetVisible(false)}
+        onMemberPress={openMemberProfile}
+      />
     </DismissKeyboard>
   );
 }
@@ -270,6 +339,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
+  },
+  limitBarTrack: {
+    height: 2,
+    width: '100%',
+    backgroundColor: colors.border,
+  },
+  limitBarFill: {
+    height: '100%',
   },
   input: {
     flex: 1,
