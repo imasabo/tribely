@@ -8,6 +8,8 @@ import { colors } from '@/constants/theme';
 import { ActivityEngagementProvider } from '@/providers/ActivityEngagementProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { OwnProfileProvider } from '@/providers/OwnProfileProvider';
+import { BlockedUsersProvider } from '@/providers/BlockedUsersProvider';
+import { SettingsProvider } from '@/providers/SettingsProvider';
 import { DiscoverFiltersModal } from '@/features/discover/components/DiscoverFiltersModal';
 import { DiscoverFiltersProvider } from '@/providers/DiscoverFiltersProvider';
 import { DiscoverLocationProvider } from '@/providers/DiscoverLocationProvider';
@@ -17,6 +19,8 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <OwnProfileProvider>
+        <SettingsProvider>
+        <BlockedUsersProvider>
         <DiscoverFiltersProvider>
           <DiscoverLocationProvider>
           <ActivityEngagementProvider>
@@ -32,6 +36,9 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="create" options={{ presentation: 'card' }} />
             <Stack.Screen name="edit-profile" options={{ presentation: 'card' }} />
+            <Stack.Screen name="settings" options={{ presentation: 'card' }} />
+            <Stack.Screen name="blocked-users" options={{ presentation: 'card' }} />
+            <Stack.Screen name="report-user" options={{ presentation: 'card' }} />
             <Stack.Screen name="upcoming-lessons" options={{ presentation: 'card' }} />
             <Stack.Screen name="search" options={{ presentation: 'card' }} />
             <Stack.Screen name="notifications" options={{ presentation: 'card' }} />
@@ -49,6 +56,8 @@ export default function RootLayout() {
           </ActivityEngagementProvider>
           </DiscoverLocationProvider>
         </DiscoverFiltersProvider>
+        </BlockedUsersProvider>
+        </SettingsProvider>
         </OwnProfileProvider>
       </AuthProvider>
     </SafeAreaProvider>

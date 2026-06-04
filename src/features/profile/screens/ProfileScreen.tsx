@@ -33,6 +33,7 @@ export function ProfileScreen() {
           icon="settings"
           accessibilityLabel="Settings"
           variant="onGradient"
+          onPress={() => router.push('/settings')}
         />
       }
     />

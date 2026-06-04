@@ -47,6 +47,8 @@ export interface UserProfilePageProps {
   /** Shown beside display name on own profile. */
   identityNameAccessory?: ReactNode;
   friendConnection?: ProfileFriendConnectionConfig;
+  /** Replaces friend connection UI (e.g. blocked notice). */
+  identityAction?: ReactNode;
   teachSectionTitle?: string;
   learnSectionTitle?: string;
   hideEmptyTopicSections?: boolean;
@@ -67,6 +69,7 @@ export function UserProfilePage({
   headerEnd,
   identityNameAccessory,
   friendConnection,
+  identityAction,
   teachSectionTitle = 'Teaches',
   learnSectionTitle = 'Wants to learn',
   hideEmptyTopicSections = true,
@@ -128,13 +131,14 @@ export function UserProfilePage({
               bio={profile.bio}
               nameAccessory={identityNameAccessory}
               action={
-                friendConnection ? (
+                identityAction ??
+                (friendConnection ? (
                   <ProfileFriendConnection
                     status={friendConnection.status}
                     requesting={friendConnection.requesting}
                     onSendFriendRequest={friendConnection.onSendFriendRequest}
                   />
-                ) : undefined
+                ) : undefined)
               }
             />
             <ProfileStatsRow
