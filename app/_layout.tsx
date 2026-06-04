@@ -9,12 +9,14 @@ import { ActivityEngagementProvider } from '@/providers/ActivityEngagementProvid
 import { AuthProvider } from '@/providers/AuthProvider';
 import { DiscoverFiltersModal } from '@/features/discover/components/DiscoverFiltersModal';
 import { DiscoverFiltersProvider } from '@/providers/DiscoverFiltersProvider';
+import { DiscoverLocationProvider } from '@/providers/DiscoverLocationProvider';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <DiscoverFiltersProvider>
+          <DiscoverLocationProvider>
           <ActivityEngagementProvider>
             <StatusBar style="dark" />
             <DiscoverFiltersModal />
@@ -37,6 +39,7 @@ export default function RootLayout() {
             />
             </Stack>
           </ActivityEngagementProvider>
+          </DiscoverLocationProvider>
         </DiscoverFiltersProvider>
       </AuthProvider>
     </SafeAreaProvider>

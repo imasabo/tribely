@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 
+import { useDiscoverLocationFeatures } from '@/features/discover/hooks/useDiscoverLocationFeatures';
 import { useDiscoverFilters } from '@/providers/DiscoverFiltersProvider';
 
 interface DiscoverFilterButtonProps {
@@ -8,7 +9,8 @@ interface DiscoverFilterButtonProps {
 }
 
 export function DiscoverFilterButton({ className }: DiscoverFilterButtonProps) {
-  const { activeFilterCount, openFilterSheet } = useDiscoverFilters();
+  const { openFilterSheet } = useDiscoverFilters();
+  const { activeFilterCount } = useDiscoverLocationFeatures();
 
   return (
     <Pressable

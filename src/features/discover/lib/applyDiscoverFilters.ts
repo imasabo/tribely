@@ -117,10 +117,17 @@ function matchesCategoryFilter(lesson: Lesson, category: string): boolean {
 
 export function applyDiscoverSheetFilters(
   lessons: Lesson[],
-  filters: DiscoverSheetFilters
+  filters: DiscoverSheetFilters,
+  options?: { filterByDistance?: boolean }
 ): Lesson[] {
+  const filterByDistance = options?.filterByDistance ?? true;
   return lessons.filter((lesson) => {
-    if (parseDistanceMiles(lesson.distanceLabel) > filters.distanceMiles) return false;
+    if (
+      filterByDistance &&
+      parseDistanceMiles(lesson.distanceLabel) > filters.distanceMiles
+    ) {
+      return false;
+    }
     if (!filters.durations.includes(lesson.durationMinutes)) return false;
     if (!matchesWhenFilter(lesson.scheduledAtLabel, filters.when)) return false;
     return true;

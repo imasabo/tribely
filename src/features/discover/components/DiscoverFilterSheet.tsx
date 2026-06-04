@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/constants/theme';
 import {
@@ -17,6 +18,7 @@ import type { LessonDurationMinutes } from '@/types/domain';
 interface DiscoverFilterSheetProps {
   visible: boolean;
   draft: DiscoverSheetFilters;
+  distanceFilterEnabled: boolean;
   onChange: (filters: DiscoverSheetFilters) => void;
   onApply: () => void;
   onReset: () => void;
@@ -27,15 +29,17 @@ interface FilterChipProps {
   label: string;
   selected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }
 
-function FilterChip({ label, selected, onPress }: FilterChipProps) {
+function FilterChip({ label, selected, onPress, disabled = false }: FilterChipProps) {
   return (
     <Pressable
       onPress={onPress}
-      className={`rounded-full border px-4 py-2.5 active:opacity-80 ${
-        selected ? 'border-primary bg-secondary' : 'border-border bg-card'
-      }`}>
+      disabled={disabled}
+      className={`rounded-full border px-4 py-2.5 ${
+        disabled ? 'opacity-40' : 'active:opacity-80'
+      } ${selected ? 'border-primary bg-secondary' : 'border-border bg-card'}`}>
       <Text
         className={`text-[13px] font-medium ${selected ? 'text-primary' : 'text-foreground'}`}>
         {label}
@@ -51,6 +55,7 @@ function SectionTitle({ title }: { title: string }) {
 export function DiscoverFilterSheet({
   visible,
   draft,
+  distanceFilterEnabled,
   onChange,
   onApply,
   onReset,
@@ -71,13 +76,12 @@ export function DiscoverFilterSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 justify-end bg-black/40">
-        <Pressable className="flex-1" onPress={onClose} accessibilityLabel="Close filters" />
-
-        <View
-          className="rounded-t-3xl bg-background px-5 pt-3"
-          style={{ paddingBottom: insets.bottom + 16 }}>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      accessibilityLabel="Close filters"
+      sheetClassName="px-5 pt-3"
+      sheetStyle={{ paddingBottom: insets.bottom + 16 }}>
           <View className="mb-5 items-center">
             <View className="h-1 w-10 rounded-full bg-border" />
           </View>
@@ -92,12 +96,19 @@ export function DiscoverFilterSheet({
           </View>
 
           <SectionTitle title="Distance" />
+          {!distanceFilterEnabled ? (
+            <Text className="mb-3 text-sm leading-5 text-muted-foreground">
+              Distance filters need location access. You're browsing by city — turn on
+              location to filter by miles from you.
+            </Text>
+          ) : null}
           <View className="mb-6 flex-row flex-wrap gap-2">
             {DISCOVER_DISTANCE_OPTIONS.map((miles) => (
               <FilterChip
                 key={miles}
                 label={`${miles} mi`}
                 selected={draft.distanceMiles === miles}
+                disabled={!distanceFilterEnabled}
                 onPress={() => setDistance(miles)}
               />
             ))}
@@ -135,9 +146,7 @@ export function DiscoverFilterSheet({
               <Button title="Apply" fullWidth onPress={onApply} />
             </View>
           </View>
-        </View>
-      </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 

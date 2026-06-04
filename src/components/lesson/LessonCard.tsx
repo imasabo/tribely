@@ -9,10 +9,16 @@ import { GoogleSlidesCardPreview } from './GoogleSlidesCardPreview';
 interface LessonCardProps {
   lesson: Lesson;
   variant?: 'featured' | 'compact';
+  showDistance?: boolean;
   onPress: () => void;
 }
 
-export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardProps) {
+export function LessonCard({
+  lesson,
+  variant = 'compact',
+  showDistance = true,
+  onPress,
+}: LessonCardProps) {
   if (variant === 'featured') {
     return (
       <Pressable
@@ -49,10 +55,12 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
               <Feather name="clock" size={12} color={colors.mutedForeground} />
               <Text className="text-xs text-muted-foreground">{lesson.scheduledAtLabel}</Text>
             </View>
-            <View className="flex-row items-center gap-1">
-              <Feather name="map-pin" size={12} color={colors.mutedForeground} />
-              <Text className="text-xs text-muted-foreground">{lesson.distanceLabel}</Text>
-            </View>
+            {showDistance ? (
+              <View className="flex-row items-center gap-1">
+                <Feather name="map-pin" size={12} color={colors.mutedForeground} />
+                <Text className="text-xs text-muted-foreground">{lesson.distanceLabel}</Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </Pressable>
@@ -85,10 +93,12 @@ export function LessonCard({ lesson, variant = 'compact', onPress }: LessonCardP
             <Feather name="clock" size={10} color={colors.mutedForeground} />
             <Text className="text-[11px] text-muted-foreground">{lesson.scheduledAtLabel}</Text>
           </View>
-          <View className="flex-row items-center gap-1">
-            <Feather name="map-pin" size={10} color={colors.mutedForeground} />
-            <Text className="text-[11px] text-muted-foreground">{lesson.distanceLabel}</Text>
-          </View>
+          {showDistance ? (
+            <View className="flex-row items-center gap-1">
+              <Feather name="map-pin" size={10} color={colors.mutedForeground} />
+              <Text className="text-[11px] text-muted-foreground">{lesson.distanceLabel}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
     </Pressable>

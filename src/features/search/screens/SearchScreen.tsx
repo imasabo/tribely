@@ -13,22 +13,34 @@ import {
   applyDiscoverSheetFilters,
   sortDiscoverLessons,
 } from '@/features/discover/lib/applyDiscoverFilters';
+import { useDiscoverLocationFeatures } from '@/features/discover/hooks/useDiscoverLocationFeatures';
+import { canFilterLessonsByDistance } from '@/features/discover/lib/discoverLocation';
 import { useLessonSearch } from '@/features/search/hooks/useLessonSearch';
 import { useDiscoverFilters } from '@/providers/DiscoverFiltersProvider';
+import { useDiscoverLocationContext } from '@/providers/DiscoverLocationProvider';
 
 export function SearchScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const { results, loading } = useLessonSearch(query);
-  const { appliedSheetFilters, selectedSort, activeFilterCount, resetAppliedSheetFilters } =
-    useDiscoverFilters();
+  const { appliedSheetFilters, selectedSort, resetAppliedSheetFilters } = useDiscoverFilters();
+  const { mode: locationMode } = useDiscoverLocationContext();
+  const {
+    showLessonDistance,
+    locationLabel,
+    activeFilterCount,
+    distanceFilteringEnabled,
+  } = useDiscoverLocationFeatures();
 
   const trimmedQuery = query.trim();
+  const filterByDistance = canFilterLessonsByDistance(locationMode);
 
   const displayedResults = useMemo(() => {
-    const filtered = applyDiscoverSheetFilters(results, appliedSheetFilters);
+    const filtered = applyDiscoverSheetFilters(results, appliedSheetFilters, {
+      filterByDistance,
+    });
     return sortDiscoverLessons(filtered, selectedSort);
-  }, [results, appliedSheetFilters, selectedSort]);
+  }, [results, appliedSheetFilters, selectedSort, filterByDistance]);
 
   const hasActiveFilters = activeFilterCount > 0;
 
@@ -81,7 +93,10 @@ export function SearchScreen() {
               </Text>
               <Text className="mt-1 text-center text-sm text-muted-foreground">
                 {results.length} result{results.length === 1 ? '' : 's'} for &ldquo;{trimmedQuery}
-                &rdquo; — try widening distance or when.
+                &rdquo;
+                {distanceFilteringEnabled
+                  ? ' — try widening distance or when.'
+                  : ' — try adjusting when or duration.'}
               </Text>
               {hasActiveFilters ? (
                 <Pressable onPress={resetAppliedSheetFilters} className="mt-4 active:opacity-80">
@@ -98,14 +113,13 @@ export function SearchScreen() {
                     ? ` of ${results.length}`
                     : ''}
                 </Text>
-                <Text className="text-sm text-muted-foreground">
-                  within {appliedSheetFilters.distanceMiles} mi
-                </Text>
+                <Text className="text-sm text-muted-foreground">{locationLabel}</Text>
               </View>
               {displayedResults.map((lesson) => (
                 <LessonCard
                   key={lesson.id}
                   lesson={lesson}
+                  showDistance={showLessonDistance}
                   onPress={() => router.push(`/lesson/${lesson.id}`)}
                 />
               ))}

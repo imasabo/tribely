@@ -33,6 +33,12 @@
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Tribely uses your location to show lessons near you."
+        }
+      ],
       "./plugins/withFirebaseIos.js"
     ],
     "experiments": {
@@ -53,7 +59,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tribely.app",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Tribely uses your location to show lessons near you."
+      }
     },
     "android": {
       "package": "com.tribely.app",

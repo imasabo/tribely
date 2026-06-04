@@ -7,6 +7,7 @@ export type DiscoverDistanceMiles = 1 | 2 | 5 | 10;
 export type DiscoverSortOption = 'Nearest' | 'Rating' | 'Soonest' | 'Duration' | 'New';
 
 export interface DiscoverSheetFilters {
+  /** Radius in miles from the user's location (geo query in Phase 2). */
   distanceMiles: DiscoverDistanceMiles;
   when: DiscoverWhenFilter;
   durations: LessonDurationMinutes[];
@@ -29,9 +30,18 @@ export const DISCOVER_WHEN_OPTIONS: { value: DiscoverWhenFilter; label: string }
 
 export const DISCOVER_DURATION_OPTIONS: LessonDurationMinutes[] = [30, 45, 60];
 
-export function countActiveSheetFilters(filters: DiscoverSheetFilters): number {
+export function countActiveSheetFilters(
+  filters: DiscoverSheetFilters,
+  options?: { includeDistance?: boolean }
+): number {
+  const includeDistance = options?.includeDistance ?? true;
   let count = 0;
-  if (filters.distanceMiles !== DEFAULT_DISCOVER_SHEET_FILTERS.distanceMiles) count++;
+  if (
+    includeDistance &&
+    filters.distanceMiles !== DEFAULT_DISCOVER_SHEET_FILTERS.distanceMiles
+  ) {
+    count++;
+  }
   if (filters.when !== DEFAULT_DISCOVER_SHEET_FILTERS.when) count++;
   if (filters.durations.length !== DEFAULT_DISCOVER_SHEET_FILTERS.durations.length) count++;
   return count;
