@@ -1,9 +1,17 @@
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
+import {
+  GROWABLE_FIELD_DEFAULT_HEIGHT,
+  GrowableTextField,
+} from '@/components/ui/GrowableTextField';
 import { colors } from '@/constants/theme';
+import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles';
+import { PROFILE_TOPIC_CHAR_LIMIT } from '@/features/profile/lib/profileLimits';
 import type { ProfileTopicVariant } from '@/features/profile/types';
+
+const TOPIC_INPUT_MAX_HEIGHT = 104;
 
 interface ProfileTopicsEditorProps {
   title: string;
@@ -71,22 +79,22 @@ export function ProfileTopicsEditor({
           ))}
         </View>
       ) : null}
-      <View className="flex-row items-center gap-2">
-        <TextInput
+      <View className="flex-row items-start gap-2">
+        <GrowableTextField
           value={draft}
           onChangeText={setDraft}
           placeholder="Add a topic"
-          placeholderTextColor={colors.mutedForeground}
-          onSubmitEditing={addTopic}
-          returnKeyType="done"
-          className="min-h-[44px] flex-1 rounded-xl bg-muted px-4 text-base text-foreground"
+          maxLength={PROFILE_TOPIC_CHAR_LIMIT}
+          maxHeight={TOPIC_INPUT_MAX_HEIGHT}
+          style={charLimitOutlineStyle(draft.length, PROFILE_TOPIC_CHAR_LIMIT)}
         />
         <Pressable
           onPress={addTopic}
           disabled={!normalizeTopic(draft)}
           accessibilityRole="button"
           accessibilityLabel="Add topic"
-          className="h-11 items-center justify-center rounded-xl bg-primary px-4 active:opacity-80 disabled:opacity-40">
+          style={{ height: GROWABLE_FIELD_DEFAULT_HEIGHT }}
+          className="shrink-0 items-center justify-center rounded-xl bg-primary px-4 active:opacity-80 disabled:opacity-40">
           <Text className="text-sm font-semibold text-primary-foreground">Add</Text>
         </Pressable>
       </View>

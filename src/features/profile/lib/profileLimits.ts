@@ -1,0 +1,3 @@
+export const PROFILE_NAME_CHAR_LIMIT = 50;
+export const PROFILE_BIO_CHAR_LIMIT = 200;
+export const PROFILE_TOPIC_CHAR_LIMIT = 40;

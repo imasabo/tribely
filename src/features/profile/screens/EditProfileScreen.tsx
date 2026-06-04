@@ -1,11 +1,17 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
+import { FormTextField } from '@/components/ui/FormTextField';
 import { colors } from '@/constants/theme';
+import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles';
+import {
+  PROFILE_BIO_CHAR_LIMIT,
+  PROFILE_NAME_CHAR_LIMIT,
+} from '@/features/profile/lib/profileLimits';
 import { ProfileTopicsEditor } from '@/features/profile/components/ProfileTopicsEditor';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
 
@@ -65,26 +71,29 @@ export function EditProfileScreen() {
         showsVerticalScrollIndicator={false}>
         <View className="mb-4 gap-1.5">
           <Text className="text-sm font-medium text-foreground">Name</Text>
-          <TextInput
+          <FormTextField
+            variant="multiline"
             value={displayName}
             onChangeText={setDisplayName}
             placeholder="Your name"
-            placeholderTextColor={colors.mutedForeground}
-            className="rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
+            maxLength={PROFILE_NAME_CHAR_LIMIT}
+            scrollEnabled={false}
+            style={[
+              { minHeight: 52, maxHeight: 80 },
+              charLimitOutlineStyle(displayName.length, PROFILE_NAME_CHAR_LIMIT),
+            ]}
           />
         </View>
 
         <View className="mb-6 gap-1.5">
           <Text className="text-sm font-medium text-foreground">Bio</Text>
-          <TextInput
+          <FormTextField
+            variant="multiline"
             value={bio}
             onChangeText={setBio}
             placeholder="A short intro"
-            placeholderTextColor={colors.mutedForeground}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            className="min-h-[100px] rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
+            maxLength={PROFILE_BIO_CHAR_LIMIT}
+            style={charLimitOutlineStyle(bio.length, PROFILE_BIO_CHAR_LIMIT)}
           />
         </View>
 
