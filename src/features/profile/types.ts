@@ -70,13 +70,13 @@ export interface ProfileViewModel {
   stats: ProfileStatItem[];
 }
 
-export type UpcomingLessonRole = 'teaching' | 'attending';
+export type UserLessonRole = 'teaching' | 'attending';
 
-/** A lesson on the user's upcoming schedule. */
-export interface UpcomingLessonItem {
+/** A lesson on the user's schedule (active or completed). */
+export interface UserLessonItem {
   id: string;
   lessonId: string;
-  role: UpcomingLessonRole;
+  role: UserLessonRole;
   title: string;
   category: string;
   categoryEmoji: string;
@@ -88,9 +88,22 @@ export interface UpcomingLessonItem {
   teacherAvatar?: string;
   enrolledCount?: number;
   maxLearners?: number;
+  /** Set for items on the Completed tab. */
+  completedAtLabel?: string;
+  /** Learner can post a completion post (session ended, not yet shared). */
+  canShareExperience?: boolean;
+  hasSharedExperience?: boolean;
 }
 
-export interface UpcomingLessonsBundle {
-  teaching: UpcomingLessonItem[];
-  attending: UpcomingLessonItem[];
+export interface UserLessonsBundle {
+  teaching: UserLessonItem[];
+  attending: UserLessonItem[];
+  completed: UserLessonItem[];
 }
+
+/** @deprecated Use UserLessonItem */
+export type UpcomingLessonItem = UserLessonItem;
+/** @deprecated Use UserLessonRole */
+export type UpcomingLessonRole = UserLessonRole;
+/** @deprecated Use UserLessonsBundle */
+export type UpcomingLessonsBundle = UserLessonsBundle;

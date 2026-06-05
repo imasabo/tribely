@@ -50,7 +50,7 @@ export const mockLessonJoinRequests: LessonJoinRequest[] = [
     requestedAtLabel: 'Today',
     status: 'pending',
   },
-  /** Alex joined as a learner — shows in Messages inbox as a non-host chat. */
+  /** Alex joined — upcoming (Attending tab). */
   {
     id: 'join-req-lesson-3-alex',
     lessonId: '3',
@@ -69,6 +69,7 @@ export const mockLessonJoinRequests: LessonJoinRequest[] = [
     requestedAtLabel: '2 days ago',
     status: 'accepted',
   },
+  /** Alex joined — upcoming Saturday (Attending tab). */
   {
     id: 'join-req-chat-long-title-alex',
     lessonId: 'chat-long-title',

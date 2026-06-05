@@ -55,9 +55,92 @@ export function isSessionUpcoming(session: LessonSession, now = new Date()): boo
   if (!parsed) {
     const lower = session.scheduledAtLabel.toLowerCase();
     if (lower.includes('today') || lower.includes('tomorrow')) return true;
+    if (lower.includes('yesterday')) return false;
     return false;
   }
   return parsed.getTime() >= now.getTime();
+}
+
+/** Session used for completion eligibility (next upcoming, or latest past). */
+export function getCompletionSession(lesson: Lesson, now = new Date()): LessonSession {
+  const sessions = lesson.sessions ?? [];
+  if (sessions.length === 0) {
+    return { id: `${lesson.id}-s1`, scheduledAtLabel: lesson.scheduledAtLabel };
+  }
+  const upcoming = getUpcomingSessions(sessions, now);
+  if (upcoming[0]) return upcoming[0];
+  const past = getPastSessions(sessions, now);
+  return past[past.length - 1] ?? sessions[sessions.length - 1];
+}
+
+export function getSessionEndDate(
+  session: LessonSession,
+  durationMinutes: number,
+  now = new Date()
+): Date | null {
+  const start = parseSessionDate(session.scheduledAtLabel, now);
+  if (!start) return null;
+  return new Date(start.getTime() + durationMinutes * 60 * 1000);
+}
+
+export function isSessionEnded(
+  session: LessonSession,
+  durationMinutes: number,
+  now = new Date()
+): boolean {
+  const end = getSessionEndDate(session, durationMinutes, now);
+  if (!end) return false;
+  return end.getTime() <= now.getTime();
+}
+
+/** Learners may post a completion only after the relevant session start + duration. */
+export function canShareLessonCompletion(lesson: Lesson, now = new Date()): boolean {
+  const session = getCompletionSession(lesson, now);
+  return isSessionEnded(session, lesson.durationMinutes, now);
+}
+
+function formatClockTime(date: Date): string {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const meridiem = hours >= 12 ? 'PM' : 'AM';
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  const minutePart = minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : '';
+  return `${hour12}${minutePart} ${meridiem}`;
+}
+
+/** Short label for when a session finished (Completed tab). */
+export function formatSessionCompletedLabel(
+  session: LessonSession,
+  now = new Date()
+): string {
+  const lower = session.scheduledAtLabel.toLowerCase();
+  if (lower.includes('yesterday')) return 'Yesterday';
+  if (lower.includes('today')) return 'Today';
+  const dateMatch = session.scheduledAtLabel.match(
+    /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}/i
+  );
+  if (dateMatch) return dateMatch[0].replace(/\s+,/, ',');
+  return session.scheduledAtLabel.split('·')[0]?.trim() ?? session.scheduledAtLabel;
+}
+
+/** Human-readable unlock time for the completion flow. */
+export function lessonCompletionUnlockLabel(lesson: Lesson, now = new Date()): string | null {
+  const session = getCompletionSession(lesson, now);
+  const end = getSessionEndDate(session, lesson.durationMinutes, now);
+  if (!end || end.getTime() <= now.getTime()) return null;
+
+  const start = parseSessionDate(session.scheduledAtLabel, now);
+  const dayPrefix =
+    start && start.toDateString() === now.toDateString()
+      ? 'Today'
+      : start &&
+          start.toDateString() ===
+            new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toDateString()
+        ? 'Tomorrow'
+        : null;
+
+  const timeLabel = formatClockTime(end);
+  return dayPrefix ? `${dayPrefix}, ${timeLabel}` : timeLabel;
 }
 
 function sortSessionsByDate(sessions: LessonSession[], now = new Date()): LessonSession[] {

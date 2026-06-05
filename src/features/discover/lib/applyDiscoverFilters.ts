@@ -45,6 +45,12 @@ export function parseScheduledDate(scheduledAtLabel: string, now = new Date()): 
     return startOfDay(d);
   }
 
+  if (lower.includes('yesterday')) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 1);
+    return startOfDay(d);
+  }
+
   const monthMatch = scheduledAtLabel.match(
     /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})\b/i
   );

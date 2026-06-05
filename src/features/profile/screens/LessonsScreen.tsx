@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,53 +8,68 @@ import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { colors } from '@/constants/theme';
-import { UpcomingLessonRow } from '@/features/profile/components/UpcomingLessonRow';
+import { UserLessonRow } from '@/features/profile/components/UserLessonRow';
 import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
-import type { UpcomingLessonItem, UpcomingLessonsBundle } from '@/features/profile/types';
+import type { UserLessonItem, UserLessonsBundle } from '@/features/profile/types';
 import { useAuth } from '@/providers/AuthProvider';
-import { upcomingLessonsService } from '@/services/upcomingLessons.service';
+import { userLessonsService } from '@/services/userLessons.service';
 
-type UpcomingTab = 'teaching' | 'attending';
+type LessonsTab = 'teaching' | 'attending' | 'completed';
 
-function pickInitialTab(bundle: UpcomingLessonsBundle): UpcomingTab {
+function pickInitialTab(bundle: UserLessonsBundle): LessonsTab {
   if (bundle.teaching.length > 0) return 'teaching';
   if (bundle.attending.length > 0) return 'attending';
+  if (bundle.completed.length > 0) return 'completed';
   return 'teaching';
 }
 
-export function UpcomingLessonsScreen() {
+export function LessonsScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const [bundle, setBundle] = useState<UpcomingLessonsBundle | null>(null);
+  const [bundle, setBundle] = useState<UserLessonsBundle | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<UpcomingTab>('teaching');
+  const [activeTab, setActiveTab] = useState<LessonsTab>('teaching');
+  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void upcomingLessonsService
-      .getForUser(OWN_PROFILE_STATS_USER_ID, user?.uid)
-      .then((data) => {
-        if (!cancelled) {
+  const loadBundle = useCallback(
+    (options?: { silent?: boolean }) => {
+      if (!options?.silent) setLoading(true);
+      return userLessonsService
+        .getForUser(OWN_PROFILE_STATS_USER_ID, user?.uid)
+        .then((data) => {
           setBundle(data);
-          setActiveTab(pickInitialTab(data));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+          setActiveTab((prev) => {
+            const items =
+              prev === 'teaching'
+                ? data.teaching
+                : prev === 'attending'
+                  ? data.attending
+                  : data.completed;
+            if (items.length > 0) return prev;
+            return pickInitialTab(data);
+          });
+        })
+        .finally(() => {
+          if (!options?.silent) setLoading(false);
+        });
+    },
+    [user?.uid]
+  );
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadBundle({ silent: hasLoadedRef.current });
+      hasLoadedRef.current = true;
+    }, [loadBundle])
+  );
 
   const tabOptions = useMemo(
     () => [
       { id: 'teaching' as const, label: 'Teaching', badge: bundle?.teaching.length },
       { id: 'attending' as const, label: 'Attending', badge: bundle?.attending.length },
+      { id: 'completed' as const, label: 'Completed', badge: bundle?.completed.length },
     ],
-    [bundle?.attending.length, bundle?.teaching.length]
+    [bundle?.attending.length, bundle?.completed.length, bundle?.teaching.length]
   );
 
   const openLesson = (lessonId: string) => {
@@ -62,21 +77,31 @@ export function UpcomingLessonsScreen() {
   };
 
   if (loading) {
-    return <LoadingScreen message="Loading upcoming lessons…" />;
+    return <LoadingScreen message="Loading lessons…" />;
   }
 
   if (!bundle) {
-    return <CenteredMessage message="Could not load your schedule." />;
+    return <CenteredMessage message="Could not load your lessons." />;
   }
 
-  const isEmpty = bundle.teaching.length === 0 && bundle.attending.length === 0;
-  const activeItems: UpcomingLessonItem[] =
-    activeTab === 'teaching' ? bundle.teaching : bundle.attending;
+  const isEmpty =
+    bundle.teaching.length === 0 &&
+    bundle.attending.length === 0 &&
+    bundle.completed.length === 0;
+
+  const activeItems: UserLessonItem[] =
+    activeTab === 'teaching'
+      ? bundle.teaching
+      : activeTab === 'attending'
+        ? bundle.attending
+        : bundle.completed;
 
   const emptyTabMessage =
     activeTab === 'teaching'
       ? 'No lessons you\'re teaching scheduled.'
-      : 'No lessons you\'ve joined yet.';
+      : activeTab === 'attending'
+        ? 'No lessons you\'ve joined yet.'
+        : 'No completed lessons yet.';
 
   return (
     <View className="flex-1 bg-background">
@@ -91,7 +116,7 @@ export function UpcomingLessonsScreen() {
             className="h-9 w-9 items-center justify-center rounded-full bg-muted active:opacity-80">
             <Feather name="arrow-left" size={18} color={colors.foreground} />
           </Pressable>
-          <Text className="flex-1 text-[17px] font-semibold text-foreground">Upcoming lessons</Text>
+          <Text className="flex-1 text-[17px] font-semibold text-foreground">Lessons</Text>
         </View>
       </View>
 
@@ -112,7 +137,7 @@ export function UpcomingLessonsScreen() {
               showsVerticalScrollIndicator={false}>
               <View className="gap-3">
                 {activeItems.map((item) => (
-                  <UpcomingLessonRow
+                  <UserLessonRow
                     key={item.id}
                     item={item}
                     onPress={() => openLesson(item.lessonId)}

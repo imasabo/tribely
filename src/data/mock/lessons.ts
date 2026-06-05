@@ -42,6 +42,7 @@ export const homeLessons: Lesson[] = [
     description:
       'A practical intro to pandas and plotting. This afternoon’s session is at capacity.',
   }),
+  /** Mock (Alex joined): session ended yesterday — Share your experience is available. */
   lesson({
     id: '2',
     title: 'Intro to Guitar: First Chords',
@@ -53,11 +54,12 @@ export const homeLessons: Lesson[] = [
     durationMinutes: 30,
     rating: 5.0,
     reviewCount: 18,
-    scheduledAtLabel: 'Today, 4:00 PM',
+    scheduledAtLabel: 'Yesterday, 2:00 PM',
     locationName: 'Dolores Park',
     slidePreviewColors: ['#D97706', '#92400E', '#1F2937'],
     priceCents: 3000,
   }),
+  /** Mock (Alex joined): session tomorrow morning — completion sharing not available yet. */
   lesson({
     id: '3',
     title: 'Mindful Watercolor Painting',
@@ -83,7 +85,7 @@ export const homeLessons: Lesson[] = [
     category: 'Tech',
     categoryEmoji: '🤖',
     distanceLabel: '0.9 mi',
-    durationMinutes: 90,
+    durationMinutes: 60,
     rating: 4.9,
     reviewCount: 19,
     scheduledAtLabel: 'Saturday, 11:00 AM',

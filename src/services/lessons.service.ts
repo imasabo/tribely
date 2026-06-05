@@ -1,4 +1,5 @@
-import { discoverLessons, friendLessonActivity } from '@/data/mock/lessons';
+import { discoverLessons } from '@/data/mock/lessons';
+import { activityFeedStore } from '@/data/activityFeedStore';
 import {
   lessonCatalogStore,
   type PublishLessonInput,
@@ -13,11 +14,11 @@ export type { PublishLessonInput };
  */
 export const lessonsService = {
   async listFriendActivity(): Promise<FriendLessonActivity[]> {
-    return friendLessonActivity;
+    return activityFeedStore.list();
   },
 
   async getFriendActivityById(id: string): Promise<FriendLessonActivity | null> {
-    return friendLessonActivity.find((activity) => activity.id === id) ?? null;
+    return activityFeedStore.list().find((activity) => activity.id === id) ?? null;
   },
 
   async listDiscover(): Promise<Lesson[]> {

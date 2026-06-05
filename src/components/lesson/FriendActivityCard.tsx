@@ -1,12 +1,16 @@
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { colors } from '@/constants/theme';
+import { resolveChatViewerId } from '@/lib/lessonChatAccess';
 import { useActivityEngagement } from '@/providers/ActivityEngagementProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import type { FriendLessonActivity } from '@/types/domain';
 
 import { GoogleSlidesCardPreview } from './GoogleSlidesCardPreview';
+
+const ACTION_ICON_SIZE = 16;
 
 interface FriendActivityCardProps {
   activity: FriendLessonActivity;
@@ -24,9 +28,13 @@ export function FriendActivityCard({
   onCommentPress,
   showActions = true,
 }: FriendActivityCardProps) {
+  const { user } = useAuth();
   const { friendName, friendAvatar, completedAtLabel, lesson, ratingGiven, reviewSnippet } =
     activity;
   const { liked, toggleLike } = useActivityEngagement(activity.id);
+  const viewerId = resolveChatViewerId(user?.uid);
+  const isOwnActivity = viewerId != null && activity.friendId === viewerId;
+  const displayName = isOwnActivity ? 'You' : friendName;
 
   return (
     <View className="overflow-hidden rounded-2xl border border-border bg-card">
@@ -34,17 +42,17 @@ export function FriendActivityCard({
         <Avatar initials={friendAvatar} size="sm" />
         <View className="flex-1">
           <View className="flex-row flex-wrap items-center">
-            {onProfilePress ? (
+            {onProfilePress && !isOwnActivity ? (
               <Pressable
                 onPress={onProfilePress}
                 hitSlop={6}
                 accessibilityRole="link"
                 accessibilityLabel={`View ${friendName}'s profile`}
                 className="active:opacity-70">
-                <Text className="text-sm font-semibold text-foreground">{friendName}</Text>
+                <Text className="text-sm font-semibold text-foreground">{displayName}</Text>
               </Pressable>
             ) : (
-              <Text className="text-sm font-semibold text-foreground">{friendName}</Text>
+              <Text className="text-sm font-semibold text-foreground">{displayName}</Text>
             )}
             <Text className="text-sm text-muted-foreground"> completed a lesson</Text>
           </View>
@@ -80,14 +88,14 @@ export function FriendActivityCard({
       ) : null}
 
       {showActions ? (
-        <View className="mt-3 flex-row items-center gap-5 border-t border-border px-4 py-3">
+        <View className="mt-1 flex-row items-center gap-5 px-4 pb-3">
           <Pressable
             onPress={toggleLike}
             accessibilityLabel={liked ? 'Unlike' : 'Like'}
             className="active:opacity-70">
-            <Feather
-              name="heart"
-              size={20}
+            <Ionicons
+              name={liked ? 'heart' : 'heart-outline'}
+              size={ACTION_ICON_SIZE}
               color={liked ? colors.destructive : colors.mutedForeground}
             />
           </Pressable>
@@ -97,7 +105,7 @@ export function FriendActivityCard({
               onPress={onCommentPress}
               accessibilityLabel="Comment"
               className="active:opacity-70">
-              <Feather name="message-circle" size={20} color={colors.mutedForeground} />
+              <Feather name="message-circle" size={ACTION_ICON_SIZE} color={colors.mutedForeground} />
             </Pressable>
           ) : null}
         </View>

@@ -17,12 +17,15 @@ import {
   isLessonOwner,
 } from '@/lib/lessonEnrollment';
 import {
+  canShareLessonCompletion,
   getUpcomingSessions,
   hasUpcomingSessions,
+  lessonCompletionUnlockLabel,
   sessionCountFor,
 } from '@/lib/lessonSessions';
 import { useAuth } from '@/providers/AuthProvider';
 import { lessonChatService } from '@/services/lessonChat.service';
+import { lessonCompletionsService } from '@/services/lessonCompletions.service';
 import { lessonJoinRequestsService } from '@/services/lessonJoinRequests.service';
 import type { LessonJoinRequest } from '@/types/lessonJoinRequest';
 
@@ -49,15 +52,18 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
   const [hasPendingRequest, setHasPendingRequest] = useState(false);
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [canAccessChat, setCanAccessChat] = useState(false);
+  const [hasPostedCompletion, setHasPostedCompletion] = useState(false);
 
   const loadJoinRequests = useCallback(async () => {
     if (!lessonId) return;
-    const [pending, chatAllowed] = await Promise.all([
+    const [pending, chatAllowed, completed] = await Promise.all([
       lessonJoinRequestsService.listPendingByLesson(lessonId),
       lessonChatService.canAccess(lessonId, user?.uid),
+      lessonCompletionsService.hasCompleted(lessonId, user?.uid),
     ]);
     setJoinRequests(pending);
     setCanAccessChat(chatAllowed);
+    setHasPostedCompletion(completed);
 
     if (user?.uid) {
       const mine = await lessonJoinRequestsService.hasPendingRequest(lessonId, user.uid);
@@ -92,9 +98,12 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
   const sessions = lesson.sessions ?? [];
   const upcoming = getUpcomingSessions(sessions);
   const hasUpcoming = hasUpcomingSessions(lesson);
+  const canShareCompletion = canShareLessonCompletion(lesson);
+  const completionUnlockLabel = lessonCompletionUnlockLabel(lesson);
   const lessonFull = isLessonFull(lesson);
   const isOwner = isLessonOwner(lesson, user?.uid);
-  const canJoin = !isOwner && canRequestToJoin(lesson);
+  const canJoin =
+    !isOwner && canRequestToJoin(lesson) && !canAccessChat && !hasPendingRequest;
   const totalSessions = sessionCountFor(lesson);
   const enrollment = enrollmentLabel(lesson);
   const pendingCount = joinRequests.length;
@@ -110,6 +119,10 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
 
   const openLessonChat = () => {
     router.push(`/lesson/${lessonId}/chat`);
+  };
+
+  const openCompleteLesson = () => {
+    router.push(`/lesson/${lessonId}/complete`);
   };
 
   const handleRequestToJoin = async () => {
@@ -357,13 +370,40 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
               </Text>
             )}
           </>
-        ) : canJoin ? (
-          <Button
-            title="Request to Join"
-            fullWidth
-            loading={requestSubmitting}
-            onPress={() => void handleRequestToJoin()}
-          />
+        ) : canAccessChat ? (
+          <>
+            {!hasPostedCompletion && canShareCompletion ? (
+              <Button
+                title="Share your experience"
+                fullWidth
+                onPress={openCompleteLesson}
+                icon={<Feather name="check-circle" size={16} color="#fff" />}
+              />
+            ) : !hasPostedCompletion && !canShareCompletion ? (
+              <Text className="mb-3 text-center text-xs text-muted-foreground">
+                Share your experience after the lesson ends
+                {completionUnlockLabel ? ` (${completionUnlockLabel})` : ''}.
+              </Text>
+            ) : hasPostedCompletion ? (
+              <Text className="mb-3 text-center text-xs text-muted-foreground">
+                Your completion is on the home feed.
+              </Text>
+            ) : null}
+            <Button
+              title="Open lesson chat"
+              fullWidth
+              variant={hasPostedCompletion ? 'primary' : 'outline'}
+              className={hasPostedCompletion ? undefined : 'mt-3'}
+              onPress={openLessonChat}
+              icon={
+                <Feather
+                  name="message-circle"
+                  size={16}
+                  color={hasPostedCompletion ? '#fff' : colors.primary}
+                />
+              }
+            />
+          </>
         ) : hasPendingRequest ? (
           <>
             <Button title="Request pending" fullWidth disabled />
@@ -371,12 +411,12 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
               The teacher will review your request.
             </Text>
           </>
-        ) : canAccessChat ? (
+        ) : canJoin ? (
           <Button
-            title="Open lesson chat"
+            title="Request to Join"
             fullWidth
-            onPress={openLessonChat}
-            icon={<Feather name="message-circle" size={16} color="#fff" />}
+            loading={requestSubmitting}
+            onPress={() => void handleRequestToJoin()}
           />
         ) : lessonFull ? (
           <>

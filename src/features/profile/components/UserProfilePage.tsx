@@ -14,7 +14,7 @@ import { ProfileCoverHeaderOverlay } from '@/features/profile/components/Profile
 import { ProfileFriendConnection } from '@/features/profile/components/ProfileFriendConnection';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { ProfileIdentity } from '@/features/profile/components/ProfileIdentity';
-import { ProfileUpcomingEntry } from '@/features/profile/components/ProfileUpcomingEntry';
+import { ProfileLessonsEntry } from '@/features/profile/components/ProfileLessonsEntry';
 import { ProfileInterestsCard } from '@/features/profile/components/ProfileInterestsCard';
 import { ProfileRecentActivity } from '@/features/profile/components/ProfileRecentActivity';
 import { ProfileStatsRow } from '@/features/profile/components/ProfileStatsRow';
@@ -57,8 +57,8 @@ export interface UserProfilePageProps {
   /** Heading for the combined teach/learn card (e.g. "Interests"). */
   interestsCardTitle?: string;
   recentActivity?: ProfileActivityItem[];
-  /** Own profile: upcoming lessons entry card. */
-  showUpcomingLessons?: boolean;
+  /** Own profile: lessons entry card. */
+  showLessons?: boolean;
   /** Extra sections below topics (own profile only, etc.) */
   children?: ReactNode;
 }
@@ -78,7 +78,7 @@ export function UserProfilePage({
   hideEmptyTopicSections = true,
   interestsCardTitle,
   recentActivity,
-  showUpcomingLessons = false,
+  showLessons = false,
   children,
 }: UserProfilePageProps) {
   const insets = useSafeAreaInsets();
@@ -152,10 +152,10 @@ export function UserProfilePage({
           </ProfileHeader>
 
           <View className="gap-5 px-5 pb-8">
-            {friendsEntry || showUpcomingLessons ? (
+            {friendsEntry || showLessons ? (
               <View className="gap-2">
                 {friendsEntry}
-                {showUpcomingLessons ? <ProfileUpcomingEntry /> : null}
+                {showLessons ? <ProfileLessonsEntry /> : null}
               </View>
             ) : null}
             {showInterestsCard ? (

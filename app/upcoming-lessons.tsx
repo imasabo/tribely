@@ -1,1 +1,6 @@
-export { UpcomingLessonsScreen as default } from '@/features/profile/screens/UpcomingLessonsScreen';
+import { Redirect } from 'expo-router';
+
+/** @deprecated Use /lessons */
+export default function UpcomingLessonsRedirect() {
+  return <Redirect href="/lessons" />;
+}

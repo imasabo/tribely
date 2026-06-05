@@ -36,7 +36,7 @@ export function ProfileScreen() {
       teachSectionTitle="I Teach"
       learnSectionTitle="I Want to Learn"
       hideEmptyTopicSections={false}
-      showUpcomingLessons
+      showLessons
       interestsCardTitle="Interests"
       recentActivity={MOCK_OWN_PROFILE_ACTIVITY}
       identityNameAccessory={<ProfileEditLink onPress={openEditProfile} />}

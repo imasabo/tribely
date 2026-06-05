@@ -1,46 +1,41 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
 import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
-import type { UpcomingLessonsBundle } from '@/features/profile/types';
+import type { UserLessonsBundle } from '@/features/profile/types';
 import { useAuth } from '@/providers/AuthProvider';
-import { upcomingLessonsService } from '@/services/upcomingLessons.service';
+import { userLessonsService } from '@/services/userLessons.service';
 
-export function ProfileUpcomingEntry() {
+export function ProfileLessonsEntry() {
   const { user } = useAuth();
-  const [bundle, setBundle] = useState<UpcomingLessonsBundle | null>(null);
+  const [bundle, setBundle] = useState<UserLessonsBundle | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void upcomingLessonsService
-      .getForUser(OWN_PROFILE_STATS_USER_ID, user?.uid)
-      .then((data) => {
-        if (!cancelled) setBundle(data);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.uid]);
+  useFocusEffect(
+    useCallback(() => {
+      void userLessonsService
+        .getForUser(OWN_PROFILE_STATS_USER_ID, user?.uid)
+        .then(setBundle);
+    }, [user?.uid])
+  );
 
   if (!bundle) return null;
 
-  const total = bundle.teaching.length + bundle.attending.length;
+  const total =
+    bundle.teaching.length + bundle.attending.length + bundle.completed.length;
   const summaryParts: string[] = [];
 
   if (bundle.teaching.length > 0) {
-    summaryParts.push(
-      `${bundle.teaching.length} teaching`
-    );
+    summaryParts.push(`${bundle.teaching.length} teaching`);
   }
   if (bundle.attending.length > 0) {
-    summaryParts.push(
-      `${bundle.attending.length} attending`
-    );
+    summaryParts.push(`${bundle.attending.length} attending`);
+  }
+  if (bundle.completed.length > 0) {
+    summaryParts.push(`${bundle.completed.length} completed`);
   }
 
   const summary =
@@ -48,14 +43,14 @@ export function ProfileUpcomingEntry() {
 
   return (
     <Pressable
-      onPress={() => router.push('/upcoming-lessons')}
+      onPress={() => router.push('/lessons')}
       accessibilityRole="button"
-      accessibilityLabel="View upcoming lessons"
+      accessibilityLabel="View lessons"
       className="flex-row items-center justify-between rounded-2xl border border-border bg-card px-4 py-3.5 active:opacity-90">
       <View className="flex-1 pr-3">
         <View className="flex-row items-center gap-2">
           <Feather name="calendar" size={16} color={colors.primary} />
-          <Text className="text-[15px] font-semibold text-foreground">Upcoming lessons</Text>
+          <Text className="text-[15px] font-semibold text-foreground">Lessons</Text>
         </View>
         <Text className="mt-1 text-xs text-muted-foreground">{summary}</Text>
       </View>

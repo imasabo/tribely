@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { friendLessonActivity } from '@/data/mock/lessons';
+import { activityFeedStore } from '@/data/activityFeedStore';
 import type { ActivityComment } from '@/types/domain';
 
 type ActivityEngagementContextValue = {
@@ -23,13 +23,13 @@ const ActivityEngagementContext = createContext<ActivityEngagementContextValue |
 
 function buildInitialLikes() {
   return Object.fromEntries(
-    friendLessonActivity.map((activity) => [activity.id, activity.likedByMe ?? false])
+    activityFeedStore.list().map((activity) => [activity.id, activity.likedByMe ?? false])
   );
 }
 
 function buildInitialComments() {
   return Object.fromEntries(
-    friendLessonActivity.map((activity) => [activity.id, activity.comments ?? []])
+    activityFeedStore.list().map((activity) => [activity.id, activity.comments ?? []])
   );
 }
 

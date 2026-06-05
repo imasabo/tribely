@@ -16,7 +16,7 @@ export function ScreenStickyHeader({
 
   return (
     <View
-      className={`z-10 bg-background/95 px-5 pb-4 ${className ?? ''}`}
+      className={`z-10 bg-background/95 px-5 pb-2 ${className ?? ''}`}
       style={[{ paddingTop: insets.top + topOffset }, style]}
       {...props}>
       {children}

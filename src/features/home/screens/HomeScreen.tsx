@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { FriendActivityCard } from '@/components/lesson/FriendActivityCard';
@@ -12,7 +12,13 @@ import { useAuth } from '@/providers/AuthProvider';
 
 export function HomeScreen() {
   const { user } = useAuth();
-  const { activities, loading, error } = useFriendActivity();
+  const { activities, loading, error, refetch } = useFriendActivity();
+
+  useFocusEffect(
+    useCallback(() => {
+      void refetch();
+    }, [refetch])
+  );
 
   const avatarInitials = useMemo(() => getInitials(user?.displayName, 'AK'), [user?.displayName]);
 
@@ -33,27 +39,28 @@ export function HomeScreen() {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerStyle={{ paddingBottom: 100 }}
-      showsVerticalScrollIndicator={false}>
+    <View className="flex-1 bg-background">
       <HomeTopBar
         avatarInitials={avatarInitials}
         onNotificationsPress={() => router.push('/notifications')}
         onAvatarPress={() => router.push('/(tabs)/profile')}
       />
-
-      <View className="gap-4 px-5">
-        {activities.map((activity) => (
-          <FriendActivityCard
-            key={activity.id}
-            activity={activity}
-            onLessonPress={() => openLesson(activity.lesson.id)}
-            onProfilePress={() => openProfile(activity.friendId)}
-            onCommentPress={() => router.push(`/activity/${activity.id}`)}
-          />
-        ))}
-      </View>
-    </ScrollView>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }}
+        showsVerticalScrollIndicator={false}>
+        <View className="gap-4 px-5">
+          {activities.map((activity) => (
+            <FriendActivityCard
+              key={activity.id}
+              activity={activity}
+              onLessonPress={() => openLesson(activity.lesson.id)}
+              onProfilePress={() => openProfile(activity.friendId)}
+              onCommentPress={() => router.push(`/activity/${activity.id}`)}
+            />
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 }

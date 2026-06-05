@@ -27,7 +27,7 @@ export interface PublishLessonInput {
   templateLessonId?: string;
 }
 
-const CATALOG_SEED_VERSION = 3;
+const CATALOG_SEED_VERSION = 4;
 
 const catalog = new Map<string, Lesson>();
 const extraTaughtByTeacher = new Map<string, ProfileTaughtItem[]>();
