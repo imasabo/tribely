@@ -17,6 +17,7 @@ import {
   findDiscoverCityByLabel,
   getDiscoverCityById,
 } from '@/data/discoverCities';
+import { enrichLessonsWithTeacherStats } from '@/lib/enrichLessonsWithTeacherStats';
 import { lessonFromFirestore } from '@/mappers/lesson.mapper';
 import type { LessonDoc } from '@/types/firestore';
 import type { FriendLessonActivity, Lesson } from '@/types/domain';
@@ -34,7 +35,8 @@ async function getFromFirestore(id: string): Promise<Lesson | null> {
   const data = snap.data() as LessonDoc | undefined;
   if (!data) return null;
 
-  return lessonFromFirestore(snap.id, data);
+  const [lesson] = await enrichLessonsWithTeacherStats([lessonFromFirestore(snap.id, data)]);
+  return lesson ?? null;
 }
 
 function mapFirestoreLessonDoc(
@@ -151,7 +153,7 @@ export const lessonsService = {
       const remote = await listPublishedFromFirestore();
       const seen = new Set(merged.map((lesson) => lesson.id));
       const extras = remote.filter((lesson) => !seen.has(lesson.id));
-      return [...extras, ...merged];
+      return enrichLessonsWithTeacherStats([...extras, ...merged]);
     } catch (error) {
       console.warn('[Tribely] Failed to load Firestore lessons for discover', error);
       return merged;
@@ -166,7 +168,7 @@ export const lessonsService = {
     }
 
     try {
-      return await listByTeacherFromFirestore(teacherId);
+      return enrichLessonsWithTeacherStats(await listByTeacherFromFirestore(teacherId));
     } catch (error) {
       console.warn('[Tribely] Failed to load teacher lessons from Firestore', error);
       return [];

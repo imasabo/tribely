@@ -63,6 +63,22 @@ export const usersService = {
     return mapUserDoc(uid, data);
   },
 
+  async getProfilesByIds(uids: string[]): Promise<Map<string, UserProfile>> {
+    const profiles = new Map<string, UserProfile>();
+    const unique = [...new Set(uids)];
+    if (unique.length === 0 || !isFirestoreAvailable()) return profiles;
+
+    const results = await Promise.all(
+      unique.map(async (uid) => ({ uid, profile: await this.getProfile(uid) }))
+    );
+
+    for (const { uid, profile } of results) {
+      if (profile) profiles.set(uid, profile);
+    }
+
+    return profiles;
+  },
+
   /** Create a stub profile after first Google sign-in (no username yet). */
   async ensureStubProfile(authUser: AuthUser): Promise<UserProfile> {
     if (!isFirestoreAvailable()) {

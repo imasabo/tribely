@@ -16,6 +16,7 @@ import {
   isLessonFull,
   isLessonOwner,
 } from '@/lib/lessonEnrollment';
+import { formatLessonRating } from '@/lib/lessonRating';
 import {
   canShareLessonCompletion,
   getUpcomingSessions,
@@ -274,7 +275,7 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
                 <View className="flex-row items-center gap-1">
                   <Feather name="star" size={12} color={colors.accent} />
                   <Text className="text-sm text-muted-foreground">
-                    {lesson.rating} · {lesson.reviewCount} reviews
+                    {formatLessonRating(lesson.rating)} · {lesson.reviewCount} reviews
                   </Text>
                 </View>
                 <Text className="mt-0.5 text-xs text-muted-foreground">View profile</Text>

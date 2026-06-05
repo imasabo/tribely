@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { lessonsService } from '@/services/lessons.service';
 import type { Lesson } from '@/types/domain';
@@ -10,8 +10,14 @@ export function useDiscoverLessons() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loadInFlightRef = useRef(false);
 
   const load = useCallback(async (mode: LoadMode = 'initial') => {
+    if (loadInFlightRef.current && mode === 'refresh') {
+      return;
+    }
+
+    loadInFlightRef.current = true;
     if (mode === 'refresh') {
       setRefreshing(true);
     } else {
@@ -29,6 +35,7 @@ export function useDiscoverLessons() {
         setLessons([]);
       }
     } finally {
+      loadInFlightRef.current = false;
       if (mode === 'refresh') {
         setRefreshing(false);
       } else {
@@ -38,7 +45,7 @@ export function useDiscoverLessons() {
   }, []);
 
   useEffect(() => {
-    load('initial');
+    void load('initial');
   }, [load]);
 
   const refetch = useCallback(() => load('refresh'), [load]);

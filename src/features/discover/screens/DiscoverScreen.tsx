@@ -68,13 +68,32 @@ export function DiscoverScreen() {
     router.push(`/lesson/${lessonId}`);
   };
 
+  const handleRefresh = useCallback(() => {
+    void Promise.all([refetch(), ensureLocation()]);
+  }, [ensureLocation, refetch]);
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      tintColor={colors.primary}
+      colors={[colors.primary]}
+    />
+  );
+
   if (loading && allLessons.length === 0) {
     return <LoadingScreen message="Loading lessons…" />;
   }
 
   if (error && allLessons.length === 0) {
     return (
-      <CenteredMessage message={error} actionLabel="Try again" onAction={retry} />
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{ flexGrow: 1 }}
+        alwaysBounceVertical
+        refreshControl={refreshControl}>
+        <CenteredMessage message={error} actionLabel="Try again" onAction={retry} />
+      </ScrollView>
     );
   }
 
@@ -82,20 +101,14 @@ export function DiscoverScreen() {
     <>
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={refetch}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }>
+        alwaysBounceVertical
+        refreshControl={refreshControl}>
         {error ? (
           <View className="mx-5 mb-3 flex-row items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
             <Text className="flex-1 text-sm text-muted-foreground">{error}</Text>
-            <Pressable onPress={refetch} className="ml-3 active:opacity-80">
+            <Pressable onPress={handleRefresh} className="ml-3 active:opacity-80">
               <Text className="text-sm font-semibold text-primary">Retry</Text>
             </Pressable>
           </View>

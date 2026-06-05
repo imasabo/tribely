@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
+import { formatLessonRating } from '@/lib/lessonRating';
 import type { Lesson } from '@/types/domain';
 
 import { GoogleSlidesCardPreview } from './GoogleSlidesCardPreview';
@@ -46,7 +47,9 @@ export function LessonCard({
             <Text className="text-[13px] text-muted-foreground">{lesson.teacherName}</Text>
             <View className="flex-row items-center gap-1">
               <Feather name="star" size={12} color={colors.accent} />
-              <Text className="text-[13px] font-medium text-foreground">{lesson.rating}</Text>
+              <Text className="text-[13px] font-medium text-foreground">
+                {formatLessonRating(lesson.rating)}
+              </Text>
               <Text className="text-[13px] text-muted-foreground">({lesson.reviewCount})</Text>
             </View>
           </View>
@@ -89,7 +92,9 @@ export function LessonCard({
           </View>
           <View className="flex-row items-center gap-0.5">
             <Feather name="star" size={10} color={colors.accent} />
-            <Text className="text-[11px] text-muted-foreground">{lesson.rating}</Text>
+            <Text className="text-[11px] text-muted-foreground">
+              {formatLessonRating(lesson.rating)}
+            </Text>
           </View>
         </View>
         <View className="mt-2 flex-row gap-2">
