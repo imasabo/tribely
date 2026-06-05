@@ -1,28 +1,53 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { lessonsService } from '@/services/lessons.service';
 import type { FriendLessonActivity } from '@/types/domain';
 
+type LoadMode = 'initial' | 'refresh';
+
 export function useFriendActivity() {
   const [activities, setActivities] = useState<FriendLessonActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loadInFlightRef = useRef(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (mode: LoadMode = 'initial') => {
+    if (loadInFlightRef.current && mode === 'refresh') {
+      return;
+    }
+
+    loadInFlightRef.current = true;
+    if (mode === 'refresh') {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
+
     try {
       setActivities(await lessonsService.listFriendActivity());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load friend activity');
+      const message = e instanceof Error ? e.message : 'Failed to load friend activity';
+      setError(message);
+      if (mode === 'initial') {
+        setActivities([]);
+      }
     } finally {
-      setLoading(false);
+      loadInFlightRef.current = false;
+      if (mode === 'refresh') {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    load();
+    void load('initial');
   }, [load]);
 
-  return { activities, loading, error, refetch: load };
+  const refetch = useCallback(() => load('refresh'), [load]);
+
+  return { activities, loading, refreshing, error, refetch, retry: () => load('initial') };
 }

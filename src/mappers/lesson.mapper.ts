@@ -23,6 +23,7 @@ export function lessonFromFirestore(id: string, doc: LessonDoc): Lesson {
     reviewCount: 0,
     sessions: [{ id: `${id}-session-1`, scheduledAtLabel }],
     scheduledAtLabel,
+    scheduledAt,
     locationName: doc.location.name,
     city: doc.city,
     cityId: doc.cityId,

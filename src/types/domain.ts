@@ -25,6 +25,8 @@ export interface Lesson {
   sessions?: LessonSession[];
   /** Primary display time — next upcoming session, or last past session. */
   scheduledAtLabel: string;
+  /** Canonical session start — set for Firestore lessons; used for discover filtering. */
+  scheduledAt?: Date;
   locationName: string;
   /** Discover city label, e.g. "San Francisco, CA". */
   city?: string;

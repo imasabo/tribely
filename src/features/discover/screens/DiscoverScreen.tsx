@@ -5,11 +5,12 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LessonCard } from '@/components/lesson/LessonCard';
+import { LessonCardSkeletonList } from '@/components/lesson/LessonCardSkeleton';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
-import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { LocationLink } from '@/components/ui/LocationLink';
 import { ChooseCitySheet } from '@/features/discover/components/ChooseCitySheet';
+import { DiscoverListMetaSkeleton } from '@/features/discover/components/DiscoverListMetaSkeleton';
 import { useDiscoverLocationFeatures } from '@/features/discover/hooks/useDiscoverLocationFeatures';
 import { DiscoverFilterButton } from '@/features/discover/components/DiscoverFilterButton';
 import { DiscoverListControls } from '@/features/discover/components/DiscoverListControls';
@@ -23,6 +24,8 @@ import { useFilteredLessons } from '@/features/discover/hooks/useFilteredLessons
 import { colors } from '@/constants/theme';
 import { useDiscoverFilters } from '@/providers/DiscoverFiltersProvider';
 import { useDiscoverLocationContext } from '@/providers/DiscoverLocationProvider';
+
+const LESSON_SKELETON_COUNT = 5;
 
 export function DiscoverScreen() {
   const insets = useSafeAreaInsets();
@@ -54,6 +57,9 @@ export function DiscoverScreen() {
     fallbackCity,
   } = useDiscoverLocationFeatures();
 
+  const isLessonsLoading = loading && allLessons.length === 0;
+  const isLocationLoading = locationMode === 'idle' || locationMode === 'loading';
+
   const noResultsContext = {
     locationMode,
     fallbackCity,
@@ -81,21 +87,7 @@ export function DiscoverScreen() {
     />
   );
 
-  if (loading && allLessons.length === 0) {
-    return <LoadingScreen message="Loading lessons…" />;
-  }
-
-  if (error && allLessons.length === 0) {
-    return (
-      <ScrollView
-        className="flex-1 bg-background"
-        contentContainerStyle={{ flexGrow: 1 }}
-        alwaysBounceVertical
-        refreshControl={refreshControl}>
-        <CenteredMessage message={error} actionLabel="Try again" onAction={retry} />
-      </ScrollView>
-    );
-  }
+  const showLessonList = !isLessonsLoading && !(error && allLessons.length === 0);
 
   return (
     <>
@@ -105,7 +97,7 @@ export function DiscoverScreen() {
         showsVerticalScrollIndicator={false}
         alwaysBounceVertical
         refreshControl={refreshControl}>
-        {error ? (
+        {error && allLessons.length > 0 ? (
           <View className="mx-5 mb-3 flex-row items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
             <Text className="flex-1 text-sm text-muted-foreground">{error}</Text>
             <Pressable onPress={handleRefresh} className="ml-3 active:opacity-80">
@@ -113,6 +105,7 @@ export function DiscoverScreen() {
             </Pressable>
           </View>
         ) : null}
+
         <View className="bg-background/95 px-5 pb-4" style={{ paddingTop: insets.top + 8 }}>
           <Text className="mb-4 text-[26px] font-bold tracking-tight text-foreground">
             Discover
@@ -129,29 +122,42 @@ export function DiscoverScreen() {
             </Pressable>
             <DiscoverFilterButton />
           </View>
-
         </View>
 
         <DiscoverListControls />
 
-        <View className="mb-3 mt-1 flex-row items-center justify-between px-5">
-          <Text className="text-sm text-muted-foreground">
-            {displayedLessons.length} lesson{displayedLessons.length === 1 ? '' : 's'} found
-          </Text>
-          <InfoTooltip
-            message={locationTooltip}
-            actionLabel={locationMode === 'fallback' ? 'Change city' : undefined}
-            onAction={locationMode === 'fallback' ? openCityPicker : undefined}>
-            <LocationLink
-              variant="sm"
-              label={locationLabel}
-              onPress={locationMode === 'fallback' ? openCityPicker : undefined}
-            />
-          </InfoTooltip>
-        </View>
+        {isLessonsLoading || isLocationLoading ? (
+          <DiscoverListMetaSkeleton
+            showCount={isLessonsLoading}
+            showLocation={isLocationLoading}
+          />
+        ) : (
+          <View className="mb-3 mt-1 flex-row items-center justify-between px-5">
+            <Text className="text-sm text-muted-foreground">
+              {displayedLessons.length} lesson{displayedLessons.length === 1 ? '' : 's'} found
+            </Text>
+            <InfoTooltip
+              message={locationTooltip}
+              actionLabel={locationMode === 'fallback' ? 'Change city' : undefined}
+              onAction={locationMode === 'fallback' ? openCityPicker : undefined}>
+              <LocationLink
+                variant="sm"
+                label={locationLabel}
+                onPress={locationMode === 'fallback' ? openCityPicker : undefined}
+              />
+            </InfoTooltip>
+          </View>
+        )}
 
         <View className="gap-3 px-5">
-          {displayedLessons.length === 0 ? (
+          {isLessonsLoading ? (
+            <LessonCardSkeletonList
+              count={LESSON_SKELETON_COUNT}
+              showDistance={!isLocationLoading && showLessonDistance}
+            />
+          ) : error && allLessons.length === 0 ? (
+            <CenteredMessage message={error} actionLabel="Try again" onAction={retry} />
+          ) : showLessonList && displayedLessons.length === 0 ? (
             <DiscoverNoResultsCard
               hint={noResultsHint}
               onClear={
@@ -163,7 +169,7 @@ export function DiscoverScreen() {
               }
               clearLabel={locationMode === 'needs_city' ? 'Choose a city' : 'Clear all filters'}
             />
-          ) : (
+          ) : showLessonList ? (
             displayedLessons.map((lesson) => (
               <LessonCard
                 key={lesson.id}
@@ -172,7 +178,7 @@ export function DiscoverScreen() {
                 onPress={() => openLesson(lesson.id)}
               />
             ))
-          )}
+          ) : null}
         </View>
       </ScrollView>
 

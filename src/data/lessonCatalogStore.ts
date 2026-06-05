@@ -174,6 +174,7 @@ export const lessonCatalogStore = {
       slidePreviewColors: input.slidePreviewColors ?? ['#0F766E', '#134E4A', '#1F2937'],
       sessions: createInitialSessions(lessonId, input.scheduledAtLabel, 1),
       scheduledAtLabel: input.scheduledAtLabel,
+      scheduledAt: input.scheduledAt,
       maxLearners: input.maxLearners,
       enrolledCount: 0,
     });

@@ -1,16 +1,19 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useCallback } from 'react';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/ui/Avatar';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
+import { MessageInboxRowSkeletonList } from '@/features/messages/components/MessageInboxRowSkeleton';
+import { useMessageInbox } from '@/features/messages/hooks/useMessageInbox';
 import { colors } from '@/constants/theme';
 import { truncateInboxTitle } from '@/lib/truncateText';
 import { useAuth } from '@/providers/AuthProvider';
-import { lessonChatService } from '@/services/lessonChat.service';
 import type { LessonChatInboxItem } from '@/types/lessonChat';
+
+const INBOX_SKELETON_COUNT = 6;
 
 function InboxRow({ item, onPress }: { item: LessonChatInboxItem; onPress: () => void }) {
   const preview = item.lastMessageBody
@@ -64,20 +67,14 @@ function InboxRow({ item, onPress }: { item: LessonChatInboxItem; onPress: () =>
 export function MessagesScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const [items, setItems] = useState<LessonChatInboxItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { items, loading, error, refetch, retry } = useMessageInbox(user?.uid);
 
-  const loadInbox = useCallback(async () => {
-    setLoading(true);
-    const inbox = await lessonChatService.listInbox(user?.uid);
-    setItems(inbox);
-    setLoading(false);
-  }, [user?.uid]);
+  const isInboxLoading = loading && items.length === 0;
 
   useFocusEffect(
     useCallback(() => {
-      void loadInbox();
-    }, [loadInbox])
+      void refetch();
+    }, [refetch])
   );
 
   return (
@@ -91,10 +88,10 @@ export function MessagesScreen() {
         </Text>
       </View>
 
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color={colors.primary} />
-        </View>
+      {isInboxLoading ? (
+        <MessageInboxRowSkeletonList count={INBOX_SKELETON_COUNT} />
+      ) : error && items.length === 0 ? (
+        <CenteredMessage message={error} actionLabel="Try again" onAction={retry} />
       ) : items.length === 0 ? (
         <CenteredMessage message="No lesson chats yet. Join or host a lesson to start messaging." />
       ) : (

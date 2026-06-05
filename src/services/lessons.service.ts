@@ -17,6 +17,7 @@ import {
   findDiscoverCityByLabel,
   getDiscoverCityById,
 } from '@/data/discoverCities';
+import { filterDiscoverableLessons } from '@/lib/lessonDiscoverability';
 import { enrichLessonsWithTeacherStats } from '@/lib/enrichLessonsWithTeacherStats';
 import { lessonFromFirestore } from '@/mappers/lesson.mapper';
 import type { LessonDoc } from '@/types/firestore';
@@ -55,10 +56,11 @@ function mapFirestoreLessonDocs(
     .filter((lesson): lesson is Lesson => lesson != null);
 }
 
-async function listPublishedFromFirestore(): Promise<Lesson[]> {
+async function listUpcomingPublishedFromFirestore(now = new Date()): Promise<Lesson[]> {
   const snap = await firestore()
     .collection(collections.lessons)
     .where('status', '==', 'published')
+    .where('scheduledAt', '>=', timestampFromDate(now))
     .get();
 
   return mapFirestoreLessonDocs(snap.docs);
@@ -146,17 +148,18 @@ export const lessonsService = {
     ];
 
     if (!useFirestoreLessons()) {
-      return merged;
+      return filterDiscoverableLessons(merged);
     }
 
     try {
-      const remote = await listPublishedFromFirestore();
+      const remote = await listUpcomingPublishedFromFirestore();
       const seen = new Set(merged.map((lesson) => lesson.id));
       const extras = remote.filter((lesson) => !seen.has(lesson.id));
-      return enrichLessonsWithTeacherStats([...extras, ...merged]);
+      const enriched = await enrichLessonsWithTeacherStats([...extras, ...merged]);
+      return filterDiscoverableLessons(enriched);
     } catch (error) {
       console.warn('[Tribely] Failed to load Firestore lessons for discover', error);
-      return merged;
+      return filterDiscoverableLessons(merged);
     }
   },
 
