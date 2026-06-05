@@ -32,11 +32,14 @@ export default function AuthLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: stackContentStyle,
-      }}
-    />
+    <View style={screenStyle}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: stackContentStyle,
+          sceneStyle: stackContentStyle,
+        }}
+      />
+    </View>
   );
 }

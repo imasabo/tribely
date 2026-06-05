@@ -32,6 +32,22 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     overflow: 'visible',
   },
+  /** Vertically centered single line (e.g. name fields). Use with multiline={false}. */
+  singleLineCentered: {
+    height: SINGLE_LINE_HEIGHT,
+    minHeight: SINGLE_LINE_HEIGHT,
+    maxHeight: SINGLE_LINE_HEIGHT,
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingVertical: 0,
+    margin: 0,
+    fontSize: FONT_SIZE,
+    lineHeight: Platform.select({ ios: 20, default: LINE_HEIGHT }),
+    color: colors.foreground,
+    backgroundColor: colors.muted,
+    borderRadius: 12,
+    borderWidth: FIELD_BORDER_WIDTH,
+    borderColor: 'transparent',
+  },
   multiline: {
     minHeight: 100,
     paddingHorizontal: HORIZONTAL_PADDING,
@@ -68,20 +84,27 @@ export function FormTextField({
   ...props
 }: FormTextFieldProps) {
   const isSingleLine = variant === 'singleLine';
-  const baseStyle = isSingleLine ? styles.singleLine : styles.multiline;
   const useMultiline = multilineProp ?? (isSingleLine ? true : true);
+  const isCenteredSingleLine = isSingleLine && !useMultiline;
+  const baseStyle = isCenteredSingleLine
+    ? styles.singleLineCentered
+    : isSingleLine
+      ? styles.singleLine
+      : styles.multiline;
 
   return (
     <TextInput
       placeholderTextColor={placeholderTextColor}
-      includeFontPadding={Platform.OS === 'android' ? false : undefined}
+      includeFontPadding={
+        isCenteredSingleLine ? false : Platform.OS === 'android' ? false : undefined
+      }
       {...props}
       multiline={useMultiline}
       scrollEnabled={useMultiline ? scrollEnabledProp ?? false : scrollEnabledProp}
       blurOnSubmit={isSingleLine && !useMultiline ? true : blurOnSubmitProp}
       returnKeyType={isSingleLine ? (returnKeyTypeProp ?? 'done') : returnKeyTypeProp}
       textAlignVertical={
-        textAlignVerticalProp ?? (useMultiline && isSingleLine ? 'top' : 'center')
+        textAlignVerticalProp ?? (isCenteredSingleLine ? 'center' : useMultiline && isSingleLine ? 'top' : 'center')
       }
       style={[baseStyle, style as StyleProp<TextStyle>]}
     />

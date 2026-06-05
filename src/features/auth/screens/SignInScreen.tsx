@@ -41,10 +41,27 @@ function GoogleIcon({ size = 20 }: { size?: number }) {
 
 export function SignInScreen() {
   const insets = useSafeAreaInsets();
-  const { signInWithGoogle, isDevAuth } = useAuth();
+  const { signInWithGoogle, signInAsGuest, signInForUsernamePreview, isDevAuth, authDevBypass } =
+    useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [previewingUsername, setPreviewingUsername] = useState(false);
 
-  const handleSignIn = async () => {
+  const handleGuestSignIn = async () => {
+    setSubmitting(true);
+    try {
+      await signInAsGuest();
+      router.replace('/');
+    } catch (e) {
+      Alert.alert(
+        'Could not start dev session',
+        e instanceof Error ? e.message : 'Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
     setSubmitting(true);
     try {
       await signInWithGoogle();
@@ -54,12 +71,25 @@ export function SignInScreen() {
         'Sign in failed',
         e instanceof Error
           ? e.message
-          : isDevAuth
-            ? 'Could not start a dev session.'
-            : 'Use a development build (npx expo run:ios) with Google Sign-In configured.'
+          : 'Use a development build (npx expo run:ios) with Google Sign-In configured.'
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUsernamePreview = async () => {
+    setPreviewingUsername(true);
+    try {
+      await signInForUsernamePreview();
+      router.replace('/');
+    } catch (e) {
+      Alert.alert(
+        'Could not start preview',
+        e instanceof Error ? e.message : 'Please try again.'
+      );
+    } finally {
+      setPreviewingUsername(false);
     }
   };
 
@@ -78,29 +108,69 @@ export function SignInScreen() {
         </View>
 
         <View style={styles.actions}>
-          <Pressable
-            onPress={handleSignIn}
-            disabled={submitting}
-            accessibilityRole="button"
-            accessibilityLabel="Continue with Google"
-            style={({ pressed }) => [
-              styles.googleButton,
-              pressed && !submitting && styles.googleButtonPressed,
-              submitting && styles.googleButtonDisabled,
-            ]}>
-            <View style={styles.googleButtonContent}>
-              {submitting ? (
-                <ActivityIndicator size="small" color={colors.foreground} />
-              ) : (
-                <GoogleIcon />
-              )}
-              <Text style={styles.googleButtonLabel}>
-                {submitting ? 'Signing in…' : 'Continue with Google'}
+          {authDevBypass ? (
+            <>
+              <Pressable
+                onPress={handleGuestSignIn}
+                disabled={submitting || previewingUsername}
+                accessibilityRole="button"
+                accessibilityLabel="Continue without signing in"
+                style={({ pressed }) => [
+                  styles.guestButton,
+                  pressed && !submitting && styles.guestButtonPressed,
+                  submitting && styles.googleButtonDisabled,
+                ]}>
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.guestButtonLabel}>Continue without signing in</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={handleUsernamePreview}
+                disabled={submitting || previewingUsername}
+                accessibilityRole="button"
+                accessibilityLabel="Preview username setup"
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  pressed && styles.secondaryButtonPressed,
+                ]}>
+                {previewingUsername ? (
+                  <ActivityIndicator size="small" color={colors.foreground} />
+                ) : (
+                  <Text style={styles.secondaryButtonLabel}>Preview username setup</Text>
+                )}
+              </Pressable>
+              <Text style={styles.devNote}>
+                Dev mode: mock data only, no network auth. Sign out in Settings to return
+                here. Set EXPO_PUBLIC_USE_REAL_AUTH=true for real Google and Firestore.
               </Text>
-            </View>
-          </Pressable>
+            </>
+          ) : (
+            <Pressable
+              onPress={handleGoogleSignIn}
+              disabled={submitting}
+              accessibilityRole="button"
+              accessibilityLabel="Continue with Google"
+              style={({ pressed }) => [
+                styles.googleButton,
+                pressed && !submitting && styles.googleButtonPressed,
+                submitting && styles.googleButtonDisabled,
+              ]}>
+              <View style={styles.googleButtonContent}>
+                {submitting ? (
+                  <ActivityIndicator size="small" color={colors.foreground} />
+                ) : (
+                  <GoogleIcon />
+                )}
+                <Text style={styles.googleButtonLabel}>
+                  {submitting ? 'Signing in…' : 'Continue with Google'}
+                </Text>
+              </View>
+            </Pressable>
+          )}
 
-          {isDevAuth ? (
+          {isDevAuth && !authDevBypass ? (
             <Text style={styles.devNote}>
               Development build required for Google Sign-In.
             </Text>
@@ -196,6 +266,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: Platform.select({ ios: -0.41, default: 0 }),
     color: colors.foreground,
+  },
+  guestButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 13,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guestButtonPressed: {
+    opacity: 0.9,
+  },
+  guestButtonLabel: {
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: Platform.select({ ios: -0.41, default: 0 }),
+    color: '#fff',
+  },
+  secondaryButton: {
+    width: '100%',
+    height: 44,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonPressed: {
+    opacity: 0.7,
+  },
+  secondaryButtonLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.primary,
   },
   devNote: {
     fontSize: 13,

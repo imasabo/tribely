@@ -40,7 +40,7 @@ async function openExternalUrl(url: string, label: string) {
 
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
-  const { user, signOut, isDevAuth } = useAuth();
+  const { user, signOut, isDevAuth, authDevBypass } = useAuth();
   const { settings, loading, updateNotifications, updatePrivacy } = useSettings();
   const { blockedUsers } = useBlockedUsers();
 
@@ -96,7 +96,13 @@ export function SettingsScreen() {
           <SettingsValueRow
             label="Email"
             value={user?.email ?? 'Not set'}
-            subtitle={isDevAuth ? 'Dev session (Expo Go)' : undefined}
+            subtitle={
+              isDevAuth
+                ? 'Dev session (Expo Go)'
+                : authDevBypass
+                  ? 'Dev bypass (preview auth)'
+                  : undefined
+            }
           />
         </SettingsSection>
 

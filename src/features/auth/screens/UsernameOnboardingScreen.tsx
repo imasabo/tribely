@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -16,10 +18,16 @@ import { Button } from '@/components/ui/Button';
 import { FormTextField } from '@/components/ui/FormTextField';
 import { UsernameFormField } from '@/components/ui/UsernameFormField';
 import { colors, screenStyle } from '@/constants/theme';
+import {
+  PROFILE_NAME_CHAR_LIMIT,
+  PROFILE_NAME_MIN_LENGTH,
+  PROFILE_USERNAME_CHAR_LIMIT,
+  validateDisplayName,
+} from '@/features/profile/lib/profileLimits';
+import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles';
 import { isFirestoreAvailable } from '@/lib/firestore/client';
 import {
   normalizeUsernameInput,
-  USERNAME_MAX_LENGTH,
   validateUsernameForClaim,
 } from '@/lib/username';
 import { useAuth } from '@/providers/AuthProvider';
@@ -33,7 +41,7 @@ const fieldErrorOutline = {
 
 export function UsernameOnboardingScreen() {
   const insets = useSafeAreaInsets();
-  const { user, profile, completeUsernameOnboarding, isDevAuth } = useAuth();
+  const { user, profile, completeUsernameOnboarding, authDevBypass, signOut } = useAuth();
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState(profile?.displayName ?? '');
   const [submitting, setSubmitting] = useState(false);
@@ -79,7 +87,7 @@ export function UsernameOnboardingScreen() {
 
     setUsernameError(null);
 
-    if (isDevAuth || !isFirestoreAvailable()) {
+    if (authDevBypass || !isFirestoreAvailable()) {
       setAvailability('available');
       return true;
     }
@@ -100,7 +108,7 @@ export function UsernameOnboardingScreen() {
     } finally {
       setChecking(false);
     }
-  }, [normalized, username, user?.uid, isDevAuth]);
+  }, [normalized, username, user?.uid, authDevBypass]);
 
   const handleUsernameBlur = () => {
     setUsernameChecked(true);
@@ -128,23 +136,43 @@ export function UsernameOnboardingScreen() {
   const usernameHint = (() => {
     if (usernameError) return usernameError;
     if (!usernameChecked) {
-      return 'Lowercase letters, numbers, and underscores.';
+      return `3–${PROFILE_USERNAME_CHAR_LIMIT} characters: lowercase letters, numbers, and underscores.`;
     }
     if (checking) return 'Checking availability…';
     if (availability === 'available') return `@${normalized} is available.`;
-    return 'Lowercase letters, numbers, and underscores.';
+    if (username.length >= PROFILE_USERNAME_CHAR_LIMIT) {
+      return `${PROFILE_USERNAME_CHAR_LIMIT} character limit reached.`;
+    }
+    return `3–${PROFILE_USERNAME_CHAR_LIMIT} characters: lowercase letters, numbers, and underscores.`;
   })();
 
-  const usernameHintIsError = !!usernameError;
+  const displayNameHint = (() => {
+    if (displayNameError) return displayNameError;
+    if (displayName.length >= PROFILE_NAME_CHAR_LIMIT) {
+      return `${PROFILE_NAME_CHAR_LIMIT} character limit reached.`;
+    }
+    return `${PROFILE_NAME_MIN_LENGTH}–${PROFILE_NAME_CHAR_LIMIT} characters.`;
+  })();
+
+  const usernameHintIsError =
+    !!usernameError ||
+    availability === 'taken' ||
+    availability === 'reserved' ||
+    (username.length >= PROFILE_USERNAME_CHAR_LIMIT &&
+      !(usernameChecked && availability === 'available'));
   const usernameHintIsSuccess =
     usernameChecked && !checking && !usernameError && availability === 'available';
+
+  const displayNameHintIsError =
+    !!displayNameError || displayName.length >= PROFILE_NAME_CHAR_LIMIT;
 
   const handleContinue = async () => {
     let hasError = false;
 
     const trimmedName = displayName.trim();
-    if (!trimmedName) {
-      setDisplayNameError('Name is required.');
+    const nameError = validateDisplayName(displayName);
+    if (nameError) {
+      setDisplayNameError(nameError);
       hasError = true;
     }
 
@@ -164,7 +192,7 @@ export function UsernameOnboardingScreen() {
 
     setSubmitting(true);
     try {
-      if (!isDevAuth && isFirestoreAvailable()) {
+      if (!authDevBypass && isFirestoreAvailable()) {
         const taken = await usernameService.isUsernameTaken(normalized, user?.uid);
         if (taken) {
           setUsernameError('That username is already taken.');
@@ -189,13 +217,38 @@ export function UsernameOnboardingScreen() {
     }
   };
 
+  const handleBackToSignIn = () => {
+    void signOut().then(() => {
+      router.replace('/(auth)/sign-in');
+    });
+  };
+
   return (
-    <View style={[screenStyle, { paddingTop: insets.top }]}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}>
-        <View style={styles.flex}>
+    <Pressable
+      style={[screenStyle, { paddingTop: insets.top }]}
+      onPress={Keyboard.dismiss}
+      accessible={false}>
+      <View style={styles.main}>
+        {authDevBypass ? (
+          <View style={styles.topBar}>
+            <Pressable
+              onPress={handleBackToSignIn}
+              accessibilityRole="button"
+              accessibilityLabel="Back to sign in"
+              style={({ pressed }) => [
+                styles.backButton,
+                pressed && styles.backButtonPressed,
+              ]}>
+              <Feather name="arrow-left" size={18} color={colors.foreground} />
+            </Pressable>
+          </View>
+        ) : null}
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}>
           <View style={styles.hero}>
             <View style={styles.appIcon}>
               <Feather name="zap" size={30} color="#fff" />
@@ -217,9 +270,12 @@ export function UsernameOnboardingScreen() {
                 onChangeText={handleUsernameChange}
                 onBlur={handleUsernameBlur}
                 placeholder="your_name"
-                maxLength={USERNAME_MAX_LENGTH}
+                maxLength={PROFILE_USERNAME_CHAR_LIMIT}
                 autoFocus
-                containerStyle={usernameError ? fieldErrorOutline : undefined}
+                containerStyle={[
+                  charLimitOutlineStyle(username.length, PROFILE_USERNAME_CHAR_LIMIT),
+                  usernameError ? fieldErrorOutline : undefined,
+                ]}
               />
               <View style={styles.hintRow}>
                 {checking ? (
@@ -245,42 +301,74 @@ export function UsernameOnboardingScreen() {
                 value={displayName}
                 onChangeText={handleDisplayNameChange}
                 placeholder="Display name"
+                multiline={false}
+                maxLength={PROFILE_NAME_CHAR_LIMIT}
                 onBlur={() => {
-                  if (!displayName.trim()) {
-                    setDisplayNameError('Name is required.');
+                  const nameError = validateDisplayName(displayName);
+                  if (nameError) {
+                    setDisplayNameError(nameError);
                   }
                 }}
-                style={displayNameError ? fieldErrorOutline : undefined}
+                style={[
+                  charLimitOutlineStyle(displayName.length, PROFILE_NAME_CHAR_LIMIT),
+                  displayNameError ? fieldErrorOutline : undefined,
+                ]}
               />
-              {displayNameError ? (
-                <Text style={styles.hintError}>{displayNameError}</Text>
-              ) : null}
+              <Text
+                style={[
+                  styles.hint,
+                  displayNameHintIsError && styles.hintError,
+                ]}>
+                {displayNameHint}
+              </Text>
             </View>
           </View>
+        </ScrollView>
 
-          <View style={styles.spacer} />
-
-          <View
-            style={[
-              styles.footer,
-              { paddingBottom: Math.max(insets.bottom, 20) + 8 },
-            ]}>
-            <Button
-              title="Continue"
-              fullWidth
-              loading={submitting}
-              onPress={handleContinue}
-            />
-          </View>
+        <View
+          style={[
+            styles.footer,
+            { paddingBottom: Math.max(insets.bottom, 20) + 8 },
+          ]}>
+          <Button
+            title="Continue"
+            fullWidth
+            loading={submitting}
+            onPress={handleContinue}
+          />
         </View>
-      </KeyboardAvoidingView>
-    </View>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  main: {
     flex: 1,
+    backgroundColor: colors.background,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.muted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonPressed: {
+    opacity: 0.8,
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: colors.background,
   },
   hero: {
     alignItems: 'center',
@@ -351,11 +439,9 @@ const styles = StyleSheet.create({
   hintSuccess: {
     color: colors.primary,
   },
-  spacer: {
-    flex: 1,
-    minHeight: 16,
-  },
   footer: {
     paddingHorizontal: 20,
+    paddingTop: 16,
+    backgroundColor: colors.background,
   },
 });

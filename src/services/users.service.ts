@@ -94,9 +94,7 @@ export const usersService = {
     }
 
     const existing = await ref.get();
-    if (existing.exists) {
-      await ref.update(patch);
-    } else {
+    if (!existing.exists) {
       await ref.set({
         displayName: input.displayName?.trim() || 'New member',
         email: '',
@@ -104,12 +102,12 @@ export const usersService = {
         teachTopics: [],
         learnTopics: [],
         stats: defaultStats(),
-        onboardingComplete: true,
-        username: input.username,
+        onboardingComplete: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
     }
+    await ref.update(patch);
 
     const snap = await ref.get();
     const data = snap.data() as UserDoc | undefined;

@@ -20,6 +20,7 @@ import {
   PROFILE_BIO_CHAR_LIMIT,
   PROFILE_NAME_CHAR_LIMIT,
   PROFILE_USERNAME_CHAR_LIMIT,
+  validateDisplayName,
 } from '@/features/profile/lib/profileLimits';
 import { ProfileInterestsEditor } from '@/features/profile/components/ProfileInterestsEditor';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
@@ -49,7 +50,8 @@ export function EditProfileScreen() {
   }, [profile]);
 
   const usernameValid = isValidUsername(username);
-  const canSave = usernameValid && displayName.trim().length > 0 && !saving;
+  const displayNameError = validateDisplayName(displayName);
+  const canSave = usernameValid && !displayNameError && !saving;
 
   const usernameHint = useMemo(() => {
     if (username.length === 0) return 'Username is required.';
@@ -138,6 +140,9 @@ export function EditProfileScreen() {
               charLimitOutlineStyle(displayName.length, PROFILE_NAME_CHAR_LIMIT),
             ]}
           />
+          {displayNameError ? (
+            <Text className="text-xs text-destructive">{displayNameError}</Text>
+          ) : null}
         </View>
 
         <View className="mb-6 gap-1.5">
