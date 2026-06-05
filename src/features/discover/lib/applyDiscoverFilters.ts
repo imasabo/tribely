@@ -1,3 +1,4 @@
+import { findDiscoverCityByLabel } from '@/data/discoverCities';
 import type { DiscoverSheetFilters, DiscoverSortOption } from '@/features/discover/types';
 import type { Lesson, LessonDurationMinutes } from '@/types/domain';
 
@@ -142,6 +143,23 @@ export function applyDiscoverSheetFilters(
 
 export function applyDiscoverCategoryFilter(lessons: Lesson[], category: string): Lesson[] {
   return lessons.filter((lesson) => matchesCategoryFilter(lesson, category));
+}
+
+/** When browsing by a chosen city, keep lessons in that market. */
+export function applyDiscoverCityFilter(
+  lessons: Lesson[],
+  cityLabel?: string
+): Lesson[] {
+  const normalized = cityLabel?.trim().toLowerCase();
+  if (!normalized) return lessons;
+
+  const discoverCity = findDiscoverCityByLabel(cityLabel!);
+
+  return lessons.filter((lesson) => {
+    if (!lesson.cityId && !lesson.city) return false;
+    if (lesson.cityId && discoverCity) return lesson.cityId === discoverCity.id;
+    return lesson.city?.trim().toLowerCase() === normalized;
+  });
 }
 
 function soonestRank(scheduledAtLabel: string, now = new Date()): number {

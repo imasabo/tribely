@@ -16,8 +16,11 @@ export interface PublishLessonInput {
   title: string;
   description: string;
   locationName: string;
+  city: string;
+  cityId: string;
   durationMinutes: LessonDurationMinutes;
-  googleSlidesUrl: string;
+  googleSlidesUrl?: string;
+  scheduledAt: Date;
   scheduledAtLabel: string;
   category?: string;
   categoryEmoji?: string;
@@ -132,8 +135,10 @@ export const lessonCatalogStore = {
         title: input.title.trim() || existing.title,
         description: input.description.trim() || existing.description,
         locationName: input.locationName.trim() || existing.locationName,
+        city: input.city,
+        cityId: input.cityId,
         durationMinutes: input.durationMinutes,
-        googleSlidesUrl: input.googleSlidesUrl,
+        googleSlidesUrl: input.googleSlidesUrl?.trim() || undefined,
         category: input.category ?? existing.category,
         categoryEmoji: input.categoryEmoji ?? existing.categoryEmoji,
         slidePreviewColors: input.slidePreviewColors ?? existing.slidePreviewColors,
@@ -162,8 +167,10 @@ export const lessonCatalogStore = {
       rating: 0,
       reviewCount: 0,
       locationName: input.locationName.trim(),
+      city: input.city,
+      cityId: input.cityId,
       description: input.description.trim() || undefined,
-      googleSlidesUrl: input.googleSlidesUrl,
+      googleSlidesUrl: input.googleSlidesUrl?.trim() || undefined,
       slidePreviewColors: input.slidePreviewColors ?? ['#0F766E', '#134E4A', '#1F2937'],
       sessions: createInitialSessions(lessonId, input.scheduledAtLabel, 1),
       scheduledAtLabel: input.scheduledAtLabel,

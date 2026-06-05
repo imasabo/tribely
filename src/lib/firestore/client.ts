@@ -21,3 +21,11 @@ export function serverTimestamp() {
 export function isFirestoreAvailable(): boolean {
   return isFirebaseNativeAvailable && getFirestore() != null;
 }
+
+export function timestampFromDate(date: Date) {
+  const mod = getFirestore();
+  if (!mod) {
+    throw new Error('Firestore is unavailable.');
+  }
+  return mod.Timestamp.fromDate(date);
+}

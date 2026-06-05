@@ -26,13 +26,16 @@ export interface Lesson {
   /** Primary display time — next upcoming session, or last past session. */
   scheduledAtLabel: string;
   locationName: string;
+  /** Discover city label, e.g. "San Francisco, CA". */
+  city?: string;
+  /** Discover city id for filtering, e.g. "sf". */
+  cityId?: string;
   description?: string;
   featured?: boolean;
-  /** Google Slides share link (edit or view). Required for all lessons. */
-  googleSlidesUrl: string;
+  /** Google Slides share link (edit or view). Optional until added. */
+  googleSlidesUrl?: string;
   /** Card thumbnail accent when not rendering a live embed. */
   slidePreviewColors: [string, string, string];
-  priceCents?: number;
   /** Cap on learners for the next upcoming session. */
   maxLearners?: number;
   /** Current learners signed up for the next upcoming session. */

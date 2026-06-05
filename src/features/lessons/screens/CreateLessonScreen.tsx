@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -22,11 +23,24 @@ import {
   combineDateAndTime,
   defaultSessionDate,
   formatScheduledAtLabel,
+  isScheduleInPast,
 } from '@/lib/lessonSchedule';
+import { LessonCategoryField } from '@/features/lessons/components/LessonCategoryField';
+import { LessonCityField } from '@/features/lessons/components/LessonCityField';
 import { useLesson } from '@/features/lessons/hooks/useLesson';
+import {
+  LESSON_CATEGORY_OTHER_ID,
+  categorySelectionFromLesson,
+  resolveLessonCategory,
+  validateLessonCategorySelection,
+} from '@/features/lessons/lib/lessonCategories';
 import { isValidGoogleSlidesUrl, parseGoogleSlidesUrl } from '@/lib/googleSlides';
 import { isLessonOwner } from '@/lib/lessonEnrollment';
 import { useAuth } from '@/providers/AuthProvider';
+import {
+  findDiscoverCityByLabel,
+  formatDiscoverCityLabel,
+} from '@/data/discoverCities';
 import { lessonsService } from '@/services/lessons.service';
 import type { LessonDurationMinutes } from '@/types/domain';
 
@@ -37,14 +51,13 @@ const DURATION_OPTIONS: { label: string; minutes: LessonDurationMinutes }[] = [
 ];
 
 const MAX_LEARNER_OPTIONS = [1, 2, 4, 6, 8, 10] as const;
-const DEFAULT_MAX_LEARNERS = 6;
+const DEFAULT_MAX_LEARNERS = 1;
 const LESSON_TITLE_CHAR_LIMIT = 80;
 const LESSON_DESCRIPTION_CHAR_LIMIT = 500;
 
-/** Phase 3: wire to useCreateLesson + Firestore */
 export function CreateLessonScreen() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { templateLessonId } = useLocalSearchParams<{ templateLessonId?: string }>();
   const resolvedTemplateId =
     typeof templateLessonId === 'string'
@@ -57,12 +70,21 @@ export function CreateLessonScreen() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [customCategoryName, setCustomCategoryName] = useState('');
+  const [customCategoryEmoji, setCustomCategoryEmoji] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [customCategoryNameError, setCustomCategoryNameError] = useState<string | null>(null);
+  const [customCategoryEmojiError, setCustomCategoryEmojiError] = useState<string | null>(null);
+  const [city, setCity] = useState('');
+  const [cityError, setCityError] = useState<string | null>(null);
   const [location, setLocation] = useState('');
   const defaultSchedule = defaultSessionDate();
   const [sessionDate, setSessionDate] = useState<Date | null>(null);
   const [sessionTime, setSessionTime] = useState(defaultSchedule);
   const [scheduleDateError, setScheduleDateError] = useState<string | null>(null);
-  const [durationMinutes, setDurationMinutes] = useState<LessonDurationMinutes>(60);
+  const [scheduleTimeError, setScheduleTimeError] = useState<string | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<LessonDurationMinutes>(30);
   const [maxLearners, setMaxLearners] = useState<number>(DEFAULT_MAX_LEARNERS);
   const [slidesUrl, setSlidesUrl] = useState('');
   const [slidesError, setSlidesError] = useState<string | null>(null);
@@ -74,6 +96,12 @@ export function CreateLessonScreen() {
     templateLesson != null && isLessonOwner(templateLesson, user?.uid);
 
   useEffect(() => {
+    if (!city && profile?.city) {
+      setCity(profile.city);
+    }
+  }, [profile?.city, city]);
+
+  useEffect(() => {
     if (!templateLesson || templateApplied || !canScheduleAnotherSession) return;
 
     setTitle(templateLesson.title);
@@ -82,17 +110,36 @@ export function CreateLessonScreen() {
         'Same lesson as before — update anything that changed for this new session.'
     );
     setLocation(templateLesson.locationName);
+    if (templateLesson.city) {
+      setCity(templateLesson.city);
+    }
+    const categorySelection = categorySelectionFromLesson(
+      templateLesson.category,
+      templateLesson.categoryEmoji
+    );
+    setSelectedCategoryId(categorySelection.selectedCategoryId);
+    setCustomCategoryName(categorySelection.customCategoryName);
+    setCustomCategoryEmoji(categorySelection.customCategoryEmoji);
+    setCategoryError(null);
+    setCustomCategoryNameError(null);
+    setCustomCategoryEmojiError(null);
     setDurationMinutes(templateLesson.durationMinutes);
-    setSlidesUrl(templateLesson.googleSlidesUrl);
+    setSlidesUrl(templateLesson.googleSlidesUrl ?? '');
     setMaxLearners(templateLesson.maxLearners ?? DEFAULT_MAX_LEARNERS);
     setSessionDate(null);
     setSessionTime(defaultSessionDate());
     setScheduleDateError(null);
+    setScheduleTimeError(null);
     setTemplateApplied(true);
   }, [templateLesson, templateApplied, canScheduleAnotherSession]);
 
   const validateSlides = (url: string) => {
-    const result = parseGoogleSlidesUrl(url);
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setSlidesError(null);
+      return true;
+    }
+    const result = parseGoogleSlidesUrl(trimmed);
     if (!result.ok) {
       setSlidesError(result.error);
       return false;
@@ -113,46 +160,99 @@ export function CreateLessonScreen() {
 
   const handlePublish = async () => {
     setTouched(true);
+    if (!user?.uid) {
+      Alert.alert('Sign in required', 'Sign in to publish a lesson.');
+      return;
+    }
     if (!title.trim() || !description.trim() || !location.trim()) return;
+
+    const trimmedCity = city.trim();
+    const discoverCity = trimmedCity ? findDiscoverCityByLabel(trimmedCity) : undefined;
+    if (!trimmedCity) {
+      setCityError('Select a city.');
+      return;
+    }
+    if (!discoverCity) {
+      setCityError('Choose a city from the list.');
+      return;
+    }
+    setCityError(null);
+
+    const categoryValidation = validateLessonCategorySelection({
+      selectedCategoryId,
+      customCategoryName,
+      customCategoryEmoji,
+    });
+    setCategoryError(categoryValidation.categoryError);
+    setCustomCategoryNameError(categoryValidation.customNameError);
+    setCustomCategoryEmojiError(categoryValidation.customEmojiError);
+    if (
+      categoryValidation.categoryError ||
+      categoryValidation.customNameError ||
+      categoryValidation.customEmojiError
+    ) {
+      return;
+    }
+
+    const resolvedCategory = resolveLessonCategory({
+      selectedCategoryId,
+      customCategoryName,
+      customCategoryEmoji,
+    });
+    if (!resolvedCategory) return;
     if (!sessionDate) {
       setScheduleDateError('Select a date for this session.');
       return;
     }
     setScheduleDateError(null);
+    setScheduleTimeError(null);
     const scheduledAt = combineDateAndTime(sessionDate, sessionTime);
+    if (isScheduleInPast(sessionDate, sessionTime)) {
+      setScheduleTimeError('Choose a time in the future.');
+      return;
+    }
     if (!validateSlides(slidesUrl)) return;
-    if (resolvedTemplateId && templateLesson && !isLessonOwner(templateLesson, user?.uid)) {
+    if (resolvedTemplateId && templateLesson && !isLessonOwner(templateLesson, user.uid)) {
       return;
     }
 
-    const teacherId = user?.uid ?? 'dev-user-alex';
-    const teacherName = user?.displayName ?? 'Alex Kim';
+    const teacherName =
+      profile?.displayName?.trim() || user.displayName?.trim() || 'You';
+    const trimmedSlides = slidesUrl.trim();
 
     setPublishing(true);
     try {
       const { lessonId } = await lessonsService.publish({
-        teacherId,
+        teacherId: user.uid,
         teacherName,
         title: title.trim(),
         description: description.trim(),
         locationName: location.trim(),
+        city: formatDiscoverCityLabel(discoverCity),
+        cityId: discoverCity.id,
         durationMinutes,
-        googleSlidesUrl: slidesUrl,
+        googleSlidesUrl: trimmedSlides || undefined,
+        scheduledAt,
         scheduledAtLabel: formatScheduledAtLabel(scheduledAt),
         templateLessonId: resolvedTemplateId,
-        category: templateLesson?.category,
-        categoryEmoji: templateLesson?.categoryEmoji,
+        category: resolvedCategory.category,
+        categoryEmoji: resolvedCategory.categoryEmoji,
         slidePreviewColors: templateLesson?.slidePreviewColors,
         maxLearners,
       });
 
       router.replace(`/lesson/${lessonId}`);
-    } catch {
+    } catch (e) {
+      Alert.alert(
+        'Could not publish lesson',
+        e instanceof Error ? e.message : 'Please try again.'
+      );
       setPublishing(false);
     }
   };
 
-  const showValid = touched && slidesUrl.length > 0 && isValidGoogleSlidesUrl(slidesUrl);
+  const showValid =
+    touched && slidesUrl.trim().length > 0 && isValidGoogleSlidesUrl(slidesUrl);
   const isDuplicate = Boolean(resolvedTemplateId && canScheduleAnotherSession);
 
   if (resolvedTemplateId && templateLoading) {
@@ -235,6 +335,35 @@ export function CreateLessonScreen() {
           </View>
 
           <View className="mb-4">
+            <LessonCategoryField
+              selectedCategoryId={selectedCategoryId}
+              customCategoryName={customCategoryName}
+              customCategoryEmoji={customCategoryEmoji}
+              onSelectCategory={(categoryId) => {
+                setSelectedCategoryId(categoryId);
+                setCategoryError(null);
+                setCustomCategoryNameError(null);
+                setCustomCategoryEmojiError(null);
+                if (categoryId !== LESSON_CATEGORY_OTHER_ID) {
+                  setCustomCategoryName('');
+                  setCustomCategoryEmoji(null);
+                }
+              }}
+              onCustomNameChange={(text) => {
+                setCustomCategoryName(text);
+                setCustomCategoryNameError(null);
+              }}
+              onCustomEmojiChange={(emoji) => {
+                setCustomCategoryEmoji(emoji);
+                setCustomCategoryEmojiError(null);
+              }}
+              categoryError={categoryError ?? (touched && !selectedCategoryId ? 'Choose a category.' : undefined)}
+              customNameError={customCategoryNameError ?? undefined}
+              customEmojiError={customCategoryEmojiError ?? undefined}
+            />
+          </View>
+
+          <View className="mb-4">
             <Text className="mb-3 text-sm font-medium text-foreground">When</Text>
             <ScheduleDateTimeFields
               date={sessionDate}
@@ -242,20 +371,36 @@ export function CreateLessonScreen() {
               onDateChange={(next) => {
                 setSessionDate(next);
                 setScheduleDateError(null);
+                setScheduleTimeError(null);
               }}
-              onTimeChange={setSessionTime}
+              onTimeChange={(next) => {
+                setSessionTime(next);
+                setScheduleTimeError(null);
+              }}
               dateError={
                 scheduleDateError ?? (touched && !sessionDate ? 'Select a date' : undefined)
               }
+              timeError={scheduleTimeError ?? undefined}
+            />
+          </View>
+
+          <View className="mb-4">
+            <LessonCityField
+              value={city}
+              onChange={(next) => {
+                setCity(next);
+                setCityError(null);
+              }}
+              error={cityError ?? (touched && !city.trim() ? 'Select a city.' : undefined)}
             />
           </View>
 
           <View className="mb-4 gap-1.5">
-            <Text className="text-sm font-medium text-foreground">Location</Text>
+            <Text className="text-sm font-medium text-foreground">Meeting spot</Text>
             <TextInput
               value={location}
               onChangeText={setLocation}
-              placeholder="Where will you meet?"
+              placeholder="e.g. Blue Bottle Coffee, SoMa"
               placeholderTextColor={colors.mutedForeground}
               className={`rounded-xl bg-muted px-4 py-3.5 text-base text-foreground ${
                 locationError ? 'border border-destructive' : ''
@@ -269,8 +414,8 @@ export function CreateLessonScreen() {
           <View className="mb-6 gap-2">
             <Text className="text-sm font-medium text-foreground">Google Slides link</Text>
             <Text className="text-xs leading-5 text-muted-foreground">
-              Paste the share link from Google Slides (File → Share → Anyone with the link). Only
-              Google Slides are supported — no PowerPoint uploads.
+              Optional — paste the share link from Google Slides (File → Share → Anyone with the
+              link). Only Google Slides are supported.
             </Text>
             <View
               className={`flex-row items-start gap-3 rounded-2xl border bg-card p-4 ${
@@ -302,7 +447,7 @@ export function CreateLessonScreen() {
                     <Text className="text-xs text-primary">Valid Google Slides link</Text>
                   </View>
                 ) : (
-                  <Text className="text-xs text-muted-foreground">Required</Text>
+                  <Text className="text-xs text-muted-foreground">Optional</Text>
                 )}
               </View>
             </View>

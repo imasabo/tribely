@@ -1,34 +1,36 @@
+import { formatScheduledAtLabel } from '@/lib/lessonSchedule';
+import { getInitials } from '@/lib/userDisplay';
 import type { LessonDoc } from '@/types/firestore';
 import type { Lesson } from '@/types/domain';
 
-/** Map Firestore lesson + optional teacher denormalization → UI model (Phase 2) */
-export function lessonFromFirestore(
-  id: string,
-  doc: LessonDoc,
-  teacher?: { displayName: string; photoURL?: string }
-): Lesson {
+/** Map Firestore lesson → UI model */
+export function lessonFromFirestore(id: string, doc: LessonDoc): Lesson {
+  const scheduledAt = doc.scheduledAt.toDate();
+  const scheduledAtLabel = formatScheduledAtLabel(scheduledAt);
+  const teacherName = doc.teacherDisplayName?.trim() || 'Teacher';
+
   return {
     id,
     teacherId: doc.teacherId,
     title: doc.title,
-    teacherName: teacher?.displayName ?? 'Teacher',
-    teacherAvatar: teacher?.displayName?.slice(0, 2).toUpperCase() ?? 'TR',
+    teacherName,
+    teacherAvatar: getInitials(teacherName),
     category: doc.category,
     categoryEmoji: doc.categoryEmoji,
     distanceLabel: '—',
     durationMinutes: doc.durationMinutes,
     rating: 0,
     reviewCount: 0,
-    scheduledAtLabel: doc.scheduledAt.toDate().toLocaleString(),
+    sessions: [{ id: `${id}-session-1`, scheduledAtLabel }],
+    scheduledAtLabel,
     locationName: doc.location.name,
+    city: doc.city,
+    cityId: doc.cityId,
+    description: doc.description,
     featured: doc.featured,
-    googleSlidesUrl: doc.googleSlidesUrl,
+    googleSlidesUrl: doc.googleSlidesUrl?.trim() || undefined,
     slidePreviewColors: ['#0F766E', '#134E4A', '#1F2937'],
-    priceCents: doc.priceCents,
+    maxLearners: doc.maxLearners,
+    enrolledCount: 0,
   };
-}
-
-export function formatPriceDollars(priceCents?: number): string {
-  if (priceCents == null || priceCents === 0) return 'Free';
-  return `$${Math.round(priceCents / 100)}`;
 }

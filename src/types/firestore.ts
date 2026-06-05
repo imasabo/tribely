@@ -14,16 +14,22 @@ export interface LessonLocationDoc {
 
 export interface LessonDoc {
   teacherId: string;
+  /** Denormalized for lesson cards and detail without a user lookup. */
+  teacherDisplayName?: string;
   title: string;
   description: string;
   category: string;
   categoryEmoji: string;
   durationMinutes: LessonDurationMinutes;
-  priceCents: number;
+  /** Discover city label, e.g. "San Francisco, CA". */
+  city?: string;
+  /** Discover city id for filtering, e.g. "sf". */
+  cityId?: string;
   location: LessonLocationDoc;
   scheduledAt: FirestoreTimestamp;
   status: LessonStatus;
-  googleSlidesUrl: string;
+  /** Optional until the teacher adds slides. */
+  googleSlidesUrl?: string;
   maxLearners: number;
   featured: boolean;
   createdAt: FirestoreTimestamp;

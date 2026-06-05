@@ -115,6 +115,7 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
   const totalSessions = sessionCountFor(lesson);
   const enrollment = enrollmentLabel(lesson);
   const pendingCount = joinRequests.length;
+  const hasSlides = Boolean(lesson.googleSlidesUrl?.trim());
 
   const openFullScreenSlides = () => {
     router.push(`/lesson/${lessonId}/slides`);
@@ -177,6 +178,7 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
         <View className="relative h-72">
           <GoogleSlidesEmbed
             shareUrl={lesson.googleSlidesUrl}
+            slidePreviewColors={lesson.slidePreviewColors}
             className="h-full"
             nestedInScrollView
           />
@@ -200,12 +202,14 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
             </View>
           </View>
 
-          <Pressable
-            onPress={openFullScreenSlides}
-            className="absolute bottom-3 right-3 flex-row items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 active:opacity-80">
-            <Feather name="maximize-2" size={14} color="#fff" />
-            <Text className="text-xs font-medium text-white">Full screen</Text>
-          </Pressable>
+          {hasSlides ? (
+            <Pressable
+              onPress={openFullScreenSlides}
+              className="absolute bottom-3 right-3 flex-row items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 active:opacity-80">
+              <Feather name="maximize-2" size={14} color="#fff" />
+              <Text className="text-xs font-medium text-white">Full screen</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <View className="px-5 pt-5">
@@ -344,12 +348,23 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
             {isOwner ? 'Your slide deck' : 'Slide deck'}
           </Text>
           <Text className="mb-4 text-sm leading-5 text-muted-foreground">
-            {isOwner
-              ? 'Preview what learners will see before they join. Tap above for full screen.'
-              : 'Swipe through the teacher\'s Google Slides before requesting to join. Tap the preview above for full screen.'}
+            {hasSlides
+              ? isOwner
+                ? 'Preview what learners will see before they join. Tap above for full screen.'
+                : 'Swipe through the teacher\'s Google Slides before requesting to join. Tap the preview above for full screen.'
+              : isOwner
+                ? 'No slides added yet. Add a Google Slides link when you create or edit this lesson.'
+                : 'This lesson has no slides yet.'}
           </Text>
 
-          <Button title="Open slides full screen" variant="outline" fullWidth onPress={openFullScreenSlides} />
+          {hasSlides ? (
+            <Button
+              title="Open slides full screen"
+              variant="outline"
+              fullWidth
+              onPress={openFullScreenSlides}
+            />
+          ) : null}
         </View>
       </ScrollView>
 

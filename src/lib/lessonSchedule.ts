@@ -46,3 +46,31 @@ export function startOfToday(): Date {
   d.setHours(0, 0, 0, 0);
   return d;
 }
+
+export function isSameCalendarDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+export function isScheduleInPast(date: Date, time: Date, now = new Date()): boolean {
+  return combineDateAndTime(date, time).getTime() < now.getTime();
+}
+
+/** If the selected day is today, bump time forward to the next valid minute. */
+export function clampTimeForSelectedDate(date: Date, time: Date, now = new Date()): Date {
+  if (!isSameCalendarDay(date, now)) {
+    return time;
+  }
+
+  const combined = combineDateAndTime(date, time);
+  if (combined.getTime() >= now.getTime()) {
+    return time;
+  }
+
+  const clamped = new Date(now);
+  clamped.setSeconds(0, 0);
+  return clamped;
+}

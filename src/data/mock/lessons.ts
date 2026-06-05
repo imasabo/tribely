@@ -7,7 +7,6 @@ function lesson(
   partial: Omit<Lesson, 'teacherId' | 'googleSlidesUrl'> & {
     teacherId?: string;
     googleSlidesUrl?: string;
-    priceCents?: number;
   }
 ): Lesson {
   const duration = partial.durationMinutes as LessonDurationMinutes;
@@ -36,7 +35,6 @@ export const homeLessons: Lesson[] = [
     locationName: 'Blue Bottle Coffee, SoMa',
     featured: true,
     slidePreviewColors: ['#0F766E', '#134E4A', '#1F2937'],
-    priceCents: 5000,
     maxLearners: 6,
     enrolledCount: 6,
     description:
@@ -57,7 +55,6 @@ export const homeLessons: Lesson[] = [
     scheduledAtLabel: 'Yesterday, 2:00 PM',
     locationName: 'Dolores Park',
     slidePreviewColors: ['#D97706', '#92400E', '#1F2937'],
-    priceCents: 3000,
   }),
   /** Mock (Alex joined): session tomorrow morning — completion sharing not available yet. */
   lesson({
@@ -74,7 +71,6 @@ export const homeLessons: Lesson[] = [
     scheduledAtLabel: 'Tomorrow, 10:00 AM',
     locationName: 'SF Public Library, Mission',
     slidePreviewColors: ['#7C3AED', '#4C1D95', '#1F2937'],
-    priceCents: 3500,
   }),
   lesson({
     id: 'chat-long-title',
@@ -91,7 +87,6 @@ export const homeLessons: Lesson[] = [
     scheduledAtLabel: 'Saturday, 11:00 AM',
     locationName: 'WeWork, FiDi',
     slidePreviewColors: ['#1D4ED8', '#1E3A8A', '#1F2937'],
-    priceCents: 7500,
   }),
   lesson({
     id: '4',
@@ -107,7 +102,6 @@ export const homeLessons: Lesson[] = [
     scheduledAtLabel: 'Tomorrow, 11:30 AM',
     locationName: 'Ritual Coffee, Castro',
     slidePreviewColors: ['#D97706', '#7C2D12', '#1F2937'],
-    priceCents: 4000,
   }),
 ];
 
@@ -126,7 +120,6 @@ export const discoverLessons: Lesson[] = [
     scheduledAtLabel: 'Today 3 PM',
     locationName: 'WeWork, FiDi',
     slidePreviewColors: ['#0F766E', '#134E4A', '#1F2937'],
-    priceCents: 5000,
   }),
   lesson({
     id: 'd2',
@@ -142,7 +135,6 @@ export const discoverLessons: Lesson[] = [
     scheduledAtLabel: 'Today 5 PM',
     locationName: 'Mission Dance Studio',
     slidePreviewColors: ['#EC4899', '#9D174D', '#1F2937'],
-    priceCents: 3000,
   }),
   lesson({
     id: 'd3',
@@ -158,7 +150,6 @@ export const discoverLessons: Lesson[] = [
     scheduledAtLabel: 'Tomorrow 9 AM',
     locationName: 'Dolores Park',
     slidePreviewColors: ['#3B82F6', '#1E40AF', '#1F2937'],
-    priceCents: 2000,
   }),
   lesson({
     id: 'd4',
@@ -174,7 +165,6 @@ export const discoverLessons: Lesson[] = [
     scheduledAtLabel: 'Jun 5 10 AM',
     locationName: 'Blue Bottle Coffee',
     slidePreviewColors: ['#D97706', '#92400E', '#1F2937'],
-    priceCents: 3000,
   }),
   lesson({
     id: 'd5',

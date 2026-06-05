@@ -30,6 +30,17 @@ export function LessonSlidesScreen({ lessonId }: LessonSlidesScreenProps) {
     );
   }
 
+  if (!lesson.googleSlidesUrl?.trim()) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background px-6">
+        <Text className="text-center text-muted-foreground">This lesson has no slides yet.</Text>
+        <Pressable onPress={() => router.back()} className="mt-4">
+          <Text className="text-primary">Go back</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-black">
       <GoogleSlidesEmbed shareUrl={lesson.googleSlidesUrl} className="flex-1" />

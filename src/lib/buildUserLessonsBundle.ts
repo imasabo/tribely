@@ -79,16 +79,51 @@ function sortBySessionEndDesc(items: UserLessonItem[], lessonsById: Map<string, 
   });
 }
 
+export type BuildUserLessonsBundleOptions = {
+  /** Lessons loaded from Firestore (and other remote sources). */
+  remoteLessons?: Lesson[];
+  now?: Date;
+};
+
+function mergeOwnedLessons(userId: string, remoteLessons: Lesson[]): Map<string, Lesson> {
+  const owned = new Map<string, Lesson>();
+
+  for (const lesson of lessonCatalogStore.listAll()) {
+    if (isLessonOwner(lesson, userId)) {
+      owned.set(lesson.id, lesson);
+    }
+  }
+
+  for (const lesson of remoteLessons) {
+    if (isLessonOwner(lesson, userId)) {
+      owned.set(lesson.id, lesson);
+    }
+  }
+
+  return owned;
+}
+
+function resolveLessonById(
+  lessonId: string,
+  remoteById: Map<string, Lesson>
+): Lesson | null {
+  return remoteById.get(lessonId) ?? lessonCatalogStore.getById(lessonId);
+}
+
 /** Builds teaching / attending / completed tabs from catalog, enrollments, and session times. */
-export function buildUserLessonsBundle(userId: string, now = new Date()): UserLessonsBundle {
+export function buildUserLessonsBundle(
+  userId: string,
+  options?: BuildUserLessonsBundleOptions
+): UserLessonsBundle {
+  const now = options?.now ?? new Date();
+  const remoteLessons = options?.remoteLessons ?? [];
+  const remoteById = new Map(remoteLessons.map((lesson) => [lesson.id, lesson]));
   const teaching: UserLessonItem[] = [];
   const attending: UserLessonItem[] = [];
   const completed: UserLessonItem[] = [];
   const lessonsById = new Map<string, Lesson>();
 
-  for (const lesson of lessonCatalogStore.listAll()) {
-    if (!isLessonOwner(lesson, userId)) continue;
-
+  for (const lesson of mergeOwnedLessons(userId, remoteLessons).values()) {
     lessonsById.set(lesson.id, lesson);
     const sessions = defaultSessions(lesson);
 
@@ -129,7 +164,7 @@ export function buildUserLessonsBundle(userId: string, now = new Date()): UserLe
   ];
 
   for (const lessonId of acceptedLessonIds) {
-    const lesson = lessonCatalogStore.getById(lessonId);
+    const lesson = resolveLessonById(lessonId, remoteById);
     if (!lesson) continue;
 
     lessonsById.set(lesson.id, lesson);

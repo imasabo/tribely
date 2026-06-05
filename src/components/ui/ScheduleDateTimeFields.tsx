@@ -2,13 +2,15 @@ import { Feather } from '@expo/vector-icons';
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
 import {
+  clampTimeForSelectedDate,
   formatScheduleDate,
   formatScheduleTime,
+  isSameCalendarDay,
   startOfToday,
 } from '@/lib/lessonSchedule';
 
@@ -67,10 +69,12 @@ function InlinePicker({
   mode,
   value,
   onChange,
+  minimumDate,
 }: {
   mode: 'date' | 'time';
   value: Date;
   onChange: (event: DateTimePickerEvent, date?: Date) => void;
+  minimumDate?: Date;
 }) {
   return (
     <View className="mt-2 overflow-hidden rounded-2xl border border-border bg-card">
@@ -81,7 +85,7 @@ function InlinePicker({
             mode="date"
             display="inline"
             onChange={onChange}
-            minimumDate={startOfToday()}
+            minimumDate={minimumDate}
             themeVariant="light"
             accentColor={colors.primary}
           />
@@ -92,7 +96,7 @@ function InlinePicker({
           mode={mode}
           display="spinner"
           onChange={onChange}
-          minimumDate={mode === 'date' ? startOfToday() : undefined}
+          minimumDate={minimumDate}
           themeVariant="light"
           accentColor={colors.primary}
         />
@@ -111,21 +115,42 @@ export function ScheduleDateTimeFields({
 }: ScheduleDateTimeFieldsProps) {
   const [activePicker, setActivePicker] = useState<ActivePicker>(null);
 
-  const handlePickerChange = (mode: 'date' | 'time') => (event: DateTimePickerEvent, selected?: Date) => {
-    if (event.type === 'dismissed') {
-      setActivePicker(null);
+  const timeMinimumDate = useMemo(() => {
+    if (!date || !isSameCalendarDay(date, new Date())) return undefined;
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return now;
+  }, [date]);
+
+  const applyDateChange = (selected: Date) => {
+    onDateChange(selected);
+    onTimeChange(clampTimeForSelectedDate(selected, time));
+  };
+
+  const applyTimeChange = (selected: Date) => {
+    if (!date) {
+      onTimeChange(selected);
       return;
     }
-
-    if (selected) {
-      if (mode === 'date') onDateChange(selected);
-      else onTimeChange(selected);
-    }
-
-    if (Platform.OS === 'android') {
-      setActivePicker(null);
-    }
+    onTimeChange(clampTimeForSelectedDate(date, selected));
   };
+
+  const handlePickerChange =
+    (mode: 'date' | 'time') => (event: DateTimePickerEvent, selected?: Date) => {
+      if (event.type === 'dismissed') {
+        setActivePicker(null);
+        return;
+      }
+
+      if (selected) {
+        if (mode === 'date') applyDateChange(selected);
+        else applyTimeChange(selected);
+      }
+
+      if (Platform.OS === 'android') {
+        setActivePicker(null);
+      }
+    };
 
   const openPicker = (mode: 'date' | 'time') => {
     setActivePicker((current) => (current === mode ? null : mode));
@@ -149,6 +174,7 @@ export function ScheduleDateTimeFields({
             mode="date"
             value={date ?? new Date()}
             onChange={handlePickerChange('date')}
+            minimumDate={startOfToday()}
           />
         ) : null}
       </View>
@@ -165,7 +191,12 @@ export function ScheduleDateTimeFields({
         />
         {timeError ? <Text className="mt-1 text-xs text-destructive">{timeError}</Text> : null}
         {Platform.OS === 'ios' && activePicker === 'time' ? (
-          <InlinePicker mode="time" value={time} onChange={handlePickerChange('time')} />
+          <InlinePicker
+            mode="time"
+            value={time}
+            onChange={handlePickerChange('time')}
+            minimumDate={timeMinimumDate}
+          />
         ) : null}
       </View>
 
@@ -185,6 +216,7 @@ export function ScheduleDateTimeFields({
           mode="time"
           display="default"
           onChange={handlePickerChange('time')}
+          minimumDate={timeMinimumDate}
         />
       ) : null}
     </View>

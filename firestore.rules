@@ -33,9 +33,13 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Not used in the app yet — keep locked until you add Firestore-backed features
     match /lessons/{lessonId} {
-      allow read, write: if false;
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.teacherId == request.auth.uid
+        && request.resource.data.status == 'published';
+      allow update: if isSignedIn() && resource.data.teacherId == request.auth.uid;
+      allow delete: if false;
     }
 
     match /bookings/{bookingId} {
