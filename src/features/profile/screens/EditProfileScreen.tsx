@@ -1,11 +1,17 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
-import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
 import { FormTextField } from '@/components/ui/FormTextField';
 import { UsernameFormField } from '@/components/ui/UsernameFormField';
 import { colors } from '@/constants/theme';
@@ -91,12 +97,16 @@ export function EditProfileScreen() {
         <View className="w-9" />
       </View>
 
-      <DismissKeyboard className="flex-1">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}>
         <ScrollView
-          className="flex-1 px-5"
-          contentContainerStyle={{ paddingBottom: 24 }}
-          keyboardShouldPersistTaps="never"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }}
+          keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          nestedScrollEnabled
           showsVerticalScrollIndicator={false}>
         <View className="mb-4 gap-1.5">
           <Text className="text-sm font-medium text-foreground">Username</Text>
@@ -149,7 +159,7 @@ export function EditProfileScreen() {
           onLearnTopicsChange={setLearnTopics}
         />
         </ScrollView>
-      </DismissKeyboard>
+      </KeyboardAvoidingView>
 
       <View
         className="border-t border-border bg-background px-5 pt-3"
