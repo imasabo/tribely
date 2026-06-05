@@ -83,6 +83,8 @@ export function TaughtLessonDetailScreen({
     );
   }
 
+  const isOwner = isLessonOwner(lesson, user?.uid);
+
   return (
     <View className="flex-1 bg-background">
       <View
@@ -149,7 +151,7 @@ export function TaughtLessonDetailScreen({
           </View>
         </View>
 
-        {lesson && isLessonOwner(lesson, user?.uid) && pendingJoinCount > 0 ? (
+        {isOwner && pendingJoinCount > 0 ? (
           <View className="mt-4 rounded-2xl border border-primary/30 bg-secondary px-4 py-3">
             <Text className="text-sm font-semibold text-primary">
               {pendingJoinCount} pending join request{pendingJoinCount === 1 ? '' : 's'}
@@ -169,15 +171,17 @@ export function TaughtLessonDetailScreen({
               icon={<Feather name="message-circle" size={16} color="#fff" />}
             />
           ) : null}
-          <Button
-            title="Schedule another session"
-            fullWidth
-            onPress={openCreateAnotherSession}
-            icon={<Feather name="calendar" size={16} color="#fff" />}
-          />
+          {isOwner ? (
+            <Button
+              title="Schedule another session"
+              fullWidth
+              onPress={openCreateAnotherSession}
+              icon={<Feather name="calendar" size={16} color="#fff" />}
+            />
+          ) : null}
           <Button
             title={
-              pendingJoinCount > 0 && lesson && isLessonOwner(lesson, user?.uid)
+              pendingJoinCount > 0 && isOwner
                 ? `Review join requests (${pendingJoinCount})`
                 : 'View public lesson page'
             }
@@ -187,10 +191,12 @@ export function TaughtLessonDetailScreen({
           />
         </View>
 
-        <Text className="mt-4 text-center text-xs leading-5 text-muted-foreground">
-          Reuse your slides, description, and lesson details — set a new date and time for the
-          next session.
-        </Text>
+        {isOwner ? (
+          <Text className="mt-4 text-center text-xs leading-5 text-muted-foreground">
+            Reuse your slides, description, and lesson details — set a new date and time for the
+            next session.
+          </Text>
+        ) : null}
       </ScrollView>
     </View>
   );

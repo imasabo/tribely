@@ -1,12 +1,12 @@
 import { mockLessonChatMessages } from '@/data/mock/lessonChatMessages';
-import { canAccessLessonChat, getLessonForChat } from '@/lib/lessonChatAccess';
+import { canAccessLessonChat, getLessonForChat, resolveChatSenderId } from '@/lib/lessonChatAccess';
 import { getInitials } from '@/lib/userDisplay';
 import { lessonJoinRequestsService } from '@/services/lessonJoinRequests.service';
 import { isLessonOwner } from '@/lib/lessonEnrollment';
 import { lessonCatalogStore } from '@/data/lessonCatalogStore';
 import type { LessonChatInboxItem, LessonChatMessage } from '@/types/lessonChat';
 
-const CHAT_SEED_VERSION = 1;
+const CHAT_SEED_VERSION = 5;
 
 const messages = new Map<string, LessonChatMessage>();
 let chatSeedVersion = 0;
@@ -54,6 +54,8 @@ export const lessonChatService = {
       const thread = listForLesson(lesson.id);
       const last = thread[thread.length - 1];
 
+      const viewerId = resolveChatSenderId(viewerUid);
+
       items.push({
         lessonId: lesson.id,
         title: lesson.title,
@@ -65,6 +67,7 @@ export const lessonChatService = {
         lastMessageAtLabel: last?.sentAtLabel,
         lastSentAt: last?.sentAt,
         isHost: isLessonOwner(lesson, viewerUid),
+        hasUnread: Boolean(last && last.senderId !== viewerId),
       });
     }
 

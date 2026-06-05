@@ -4,8 +4,10 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/ui/Avatar';
 import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { colors } from '@/constants/theme';
+import { truncateInboxTitle } from '@/lib/truncateText';
 import { useAuth } from '@/providers/AuthProvider';
 import { lessonChatService } from '@/services/lessonChat.service';
 import type { LessonChatInboxItem } from '@/types/lessonChat';
@@ -20,23 +22,37 @@ function InboxRow({ item, onPress }: { item: LessonChatInboxItem; onPress: () =>
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 border-b border-border bg-card px-5 py-4 active:opacity-90">
-      <View className="h-12 w-12 items-center justify-center rounded-2xl bg-secondary">
-        <Feather name="message-circle" size={22} color={colors.primary} />
+      className="flex-row items-center gap-3 border-b border-border bg-card py-4 pl-3 pr-5 active:opacity-90">
+      <View className="w-3 items-center justify-center self-stretch">
+        {item.hasUnread ? (
+          <View
+            className="h-2.5 w-2.5 rounded-full bg-primary"
+            accessibilityLabel="Unread messages"
+          />
+        ) : null}
       </View>
-      <View className="min-w-0 flex-1">
-        <View className="flex-row items-center justify-between gap-2">
-          <Text className="flex-1 text-base font-semibold text-foreground" numberOfLines={1}>
-            {item.title}
+      <Avatar size="inbox" initials={item.teacherAvatar} personPlaceholder />
+      <View className="min-w-0 flex-1 shrink">
+        <View className="min-w-0 flex-row items-center gap-2">
+          <Text
+            accessibilityLabel={item.title}
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            className={`min-w-0 flex-1 shrink text-base ${item.hasUnread ? 'font-bold' : 'font-semibold'} text-foreground`}>
+            {truncateInboxTitle(item.title)}
           </Text>
           {item.lastMessageAtLabel ? (
-            <Text className="text-[11px] text-muted-foreground">{item.lastMessageAtLabel}</Text>
+            <Text className="shrink-0 text-[11px] text-muted-foreground">
+              {item.lastMessageAtLabel}
+            </Text>
           ) : null}
         </View>
         <Text className="mt-0.5 text-xs text-muted-foreground" numberOfLines={1}>
           {item.isHost ? 'Your lesson' : item.teacherName} · {item.scheduledAtLabel}
         </Text>
-        <Text className="mt-1 text-sm text-muted-foreground" numberOfLines={2}>
+        <Text
+          className={`mt-1 text-sm ${item.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`}
+          numberOfLines={2}>
           {preview}
         </Text>
       </View>

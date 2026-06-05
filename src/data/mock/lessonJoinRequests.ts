@@ -50,4 +50,32 @@ export const mockLessonJoinRequests: LessonJoinRequest[] = [
     requestedAtLabel: 'Today',
     status: 'pending',
   },
+  /** Alex joined as a learner — shows in Messages inbox as a non-host chat. */
+  {
+    id: 'join-req-lesson-3-alex',
+    lessonId: '3',
+    requesterId: 'dev-user-alex',
+    requesterName: 'Alex Kim',
+    requesterInitials: getInitials('Alex Kim'),
+    requestedAtLabel: 'Yesterday',
+    status: 'accepted',
+  },
+  {
+    id: 'join-req-lesson-2-alex',
+    lessonId: '2',
+    requesterId: 'dev-user-alex',
+    requesterName: 'Alex Kim',
+    requesterInitials: getInitials('Alex Kim'),
+    requestedAtLabel: '2 days ago',
+    status: 'accepted',
+  },
+  {
+    id: 'join-req-chat-long-title-alex',
+    lessonId: 'chat-long-title',
+    requesterId: 'dev-user-alex',
+    requesterName: 'Alex Kim',
+    requesterInitials: getInitials('Alex Kim'),
+    requestedAtLabel: 'Today',
+    status: 'accepted',
+  },
 ];

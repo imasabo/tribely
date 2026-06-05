@@ -4,7 +4,7 @@ import { isLessonFull } from '@/lib/lessonEnrollment';
 import { getInitials } from '@/lib/userDisplay';
 import type { LessonJoinRequest, LessonJoinRequestStatus } from '@/types/lessonJoinRequest';
 
-const REQUESTS_SEED_VERSION = 2;
+const REQUESTS_SEED_VERSION = 6;
 
 const requests = new Map<string, LessonJoinRequest>();
 let requestsSeedVersion = 0;

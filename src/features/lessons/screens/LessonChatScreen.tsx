@@ -200,10 +200,22 @@ export function LessonChatScreen({ lessonId }: LessonChatScreenProps) {
             className="h-9 w-9 items-center justify-center rounded-full bg-muted active:opacity-80">
             <Feather name="arrow-left" size={18} color={colors.foreground} />
           </Pressable>
-          <View className="flex-1">
-            <Text className="text-[17px] font-semibold text-foreground" numberOfLines={1}>
-              {lesson.title}
-            </Text>
+          <View className="min-w-0 flex-1">
+            <Pressable
+              onPress={() => router.push(`/lesson/${lessonId}`)}
+              accessibilityRole="link"
+              accessibilityLabel={`View lesson: ${lesson.title}`}
+              className="max-w-full flex-row items-center gap-1.5 self-start rounded-full border border-border bg-muted/50 py-1 pl-3 pr-2 active:opacity-70">
+              <Text
+                className="min-w-0 shrink text-[17px] font-semibold text-foreground"
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {lesson.title}
+              </Text>
+              <View className="h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-card">
+                <Feather name="arrow-right" size={14} color={colors.foreground} />
+              </View>
+            </Pressable>
             <Pressable
               onPress={() => setMembersSheetVisible(true)}
               accessibilityRole="button"

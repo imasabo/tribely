@@ -75,6 +75,23 @@ export const homeLessons: Lesson[] = [
     priceCents: 3500,
   }),
   lesson({
+    id: 'chat-long-title',
+    title:
+      'Advanced Machine Learning: Feature Engineering, Model Selection, and Production Deployment Workshop',
+    teacherName: 'Priya Nair',
+    teacherAvatar: 'PN',
+    category: 'Tech',
+    categoryEmoji: '🤖',
+    distanceLabel: '0.9 mi',
+    durationMinutes: 90,
+    rating: 4.9,
+    reviewCount: 19,
+    scheduledAtLabel: 'Saturday, 11:00 AM',
+    locationName: 'WeWork, FiDi',
+    slidePreviewColors: ['#1D4ED8', '#1E3A8A', '#1F2937'],
+    priceCents: 7500,
+  }),
+  lesson({
     id: '4',
     title: 'Bread Baking from Scratch',
     teacherName: 'Nadia Volkov',

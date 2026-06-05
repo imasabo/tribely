@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
+import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LimitedTextField } from '@/components/ui/LimitedTextField';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { ScheduleDateTimeFields } from '@/components/ui/ScheduleDateTimeFields';
@@ -24,6 +25,7 @@ import {
 } from '@/lib/lessonSchedule';
 import { useLesson } from '@/features/lessons/hooks/useLesson';
 import { isValidGoogleSlidesUrl, parseGoogleSlidesUrl } from '@/lib/googleSlides';
+import { isLessonOwner } from '@/lib/lessonEnrollment';
 import { useAuth } from '@/providers/AuthProvider';
 import { lessonsService } from '@/services/lessons.service';
 import type { LessonDurationMinutes } from '@/types/domain';
@@ -68,8 +70,11 @@ export function CreateLessonScreen() {
   const [templateApplied, setTemplateApplied] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
+  const canScheduleAnotherSession =
+    templateLesson != null && isLessonOwner(templateLesson, user?.uid);
+
   useEffect(() => {
-    if (!templateLesson || templateApplied) return;
+    if (!templateLesson || templateApplied || !canScheduleAnotherSession) return;
 
     setTitle(templateLesson.title);
     setDescription(
@@ -84,7 +89,7 @@ export function CreateLessonScreen() {
     setSessionTime(defaultSessionDate());
     setScheduleDateError(null);
     setTemplateApplied(true);
-  }, [templateLesson, templateApplied]);
+  }, [templateLesson, templateApplied, canScheduleAnotherSession]);
 
   const validateSlides = (url: string) => {
     const result = parseGoogleSlidesUrl(url);
@@ -101,9 +106,14 @@ export function CreateLessonScreen() {
     if (touched) validateSlides(text);
   };
 
+  const titleError = touched && !title.trim() ? 'Title is required' : undefined;
+  const descriptionError =
+    touched && !description.trim() ? 'Description is required' : undefined;
+  const locationError = touched && !location.trim() ? 'Location is required' : undefined;
+
   const handlePublish = async () => {
     setTouched(true);
-    if (!title.trim()) return;
+    if (!title.trim() || !description.trim() || !location.trim()) return;
     if (!sessionDate) {
       setScheduleDateError('Select a date for this session.');
       return;
@@ -111,6 +121,9 @@ export function CreateLessonScreen() {
     setScheduleDateError(null);
     const scheduledAt = combineDateAndTime(sessionDate, sessionTime);
     if (!validateSlides(slidesUrl)) return;
+    if (resolvedTemplateId && templateLesson && !isLessonOwner(templateLesson, user?.uid)) {
+      return;
+    }
 
     const teacherId = user?.uid ?? 'dev-user-alex';
     const teacherName = user?.displayName ?? 'Alex Kim';
@@ -140,10 +153,26 @@ export function CreateLessonScreen() {
   };
 
   const showValid = touched && slidesUrl.length > 0 && isValidGoogleSlidesUrl(slidesUrl);
-  const isDuplicate = Boolean(resolvedTemplateId);
+  const isDuplicate = Boolean(resolvedTemplateId && canScheduleAnotherSession);
 
-  if (isDuplicate && templateLoading) {
+  if (resolvedTemplateId && templateLoading) {
     return <LoadingScreen message="Loading lesson template…" />;
+  }
+
+  if (
+    resolvedTemplateId &&
+    !templateLoading &&
+    (!templateLesson || !canScheduleAnotherSession)
+  ) {
+    return (
+      <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+        <CenteredMessage
+          message="Only the lesson creator can schedule another session."
+          actionLabel="Go back"
+          onAction={() => router.back()}
+        />
+      </View>
+    );
   }
 
   return (
@@ -189,6 +218,7 @@ export function CreateLessonScreen() {
               onChangeText={setTitle}
               maxLength={LESSON_TITLE_CHAR_LIMIT}
               placeholder="e.g. Intro to Python for Beginners"
+              error={titleError}
             />
           </View>
 
@@ -200,6 +230,7 @@ export function CreateLessonScreen() {
               maxLength={LESSON_DESCRIPTION_CHAR_LIMIT}
               placeholder="What will learners take away?"
               multiline
+              error={descriptionError}
             />
           </View>
 
@@ -226,8 +257,13 @@ export function CreateLessonScreen() {
               onChangeText={setLocation}
               placeholder="Where will you meet?"
               placeholderTextColor={colors.mutedForeground}
-              className="rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
+              className={`rounded-xl bg-muted px-4 py-3.5 text-base text-foreground ${
+                locationError ? 'border border-destructive' : ''
+              }`}
             />
+            {locationError ? (
+              <Text className="text-xs text-destructive">{locationError}</Text>
+            ) : null}
           </View>
 
           <View className="mb-6 gap-2">

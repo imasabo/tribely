@@ -8,6 +8,7 @@ interface LimitedTextFieldProps extends TextInputProps {
   onChangeText: (text: string) => void;
   maxLength: number;
   multiline?: boolean;
+  error?: string;
 }
 
 export function LimitedTextField({
@@ -17,6 +18,7 @@ export function LimitedTextField({
   maxLength,
   multiline = false,
   placeholder,
+  error,
   ...textInputProps
 }: LimitedTextFieldProps) {
   return (
@@ -33,9 +35,10 @@ export function LimitedTextField({
         textAlignVertical={multiline ? 'top' : 'center'}
         className={`rounded-xl bg-muted px-4 text-base text-foreground ${
           multiline ? 'min-h-[100px] py-3.5' : 'py-3.5'
-        }`}
+        } ${error ? 'border border-destructive' : ''}`}
         {...textInputProps}
       />
+      {error ? <Text className="text-xs text-destructive">{error}</Text> : null}
       {value.length > 0 ? (
         <Text className="text-right text-xs text-muted-foreground">
           {value.length}/{maxLength}

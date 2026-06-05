@@ -9,6 +9,7 @@ export interface LessonChatInboxItem {
   lastMessageAtLabel?: string;
   lastSentAt?: number;
   isHost: boolean;
+  hasUnread: boolean;
 }
 
 export interface LessonChatMessage {

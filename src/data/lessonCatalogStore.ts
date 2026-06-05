@@ -1,5 +1,6 @@
 import { allCatalogLessons } from '@/data/mock/profileTeachingLessons';
 import { mockProfileStatDetails } from '@/data/mock/profileStatDetails';
+import { isLessonOwner } from '@/lib/lessonEnrollment';
 import {
   createInitialSessions,
   newSessionId,
@@ -26,7 +27,7 @@ export interface PublishLessonInput {
   templateLessonId?: string;
 }
 
-const CATALOG_SEED_VERSION = 2;
+const CATALOG_SEED_VERSION = 3;
 
 const catalog = new Map<string, Lesson>();
 const extraTaughtByTeacher = new Map<string, ProfileTaughtItem[]>();
@@ -116,6 +117,9 @@ export const lessonCatalogStore = {
       const existing = catalog.get(input.templateLessonId);
       if (!existing) {
         throw new Error('Lesson not found');
+      }
+      if (!isLessonOwner(existing, input.teacherId)) {
+        throw new Error('Only the lesson creator can schedule another session');
       }
 
       const session = {
