@@ -15,15 +15,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
-import { FormTextField } from '@/components/ui/FormTextField';
 import { UsernameFormField } from '@/components/ui/UsernameFormField';
 import { colors, screenStyle } from '@/constants/theme';
-import {
-  PROFILE_NAME_CHAR_LIMIT,
-  PROFILE_NAME_MIN_LENGTH,
-  PROFILE_USERNAME_CHAR_LIMIT,
-  validateDisplayName,
-} from '@/features/profile/lib/profileLimits';
+import { PROFILE_USERNAME_CHAR_LIMIT } from '@/features/profile/lib/profileLimits';
 import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles';
 import { isFirestoreAvailable } from '@/lib/firestore/client';
 import {
@@ -41,22 +35,14 @@ const fieldErrorOutline = {
 
 export function UsernameOnboardingScreen() {
   const insets = useSafeAreaInsets();
-  const { user, profile, completeUsernameOnboarding, authDevBypass, signOut } = useAuth();
+  const { user, completeUsernameOnboarding, authDevBypass, signOut } = useAuth();
   const [username, setUsername] = useState('');
-  const [displayName, setDisplayName] = useState(profile?.displayName ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [checking, setChecking] = useState(false);
   const [availability, setAvailability] = useState<Availability>('idle');
   const [usernameChecked, setUsernameChecked] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
-  const [displayNameError, setDisplayNameError] = useState<string | null>(null);
   const [lastCheckedUsername, setLastCheckedUsername] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (profile?.displayName) {
-      setDisplayName(profile.displayName);
-    }
-  }, [profile?.displayName]);
 
   const normalized = normalizeUsernameInput(username);
 
@@ -128,11 +114,6 @@ export function UsernameOnboardingScreen() {
     setLastCheckedUsername(null);
   };
 
-  const handleDisplayNameChange = (text: string) => {
-    setDisplayName(text);
-    setDisplayNameError(null);
-  };
-
   const usernameHint = (() => {
     if (usernameError) return usernameError;
     if (!usernameChecked) {
@@ -146,14 +127,6 @@ export function UsernameOnboardingScreen() {
     return `3–${PROFILE_USERNAME_CHAR_LIMIT} characters: lowercase letters, numbers, and underscores.`;
   })();
 
-  const displayNameHint = (() => {
-    if (displayNameError) return displayNameError;
-    if (displayName.length >= PROFILE_NAME_CHAR_LIMIT) {
-      return `${PROFILE_NAME_CHAR_LIMIT} character limit reached.`;
-    }
-    return `${PROFILE_NAME_MIN_LENGTH}–${PROFILE_NAME_CHAR_LIMIT} characters.`;
-  })();
-
   const usernameHintIsError =
     !!usernameError ||
     availability === 'taken' ||
@@ -163,18 +136,8 @@ export function UsernameOnboardingScreen() {
   const usernameHintIsSuccess =
     usernameChecked && !checking && !usernameError && availability === 'available';
 
-  const displayNameHintIsError =
-    !!displayNameError || displayName.length >= PROFILE_NAME_CHAR_LIMIT;
-
   const handleContinue = async () => {
     let hasError = false;
-
-    const trimmedName = displayName.trim();
-    const nameError = validateDisplayName(displayName);
-    if (nameError) {
-      setDisplayNameError(nameError);
-      hasError = true;
-    }
 
     setUsernameChecked(true);
     const usernameOk =
@@ -202,11 +165,8 @@ export function UsernameOnboardingScreen() {
         }
       }
 
-      await completeUsernameOnboarding({
-        username: normalized,
-        displayName: trimmedName,
-      });
-      router.replace('/(tabs)');
+      await completeUsernameOnboarding({ username: normalized });
+      router.replace('/(auth)/setup-profile');
     } catch (e) {
       Alert.alert(
         'Could not save username',
@@ -290,37 +250,6 @@ export function UsernameOnboardingScreen() {
                   {usernameHint}
                 </Text>
               </View>
-            </View>
-
-            <View style={styles.fieldGroup}>
-              <Text
-                style={[styles.fieldLabel, displayNameError && styles.fieldLabelError]}>
-                Name
-              </Text>
-              <FormTextField
-                value={displayName}
-                onChangeText={handleDisplayNameChange}
-                placeholder="Display name"
-                multiline={false}
-                maxLength={PROFILE_NAME_CHAR_LIMIT}
-                onBlur={() => {
-                  const nameError = validateDisplayName(displayName);
-                  if (nameError) {
-                    setDisplayNameError(nameError);
-                  }
-                }}
-                style={[
-                  charLimitOutlineStyle(displayName.length, PROFILE_NAME_CHAR_LIMIT),
-                  displayNameError ? fieldErrorOutline : undefined,
-                ]}
-              />
-              <Text
-                style={[
-                  styles.hint,
-                  displayNameHintIsError && styles.hintError,
-                ]}>
-                {displayNameHint}
-              </Text>
             </View>
           </View>
         </ScrollView>

@@ -2,30 +2,21 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from 'react';
 
-import { MOCK_OWN_PROFILE_VIEW_MODEL } from '@/features/profile/lib/profileViewModel';
-import type { ProfileViewModel } from '@/features/profile/types';
 import {
-  loadOwnProfile,
-  saveOwnProfile,
-  type OwnProfileData,
-} from '@/lib/ownProfileStorage';
+  emptyOwnProfileViewModel,
+  userProfileToViewModel,
+} from '@/features/profile/lib/profileViewModel';
+import type { ProfileViewModel } from '@/features/profile/types';
+import { isFirestoreAvailable } from '@/lib/firestore/client';
+import { saveOwnProfile, type OwnProfileData } from '@/lib/ownProfileStorage';
 import { isValidUsername, usernameFromDisplayName } from '@/lib/username';
 import { useAuth } from '@/providers/AuthProvider';
+import { usersService } from '@/services/users.service';
 import type { UserProfile } from '@/types/userProfile';
-
-const DEFAULT_OWN_PROFILE: OwnProfileData = {
-  username: MOCK_OWN_PROFILE_VIEW_MODEL.username,
-  displayName: MOCK_OWN_PROFILE_VIEW_MODEL.displayName,
-  bio: MOCK_OWN_PROFILE_VIEW_MODEL.bio ?? '',
-  teachTopics: [...MOCK_OWN_PROFILE_VIEW_MODEL.teachTopics],
-  learnTopics: [...MOCK_OWN_PROFILE_VIEW_MODEL.learnTopics],
-};
 
 type OwnProfileContextValue = {
   profile: OwnProfileData;
@@ -36,121 +27,86 @@ type OwnProfileContextValue = {
 
 const OwnProfileContext = createContext<OwnProfileContextValue | null>(null);
 
-function resolveUsername(stored: string, displayName: string): string {
-  if (isValidUsername(stored)) return stored;
-  return usernameFromDisplayName(displayName || MOCK_OWN_PROFILE_VIEW_MODEL.displayName);
-}
-
-function profileDataFromAuth(profile: UserProfile): OwnProfileData {
-  const displayName = profile.displayName || DEFAULT_OWN_PROFILE.displayName;
+function authProfileToOwnData(profile: UserProfile): OwnProfileData {
+  const displayName = profile.displayName;
   return {
     username: profile.username
-      ? resolveUsername(profile.username, displayName)
+      ? isValidUsername(profile.username)
+        ? profile.username
+        : usernameFromDisplayName(displayName)
       : usernameFromDisplayName(displayName),
     displayName,
-    bio: profile.bio || '',
-    teachTopics:
-      profile.teachTopics.length > 0 ? profile.teachTopics : DEFAULT_OWN_PROFILE.teachTopics,
-    learnTopics:
-      profile.learnTopics.length > 0 ? profile.learnTopics : DEFAULT_OWN_PROFILE.learnTopics,
+    bio: profile.bio ?? '',
+    city: profile.city ?? '',
+    teachTopics: profile.teachTopics ?? [],
+    learnTopics: profile.learnTopics ?? [],
   };
 }
 
-function toViewModel(data: OwnProfileData): ProfileViewModel {
-  return {
-    ...MOCK_OWN_PROFILE_VIEW_MODEL,
-    username: resolveUsername(data.username, data.displayName),
-    displayName: data.displayName,
-    bio: data.bio,
-    teachTopics: data.teachTopics,
-    learnTopics: data.learnTopics,
-  };
-}
+const EMPTY_OWN_DATA: OwnProfileData = {
+  username: '',
+  displayName: '',
+  bio: '',
+  city: '',
+  teachTopics: [],
+  learnTopics: [],
+};
 
 export function OwnProfileProvider({ children }: { children: ReactNode }) {
-  const { user, profile: authProfile } = useAuth();
-  const [profile, setProfile] = useState<OwnProfileData>(DEFAULT_OWN_PROFILE);
-  const [loading, setLoading] = useState(true);
+  const { user, profile: authProfile, profileLoading, refreshProfile, authDevBypass } =
+    useAuth();
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function hydrate() {
-      if (!user?.uid) {
-        if (mounted) {
-          setProfile(DEFAULT_OWN_PROFILE);
-          setLoading(false);
-        }
-        return;
-      }
-
-      setLoading(true);
-
-      if (authProfile?.onboardingComplete) {
-        const fromAuth = profileDataFromAuth(authProfile);
-        if (mounted) {
-          setProfile(fromAuth);
-          setLoading(false);
-        }
-        await saveOwnProfile(user.uid, fromAuth);
-        return;
-      }
-
-      const stored = await loadOwnProfile(user.uid);
-      if (!mounted) return;
-
-      setProfile(
-        stored
-          ? {
-              username: resolveUsername(
-                stored.username,
-                stored.displayName || DEFAULT_OWN_PROFILE.displayName
-              ),
-              displayName: stored.displayName || DEFAULT_OWN_PROFILE.displayName,
-              bio: stored.bio || DEFAULT_OWN_PROFILE.bio,
-              teachTopics:
-                stored.teachTopics.length > 0
-                  ? stored.teachTopics
-                  : DEFAULT_OWN_PROFILE.teachTopics,
-              learnTopics:
-                stored.learnTopics.length > 0
-                  ? stored.learnTopics
-                  : DEFAULT_OWN_PROFILE.learnTopics,
-            }
-          : DEFAULT_OWN_PROFILE
-      );
-      setLoading(false);
+  const profile = useMemo(() => {
+    if (authProfile?.onboardingComplete) {
+      return authProfileToOwnData(authProfile);
     }
+    return EMPTY_OWN_DATA;
+  }, [authProfile]);
 
-    hydrate();
+  const viewModel = useMemo(() => {
+    if (authProfile?.onboardingComplete) {
+      return userProfileToViewModel(authProfile);
+    }
+    return emptyOwnProfileViewModel(user?.displayName ?? '');
+  }, [authProfile, user?.displayName]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [user?.uid, authProfile]);
+  const loading = !!user && profileLoading && !authProfile;
 
   const updateProfile = useCallback(
     async (patch: Partial<OwnProfileData>) => {
-      let next: OwnProfileData | null = null;
-      setProfile((prev) => {
-        next = { ...prev, ...patch };
-        return next;
-      });
-      if (next && user?.uid) {
-        await saveOwnProfile(user.uid, next);
+      if (!user?.uid) {
+        throw new Error('You must be signed in to update your profile.');
       }
+
+      const next: OwnProfileData = { ...profile, ...patch };
+
+      if (isFirestoreAvailable() && !authDevBypass) {
+        const updated = await usersService.updateOwnProfile(user.uid, {
+          displayName: next.displayName,
+          bio: next.bio,
+          city: next.city,
+          teachTopics: next.teachTopics,
+          learnTopics: next.learnTopics,
+        });
+        await saveOwnProfile(user.uid, authProfileToOwnData(updated));
+        await refreshProfile();
+        return;
+      }
+
+      await saveOwnProfile(user.uid, next);
+      await refreshProfile();
     },
-    [user?.uid]
+    [user?.uid, profile, refreshProfile, authDevBypass]
   );
 
   const value = useMemo<OwnProfileContextValue>(
     () => ({
       profile,
-      viewModel: toViewModel(profile),
+      viewModel,
       loading,
       updateProfile,
     }),
-    [profile, loading, updateProfile]
+    [profile, viewModel, loading, updateProfile]
   );
 
   return (

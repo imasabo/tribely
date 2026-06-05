@@ -9,7 +9,6 @@ import { CenteredMessage } from '@/components/ui/CenteredMessage';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { colors } from '@/constants/theme';
 import { UserLessonRow } from '@/features/profile/components/UserLessonRow';
-import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
 import type { UserLessonItem, UserLessonsBundle } from '@/features/profile/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { userLessonsService } from '@/services/userLessons.service';
@@ -33,10 +32,13 @@ export function LessonsScreen() {
 
   const loadBundle = useCallback(
     (options?: { silent?: boolean }) => {
+      if (!user?.uid) {
+        setBundle({ teaching: [], attending: [], completed: [] });
+        setLoading(false);
+        return Promise.resolve();
+      }
       if (!options?.silent) setLoading(true);
-      return userLessonsService
-        .getForUser(OWN_PROFILE_STATS_USER_ID, user?.uid)
-        .then((data) => {
+      return userLessonsService.getForUser(user.uid, user.uid).then((data) => {
           setBundle(data);
           setActiveTab((prev) => {
             const items =

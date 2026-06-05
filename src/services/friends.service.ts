@@ -1,6 +1,8 @@
 import { mockPublicProfiles } from '@/data/mock/users';
+import { isFirestoreAvailable } from '@/lib/firestore/client';
 import { getInitials } from '@/lib/userDisplay';
 import { loadFriendConnections } from '@/lib/friendConnectionsStorage';
+import { usersService } from '@/services/users.service';
 import type { FriendListItem } from '@/types/friendList';
 
 /**
@@ -17,15 +19,28 @@ export const friendsService = {
     const items: FriendListItem[] = [];
 
     for (const userId of friendIds) {
-      const profile = mockPublicProfiles[userId];
-      if (profile) {
+      const mockProfile = mockPublicProfiles[userId];
+      if (mockProfile) {
         items.push({
           userId,
-          displayName: profile.displayName,
-          username: profile.username,
-          initials: getInitials(profile.displayName),
+          displayName: mockProfile.displayName,
+          username: mockProfile.username,
+          initials: getInitials(mockProfile.displayName),
         });
         continue;
+      }
+
+      if (isFirestoreAvailable()) {
+        const profile = await usersService.getProfile(userId);
+        if (profile) {
+          items.push({
+            userId,
+            displayName: profile.displayName,
+            username: profile.username ?? userId,
+            initials: getInitials(profile.displayName),
+          });
+          continue;
+        }
       }
 
       items.push({

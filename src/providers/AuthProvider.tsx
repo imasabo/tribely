@@ -13,11 +13,12 @@ import {
 import { isAuthDevBypassEnabled, isRealAuthEnabled } from '@/constants/devFlags';
 import { configureGoogleSignIn, signInWithGoogleCredential, signOutGoogle } from '@/lib/googleSignIn';
 import { getAuth, isFirebaseNativeAvailable } from '@/lib/firebase';
-import { normalizeUsernameInput } from '@/lib/username';
+import { loadOwnProfile } from '@/lib/ownProfileStorage';
+import { isValidUsername, normalizeUsernameInput } from '@/lib/username';
 import { usersService } from '@/services/users.service';
 import { usernameService } from '@/services/username.service';
 import type { AuthUser } from '@/types/auth';
-import type { UserProfile } from '@/types/userProfile';
+import { EMPTY_USER_PROFILE_STATS, type UserProfile } from '@/types/userProfile';
 
 const ONBOARDING_KEY = 'tribely.has_seen_onboarding';
 const DEV_USER_KEY = 'tribely.dev_auth_user';
@@ -37,6 +38,7 @@ const PREVIEW_AUTH_PROFILE: UserProfile = {
   bio: '',
   teachTopics: [],
   learnTopics: [],
+  stats: { ...EMPTY_USER_PROFILE_STATS },
   onboardingComplete: false,
 };
 
@@ -53,8 +55,11 @@ const DEV_MOCK_PROFILE: UserProfile = {
   email: DEV_MOCK_USER.email ?? '',
   role: 'both',
   bio: '',
+  city: 'San Francisco, CA',
   teachTopics: ['Guitar', 'Music Theory'],
   learnTopics: ['Spanish', 'Photography'],
+  stats: { rating: 0, lessonsTaught: 0, students: 0, reviews: 0 },
+  joinedAtLabel: 'Joined March 2025',
   onboardingComplete: true,
 };
 
@@ -66,6 +71,7 @@ type AuthContextValue = {
   hasSeenOnboarding: boolean;
   isAuthenticated: boolean;
   needsUsernameOnboarding: boolean;
+  needsProfileSetup: boolean;
   isDevAuth: boolean;
   /** True when EXPO_PUBLIC_USE_REAL_AUTH is enabled (always true in production). */
   useRealAuth: boolean;
@@ -78,12 +84,32 @@ type AuthContextValue = {
   signInForUsernamePreview: () => Promise<void>;
   signOut: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
-  completeUsernameOnboarding: (input: {
-    username: string;
-    displayName?: string;
+  completeUsernameOnboarding: (input: { username: string }) => Promise<void>;
+  completeProfileSetup: (input: {
+    displayName: string;
+    bio?: string;
+    city?: string;
+    teachTopics: string[];
+    learnTopics: string[];
   }) => Promise<void>;
   refreshProfile: () => Promise<void>;
 };
+
+function fallbackProfileFromAuth(authUser: AuthUser): UserProfile {
+  return {
+    uid: authUser.uid,
+    username: null,
+    displayName: authUser.displayName?.trim() || 'New member',
+    email: authUser.email ?? '',
+    photoURL: authUser.photoURL ?? undefined,
+    role: 'both',
+    bio: '',
+    teachTopics: [],
+    learnTopics: [],
+    stats: { ...EMPTY_USER_PROFILE_STATS },
+    onboardingComplete: false,
+  };
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -112,23 +138,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authDevBypass = isDevAuth || isAuthDevBypassEnabled();
   const previewAuthRef = useRef(false);
 
-  const loadProfileForUser = useCallback(async (authUser: AuthUser) => {
-    setProfileLoading(true);
-    try {
-      const loaded = await usersService.getProfile(authUser.uid);
-      if (loaded) {
-        setProfile(loaded);
-        return;
+  const loadProfileForUser = useCallback(
+    async (authUser: AuthUser, options?: { background?: boolean }) => {
+      const background = options?.background ?? false;
+      if (!background) {
+        setProfileLoading(true);
       }
-      const created = await usersService.ensureStubProfile(authUser);
-      setProfile(created);
-    } catch (error) {
-      console.warn('[Tribely] Failed to load user profile', error);
-      setProfile(null);
-    } finally {
-      setProfileLoading(false);
-    }
-  }, []);
+      try {
+        const loaded = await usersService.getProfile(authUser.uid);
+        if (loaded) {
+          setProfile(loaded);
+          return;
+        }
+        const created = await usersService.ensureStubProfile(authUser);
+        setProfile(created);
+      } catch (error) {
+        console.warn('[Tribely] Failed to load user profile', error);
+        setProfile((current) => current ?? fallbackProfileFromAuth(authUser));
+      } finally {
+        if (!background) {
+          setProfileLoading(false);
+        }
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (isFirebaseNativeAvailable) {
@@ -233,12 +267,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     if (!user) return;
+
+    if (authDevBypass) {
+      const stored = await loadOwnProfile(user.uid);
+      setProfile((current) => {
+        const base =
+          current?.onboardingComplete
+            ? current
+            : user.uid === PREVIEW_AUTH_USER.uid
+              ? { ...PREVIEW_AUTH_PROFILE, onboardingComplete: true }
+              : DEV_MOCK_PROFILE;
+
+        if (!stored) return base;
+
+        return {
+          ...base,
+          uid: user.uid,
+          username: isValidUsername(stored.username) ? stored.username : base.username,
+          displayName: stored.displayName || base.displayName,
+          bio: stored.bio ?? base.bio,
+          teachTopics: stored.teachTopics ?? base.teachTopics,
+          learnTopics: stored.learnTopics ?? base.learnTopics,
+          onboardingComplete: true,
+        };
+      });
+      return;
+    }
+
     if (isDevAuth) {
       setProfile(DEV_MOCK_PROFILE);
       return;
     }
-    await loadProfileForUser(user);
-  }, [user, isDevAuth, loadProfileForUser]);
+    await loadProfileForUser(user, { background: true });
+  }, [user, isDevAuth, authDevBypass, loadProfileForUser]);
 
   const startDevGuestSession = useCallback(async () => {
     previewAuthRef.current = true;
@@ -326,7 +387,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const completeUsernameOnboarding = useCallback(
-    async (input: { username: string; displayName?: string }) => {
+    async (input: { username: string }) => {
       if (!user) {
         throw new Error('You must be signed in to choose a username.');
       }
@@ -344,9 +405,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           uid: user.uid,
           email: user.email ?? base.email,
           username: normalized,
-          displayName:
-            input.displayName?.trim() || user.displayName || base.displayName,
-          onboardingComplete: true,
+          displayName: user.displayName || base.displayName,
+          onboardingComplete: false,
         };
         previewAuthRef.current = true;
         setProfile(nextProfile);
@@ -384,15 +444,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const updated = await usersService.updateAfterUsernameClaim(firebaseUid, {
         username: normalized,
-        displayName: input.displayName,
+        displayName: user.displayName ?? undefined,
       });
       setProfile(updated);
     },
     [user, authDevBypass, profile?.username]
   );
 
+  const completeProfileSetup = useCallback(
+    async (input: {
+      displayName: string;
+      bio?: string;
+      city?: string;
+      teachTopics: string[];
+      learnTopics: string[];
+    }) => {
+      if (!user) {
+        throw new Error('You must be signed in to set up your profile.');
+      }
+
+      const useLocalSave =
+        authDevBypass || previewAuthRef.current || user.uid === PREVIEW_AUTH_USER.uid;
+
+      if (useLocalSave) {
+        const base =
+          previewAuthRef.current || user.uid === PREVIEW_AUTH_USER.uid
+            ? PREVIEW_AUTH_PROFILE
+            : DEV_MOCK_PROFILE;
+        const nextProfile: UserProfile = {
+          ...base,
+          uid: user.uid,
+          email: user.email ?? base.email,
+          username: profile?.username ?? base.username,
+          displayName: input.displayName.trim(),
+          bio: input.bio?.trim() ?? '',
+          city: input.city?.trim() || undefined,
+          teachTopics: input.teachTopics,
+          learnTopics: input.learnTopics,
+          onboardingComplete: true,
+        };
+        previewAuthRef.current = true;
+        setProfile(nextProfile);
+        setProfileLoading(false);
+        try {
+          await SecureStore.setItemAsync(
+            DEV_USER_KEY,
+            JSON.stringify({ user, profile: nextProfile })
+          );
+        } catch (error) {
+          console.warn('[Tribely] Dev profile saved in memory only', error);
+        }
+        return;
+      }
+
+      const auth = getAuth();
+      const firebaseUid = auth?.().currentUser?.uid ?? user.uid;
+      if (!firebaseUid) {
+        throw new Error('You must be signed in to set up your profile.');
+      }
+
+      const updated = await usersService.completeProfileSetup(firebaseUid, input);
+      setProfile(updated);
+    },
+    [user, authDevBypass, profile?.username]
+  );
+
   const needsUsernameOnboarding =
-    !!user && !profileLoading && (profile == null || !profile.onboardingComplete);
+    !!user && !profileLoading && !profile?.username;
+
+  const needsProfileSetup =
+    !!user && !profileLoading && !!profile?.username && !profile.onboardingComplete;
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -403,6 +524,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasSeenOnboarding,
       isAuthenticated: !!user,
       needsUsernameOnboarding,
+      needsProfileSetup,
       isDevAuth,
       useRealAuth,
       authDevBypass,
@@ -412,6 +534,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       completeOnboarding,
       completeUsernameOnboarding,
+      completeProfileSetup,
       refreshProfile,
     }),
     [
@@ -421,6 +544,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profileLoading,
       hasSeenOnboarding,
       needsUsernameOnboarding,
+      needsProfileSetup,
       isDevAuth,
       useRealAuth,
       authDevBypass,
@@ -430,6 +554,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       completeOnboarding,
       completeUsernameOnboarding,
+      completeProfileSetup,
       refreshProfile,
     ]
   );

@@ -3,8 +3,9 @@ import { learnerRatingsStore } from '@/data/learnerRatingsStore';
 import { mockProfileStatDetails } from '@/data/mock/profileStatDetails';
 import { mockTeacherProfiles } from '@/data/mock/teacherProfiles';
 import { mockPublicProfiles } from '@/data/mock/users';
-import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
+import { isFirestoreAvailable } from '@/lib/firestore/client';
 import { getPastSessions } from '@/lib/lessonSessions';
+import { usersService } from '@/services/users.service';
 import type {
   ProfileReviewItem,
   ProfileStatKey,
@@ -16,8 +17,11 @@ function resolveBundle(userId: string) {
   return mockProfileStatDetails[userId] ?? null;
 }
 
-function displayNameFor(userId: string): string | null {
-  if (userId === OWN_PROFILE_STATS_USER_ID) return 'Alex Kim';
+async function displayNameFor(userId: string): Promise<string | null> {
+  if (isFirestoreAvailable()) {
+    const profile = await usersService.getProfile(userId);
+    if (profile?.displayName) return profile.displayName;
+  }
   const profile = mockPublicProfiles[userId] ?? mockTeacherProfiles[userId];
   return profile?.displayName ?? null;
 }

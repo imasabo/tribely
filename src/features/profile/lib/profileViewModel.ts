@@ -1,11 +1,21 @@
 import type { PublicUserProfile } from '@/data/mock/users';
 import type { ProfileStatItem, ProfileViewModel } from '@/features/profile/types';
+import { isValidUsername, usernameFromDisplayName } from '@/lib/username';
+import {
+  EMPTY_USER_PROFILE_STATS,
+  type UserProfile,
+  type UserProfileStats,
+} from '@/types/userProfile';
 
-function defaultPublicStats(stats: PublicUserProfile['stats']): ProfileStatItem[] {
+export function buildProfileMetaLine(city?: string, joinedAtLabel?: string): string {
+  return [city, joinedAtLabel].filter(Boolean).join(' · ');
+}
+
+export function statsToProfileStatItems(stats: UserProfileStats): ProfileStatItem[] {
   return [
     {
       label: 'Rating',
-      value: stats.rating.toFixed(1),
+      value: stats.rating > 0 ? stats.rating.toFixed(1) : '—',
       icon: 'star',
       statKey: 'rating',
     },
@@ -30,13 +40,34 @@ function defaultPublicStats(stats: PublicUserProfile['stats']): ProfileStatItem[
   ];
 }
 
-export function publicProfileToViewModel(profile: PublicUserProfile): ProfileViewModel {
-  const metaParts = [profile.city, profile.joinedAtLabel].filter(Boolean);
+function resolveUsername(profile: UserProfile): string {
+  if (profile.username && isValidUsername(profile.username)) {
+    return profile.username;
+  }
+  return usernameFromDisplayName(profile.displayName);
+}
 
+export function userProfileToViewModel(profile: UserProfile): ProfileViewModel {
+  return {
+    username: resolveUsername(profile),
+    displayName: profile.displayName,
+    metaLine: buildProfileMetaLine(profile.city, profile.joinedAtLabel),
+    bio: profile.bio || undefined,
+    teachTopics: profile.teachTopics ?? [],
+    learnTopics: profile.learnTopics ?? [],
+    stats: statsToProfileStatItems(profile.stats ?? EMPTY_USER_PROFILE_STATS),
+  };
+}
+
+function defaultPublicStats(stats: PublicUserProfile['stats']): ProfileStatItem[] {
+  return statsToProfileStatItems(stats);
+}
+
+export function publicProfileToViewModel(profile: PublicUserProfile): ProfileViewModel {
   return {
     username: profile.username,
     displayName: profile.displayName,
-    metaLine: metaParts.join(' · '),
+    metaLine: buildProfileMetaLine(profile.city, profile.joinedAtLabel),
     bio: profile.bio,
     teachTopics: profile.teachTopics,
     learnTopics: profile.learnTopics,
@@ -44,33 +75,14 @@ export function publicProfileToViewModel(profile: PublicUserProfile): ProfileVie
   };
 }
 
-/** Phase 4: replace with useProfile() + Firestore */
-export const MOCK_OWN_PROFILE_VIEW_MODEL: ProfileViewModel = {
-  username: 'alexkim',
-  displayName: 'Alex Kim',
-  metaLine: 'San Francisco, CA · Joined March 2025',
-  bio: 'ML engineer at a startup. I love making complex tech topics approachable.',
-  teachTopics: ['Python', 'Data Science', 'ML Basics', 'SQL'],
-  learnTopics: ['Guitar', 'Watercolor', 'Spanish', 'Bread Baking'],
-  stats: [
-    { label: 'Rating', value: '4.9', icon: 'star', statKey: 'rating' },
-    { label: 'Taught', value: '12', icon: 'book-open', statKey: 'taught' },
-    { label: 'Students', value: '34', icon: 'users', statKey: 'students' },
-    { label: 'Reviews', value: '30', icon: 'award', statKey: 'reviews' },
-  ],
-};
-
-export const MOCK_OWN_PROFILE_ACTIVITY = [
-  {
-    title: 'Python for Data Science',
-    subtitle: 'May 28, 2026',
-    role: 'taught',
-    rating: 5,
-  },
-  {
-    title: 'Intro to Guitar Chords',
-    subtitle: 'May 15, 2026',
-    role: 'learned',
-    rating: 5,
-  },
-];
+export function emptyOwnProfileViewModel(displayName = ''): ProfileViewModel {
+  return {
+    username: '',
+    displayName,
+    metaLine: '',
+    bio: undefined,
+    teachTopics: [],
+    learnTopics: [],
+    stats: statsToProfileStatItems(EMPTY_USER_PROFILE_STATS),
+  };
+}

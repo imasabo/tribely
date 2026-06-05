@@ -5,7 +5,6 @@ import { useCallback, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { colors } from '@/constants/theme';
-import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
 import type { UserLessonsBundle } from '@/features/profile/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { userLessonsService } from '@/services/userLessons.service';
@@ -16,9 +15,11 @@ export function ProfileLessonsEntry() {
 
   useFocusEffect(
     useCallback(() => {
-      void userLessonsService
-        .getForUser(OWN_PROFILE_STATS_USER_ID, user?.uid)
-        .then(setBundle);
+      if (!user?.uid) {
+        setBundle(null);
+        return;
+      }
+      void userLessonsService.getForUser(user.uid, user.uid).then(setBundle);
     }, [user?.uid])
   );
 

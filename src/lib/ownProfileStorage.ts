@@ -4,6 +4,7 @@ export interface OwnProfileData {
   username: string;
   displayName: string;
   bio: string;
+  city: string;
   teachTopics: string[];
   learnTopics: string[];
 }
@@ -28,6 +29,7 @@ export async function loadOwnProfile(
       username: typeof parsed.username === 'string' ? parsed.username : '',
       displayName: typeof parsed.displayName === 'string' ? parsed.displayName : '',
       bio: typeof parsed.bio === 'string' ? parsed.bio : '',
+      city: typeof parsed.city === 'string' ? parsed.city : '',
       teachTopics: Array.isArray(parsed.teachTopics) ? parsed.teachTopics : [],
       learnTopics: Array.isArray(parsed.learnTopics) ? parsed.learnTopics : [],
     };

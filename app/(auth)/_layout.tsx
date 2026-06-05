@@ -8,14 +8,18 @@ import { useAuth } from '@/providers/AuthProvider';
 export default function AuthLayout() {
   const {
     loading,
+    profile,
     profileLoading,
     isAuthenticated,
     needsUsernameOnboarding,
+    needsProfileSetup,
   } = useAuth();
   const segments = useSegments();
-  const onSetupUsername = segments[segments.length - 1] === 'setup-username';
+  const current = segments[segments.length - 1];
+  const onSetupUsername = current === 'setup-username';
+  const onSetupProfile = current === 'setup-profile';
 
-  if (loading || (isAuthenticated && profileLoading)) {
+  if (loading || (isAuthenticated && profileLoading && !profile)) {
     return (
       <View style={screenStyle}>
         <LoadingScreen />
@@ -27,7 +31,11 @@ export default function AuthLayout() {
     return <Redirect href="/(auth)/setup-username" />;
   }
 
-  if (isAuthenticated && !needsUsernameOnboarding) {
+  if (isAuthenticated && needsProfileSetup && !onSetupProfile) {
+    return <Redirect href="/(auth)/setup-profile" />;
+  }
+
+  if (isAuthenticated && !needsUsernameOnboarding && !needsProfileSetup) {
     return <Redirect href="/(tabs)" />;
   }
 
@@ -37,7 +45,6 @@ export default function AuthLayout() {
         screenOptions={{
           headerShown: false,
           contentStyle: stackContentStyle,
-          sceneStyle: stackContentStyle,
         }}
       />
     </View>

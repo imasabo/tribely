@@ -4,6 +4,22 @@ export const PROFILE_NAME_CHAR_LIMIT = 50;
 export const PROFILE_BIO_CHAR_LIMIT = 200;
 export const PROFILE_TOPIC_CHAR_LIMIT = 40;
 
+export function displayNameFieldHint(length: number, error: string | null): string | null {
+  if (error) return error;
+  if (length >= PROFILE_NAME_CHAR_LIMIT) {
+    return `${PROFILE_NAME_CHAR_LIMIT} character limit reached.`;
+  }
+  return `${PROFILE_NAME_MIN_LENGTH}–${PROFILE_NAME_CHAR_LIMIT} characters.`;
+}
+
+export function bioFieldHint(length: number, optional = false): string | null {
+  if (length >= PROFILE_BIO_CHAR_LIMIT) {
+    return `${PROFILE_BIO_CHAR_LIMIT} character limit reached.`;
+  }
+  if (optional) return 'Optional';
+  return null;
+}
+
 export function validateDisplayName(name: string): string | null {
   const trimmed = name.trim();
   if (!trimmed) {

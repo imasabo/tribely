@@ -7,8 +7,7 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Button } from '@/components/ui/Button';
 import { SearchField } from '@/components/ui/SearchBar';
 import { colors } from '@/constants/theme';
-import { DISCOVER_CITIES } from '@/data/discoverCities';
-import type { DiscoverCity } from '@/data/discoverCities';
+import { searchDiscoverCities, type DiscoverCity } from '@/data/discoverCities';
 
 interface ChooseCitySheetProps {
   visible: boolean;
@@ -35,15 +34,7 @@ export function ChooseCitySheet({
     onSelectCity(city);
   };
 
-  const filteredCities = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return [];
-    return DISCOVER_CITIES.filter(
-      (city) =>
-        city.name.toLowerCase().includes(normalized) ||
-        city.region.toLowerCase().includes(normalized)
-    );
-  }, [query]);
+  const filteredCities = useMemo(() => searchDiscoverCities(query), [query]);
 
   return (
     <BottomSheet

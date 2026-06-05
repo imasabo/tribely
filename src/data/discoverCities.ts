@@ -83,3 +83,26 @@ export const DISCOVER_CITIES: DiscoverCity[] = [
 export function getDiscoverCityById(id: string): DiscoverCity | undefined {
   return DISCOVER_CITIES.find((city) => city.id === id);
 }
+
+export function formatDiscoverCityLabel(city: DiscoverCity): string {
+  return `${city.name}, ${city.region}`;
+}
+
+export function findDiscoverCityByLabel(label: string): DiscoverCity | undefined {
+  const normalized = label.trim().toLowerCase();
+  if (!normalized) return undefined;
+  return DISCOVER_CITIES.find(
+    (city) => formatDiscoverCityLabel(city).toLowerCase() === normalized
+  );
+}
+
+/** Returns matches only after the user types; empty query → no results (search-first UX). */
+export function searchDiscoverCities(query: string): DiscoverCity[] {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return [];
+  return DISCOVER_CITIES.filter(
+    (city) =>
+      city.name.toLowerCase().includes(normalized) ||
+      city.region.toLowerCase().includes(normalized)
+  );
+}

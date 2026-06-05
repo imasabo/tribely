@@ -7,10 +7,16 @@ import { screenStyle, stackContentStyle } from '@/constants/theme';
 import { useAuth } from '@/providers/AuthProvider';
 
 export default function TabsLayout() {
-  const { loading, profileLoading, isAuthenticated, needsUsernameOnboarding } =
-    useAuth();
+  const {
+    loading,
+    profile,
+    profileLoading,
+    isAuthenticated,
+    needsUsernameOnboarding,
+    needsProfileSetup,
+  } = useAuth();
 
-  if (loading || (isAuthenticated && profileLoading)) {
+  if (loading || (isAuthenticated && profileLoading && !profile)) {
     return (
       <View style={screenStyle}>
         <LoadingScreen />
@@ -24,6 +30,10 @@ export default function TabsLayout() {
 
   if (needsUsernameOnboarding) {
     return <Redirect href="/(auth)/setup-username" />;
+  }
+
+  if (needsProfileSetup) {
+    return <Redirect href="/(auth)/setup-profile" />;
   }
 
   return (

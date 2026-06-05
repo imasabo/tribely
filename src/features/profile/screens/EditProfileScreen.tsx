@@ -12,17 +12,17 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
-import { FormTextField } from '@/components/ui/FormTextField';
 import { UsernameFormField } from '@/components/ui/UsernameFormField';
 import { colors } from '@/constants/theme';
 import { charLimitOutlineStyle } from '@/features/profile/lib/profileFieldStyles';
 import {
-  PROFILE_BIO_CHAR_LIMIT,
-  PROFILE_NAME_CHAR_LIMIT,
   PROFILE_USERNAME_CHAR_LIMIT,
   validateDisplayName,
 } from '@/features/profile/lib/profileLimits';
+import { ProfileBioField } from '@/features/profile/components/ProfileBioField';
+import { ProfileCityField } from '@/features/profile/components/ProfileCityField';
 import { ProfileInterestsEditor } from '@/features/profile/components/ProfileInterestsEditor';
+import { ProfileNameField } from '@/features/profile/components/ProfileNameField';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
 import {
   isValidUsername,
@@ -37,6 +37,7 @@ export function EditProfileScreen() {
   const [username, setUsername] = useState(profile.username);
   const [displayName, setDisplayName] = useState(profile.displayName);
   const [bio, setBio] = useState(profile.bio);
+  const [city, setCity] = useState(profile.city);
   const [teachTopics, setTeachTopics] = useState(profile.teachTopics);
   const [learnTopics, setLearnTopics] = useState(profile.learnTopics);
   const [saving, setSaving] = useState(false);
@@ -45,6 +46,7 @@ export function EditProfileScreen() {
     setUsername(profile.username);
     setDisplayName(profile.displayName);
     setBio(profile.bio);
+    setCity(profile.city);
     setTeachTopics(profile.teachTopics);
     setLearnTopics(profile.learnTopics);
   }, [profile]);
@@ -76,6 +78,7 @@ export function EditProfileScreen() {
         username,
         displayName: name,
         bio: bio.trim(),
+        city: city.trim(),
         teachTopics,
         learnTopics,
       });
@@ -126,35 +129,20 @@ export function EditProfileScreen() {
           ) : null}
         </View>
 
-        <View className="mb-4 gap-1.5">
-          <Text className="text-sm font-medium text-foreground">Name</Text>
-          <FormTextField
-            variant="multiline"
+        <View className="mb-4">
+          <ProfileNameField
             value={displayName}
             onChangeText={setDisplayName}
-            placeholder="Your name"
-            maxLength={PROFILE_NAME_CHAR_LIMIT}
-            scrollEnabled={false}
-            style={[
-              { minHeight: 52, maxHeight: 80 },
-              charLimitOutlineStyle(displayName.length, PROFILE_NAME_CHAR_LIMIT),
-            ]}
+            error={displayNameError}
           />
-          {displayNameError ? (
-            <Text className="text-xs text-destructive">{displayNameError}</Text>
-          ) : null}
         </View>
 
-        <View className="mb-6 gap-1.5">
-          <Text className="text-sm font-medium text-foreground">Bio</Text>
-          <FormTextField
-            variant="multiline"
-            value={bio}
-            onChangeText={setBio}
-            placeholder="A short intro"
-            maxLength={PROFILE_BIO_CHAR_LIMIT}
-            style={charLimitOutlineStyle(bio.length, PROFILE_BIO_CHAR_LIMIT)}
-          />
+        <View className="mb-4">
+          <ProfileCityField value={city} onChange={setCity} />
+        </View>
+
+        <View className="mb-6">
+          <ProfileBioField value={bio} onChangeText={setBio} />
         </View>
 
         <ProfileInterestsEditor
