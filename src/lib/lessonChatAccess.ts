@@ -4,11 +4,9 @@ import { isLessonOwner } from '@/lib/lessonEnrollment';
 import type { Lesson } from '@/types/domain';
 import type { LessonJoinRequest } from '@/types/lessonJoinRequest';
 
-/** Maps live auth uid → mock id used in join-request seeds (Alex in dev). */
+/** Returns the signed-in viewer id (Firebase uid or Expo Go dev session). */
 export function resolveChatViewerId(viewerUid: string | undefined): string | undefined {
-  if (!viewerUid) return undefined;
-  if (viewerUid === OWN_PROFILE_STATS_USER_ID) return viewerUid;
-  return OWN_PROFILE_STATS_USER_ID;
+  return viewerUid;
 }
 
 export function canAccessLessonChat(

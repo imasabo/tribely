@@ -4,13 +4,22 @@ import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { useAuth } from '@/providers/AuthProvider';
 
 export default function RootIndex() {
-  const { loading, isAuthenticated, hasSeenOnboarding } = useAuth();
+  const {
+    loading,
+    profileLoading,
+    isAuthenticated,
+    hasSeenOnboarding,
+    needsUsernameOnboarding,
+  } = useAuth();
 
-  if (loading) {
+  if (loading || (isAuthenticated && profileLoading)) {
     return <LoadingScreen />;
   }
 
   if (isAuthenticated) {
+    if (needsUsernameOnboarding) {
+      return <Redirect href="/(auth)/setup-username" />;
+    }
     return <Redirect href="/(tabs)" />;
   }
 

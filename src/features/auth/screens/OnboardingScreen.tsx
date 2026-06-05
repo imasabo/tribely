@@ -5,7 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/Button';
-import { colors } from '@/constants/theme';
+import { colors, screenStyle } from '@/constants/theme';
 import { useAuth } from '@/providers/AuthProvider';
 
 export function OnboardingScreen() {
@@ -18,7 +18,7 @@ export function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+    <View style={[screenStyle, { paddingTop: insets.top }]}>
       <View className="flex-row items-center gap-2 px-6 pt-2">
         <View className="h-8 w-8 items-center justify-center rounded-xl bg-primary shadow-md">
           <Feather name="zap" size={16} color="#fff" />

@@ -1,18 +1,24 @@
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { Button } from '@/components/ui/Button';
-import { DismissKeyboard } from '@/components/ui/DismissKeyboard';
-import { colors } from '@/constants/theme';
+import { colors, screenStyle } from '@/constants/theme';
 import { useAuth } from '@/providers/AuthProvider';
 
-function GoogleIcon() {
+function GoogleIcon({ size = 20 }: { size?: number }) {
   return (
-    <Svg width={22} height={22} viewBox="0 0 24 24">
+    <Svg width={size} height={size} viewBox="0 0 24 24">
       <Path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
         fill="#4285F4"
@@ -42,7 +48,7 @@ export function SignInScreen() {
     setSubmitting(true);
     try {
       await signInWithGoogle();
-      router.replace('/(tabs)');
+      router.replace('/');
     } catch (e) {
       Alert.alert(
         'Sign in failed',
@@ -50,7 +56,7 @@ export function SignInScreen() {
           ? e.message
           : isDevAuth
             ? 'Could not start a dev session.'
-            : 'Use a development build (npx expo run:ios) and enable Anonymous Auth in Firebase Console until Google Sign-In is added.'
+            : 'Use a development build (npx expo run:ios) with Google Sign-In configured.'
       );
     } finally {
       setSubmitting(false);
@@ -58,83 +64,155 @@ export function SignInScreen() {
   };
 
   return (
-    <DismissKeyboard className="flex-1 bg-background">
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top }}
-        keyboardShouldPersistTaps="never"
-        keyboardDismissMode="on-drag"
-        showsVerticalScrollIndicator={false}>
-      <View className="px-4 pb-2">
-        <Pressable
-          onPress={() => router.back()}
-          className="h-9 w-9 items-center justify-center rounded-full bg-foreground/5">
-          <Feather name="arrow-left" size={18} color={colors.foreground} />
-        </Pressable>
-      </View>
+    <View style={[screenStyle, { paddingTop: insets.top }]}>
+      <View style={styles.main}>
+        <View style={styles.hero}>
+          <View style={styles.appIcon}>
+            <Feather name="zap" size={30} color="#fff" />
+          </View>
 
-      <View className="flex-1 px-6 pt-6">
-        <View className="mb-10 h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg">
-          <Feather name="zap" size={28} color="#fff" />
-        </View>
-        <Text className="mb-2 text-[28px] font-bold tracking-tight text-foreground">
-          Welcome back
-        </Text>
-        <Text className="mb-8 text-[15px] text-muted-foreground">
-          Sign in to continue learning and teaching
-        </Text>
-
-        <Pressable
-          onPress={handleSignIn}
-          disabled={submitting}
-          className="mb-4 flex-row items-center gap-3 rounded-2xl border border-border bg-card px-5 py-4 shadow-sm active:opacity-90">
-          <GoogleIcon />
-          <Text className="flex-1 text-base font-medium text-foreground">Continue with Google</Text>
-          <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
-        </Pressable>
-
-        <View className="my-4 flex-row items-center gap-3">
-          <View className="h-px flex-1 bg-border" />
-          <Text className="text-[13px] text-muted-foreground">or</Text>
-          <View className="h-px flex-1 bg-border" />
+          <Text style={styles.appName}>Tribely</Text>
+          <Text style={styles.tagline}>
+            Sign in to discover lessons and connect with people near you.
+          </Text>
         </View>
 
-        <View className="gap-3">
-          <View className="gap-1.5">
-            <Text className="text-sm font-medium text-foreground">Email</Text>
-            <TextInput
-              placeholder="you@example.com"
-              placeholderTextColor={colors.mutedForeground}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className="rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
-            />
-          </View>
-          <View className="gap-1.5">
-            <Text className="text-sm font-medium text-foreground">Password</Text>
-            <TextInput
-              placeholder="••••••••"
-              placeholderTextColor={colors.mutedForeground}
-              secureTextEntry
-              className="rounded-xl bg-muted px-4 py-3.5 text-base text-foreground"
-            />
-          </View>
-          <Button
-            title="Sign In"
-            fullWidth
-            loading={submitting}
+        <View style={styles.actions}>
+          <Pressable
             onPress={handleSignIn}
-            className="mt-1"
-          />
+            disabled={submitting}
+            accessibilityRole="button"
+            accessibilityLabel="Continue with Google"
+            style={({ pressed }) => [
+              styles.googleButton,
+              pressed && !submitting && styles.googleButtonPressed,
+              submitting && styles.googleButtonDisabled,
+            ]}>
+            <View style={styles.googleButtonContent}>
+              {submitting ? (
+                <ActivityIndicator size="small" color={colors.foreground} />
+              ) : (
+                <GoogleIcon />
+              )}
+              <Text style={styles.googleButtonLabel}>
+                {submitting ? 'Signing in…' : 'Continue with Google'}
+              </Text>
+            </View>
+          </Pressable>
+
+          {isDevAuth ? (
+            <Text style={styles.devNote}>
+              Development build required for Google Sign-In.
+            </Text>
+          ) : null}
         </View>
       </View>
 
-      <Text className="px-6 pb-10 text-center text-[13px] text-muted-foreground">
-        By continuing, you agree to Tribely&apos;s{' '}
-        <Text className="text-primary">Terms of Service</Text> and{' '}
-        <Text className="text-primary">Privacy Policy</Text>
-      </Text>
-      </ScrollView>
-    </DismissKeyboard>
+      <View
+        style={[
+          styles.legalFooter,
+          { paddingBottom: Math.max(insets.bottom, 20) + 8 },
+        ]}>
+        <Text style={styles.legal}>
+          By continuing, you agree to the{' '}
+          <Text style={styles.legalLink}>Terms of Service</Text>
+          {' and '}
+          <Text style={styles.legalLink}>Privacy Policy</Text>.
+        </Text>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingBottom: 24,
+  },
+  hero: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  actions: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 52,
+    gap: 16,
+  },
+  appIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  appName: {
+    fontSize: 34,
+    fontWeight: '700',
+    letterSpacing: Platform.select({ ios: 0.37, default: 0 }),
+    color: colors.foreground,
+    marginBottom: 12,
+  },
+  tagline: {
+    fontSize: 17,
+    fontWeight: '400',
+    lineHeight: 24,
+    letterSpacing: Platform.select({ ios: -0.41, default: 0 }),
+    color: colors.mutedForeground,
+    textAlign: 'center',
+    maxWidth: 300,
+  },
+  legalFooter: {
+    paddingHorizontal: 28,
+  },
+  googleButton: {
+    width: '100%',
+    height: 50,
+    borderRadius: 13,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: 'rgba(31, 41, 55, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleButtonPressed: {
+    opacity: 0.85,
+  },
+  googleButtonDisabled: {
+    opacity: 0.7,
+  },
+  googleButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  googleButtonLabel: {
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: Platform.select({ ios: -0.41, default: 0 }),
+    color: colors.foreground,
+  },
+  devNote: {
+    fontSize: 13,
+    lineHeight: 18,
+    letterSpacing: Platform.select({ ios: -0.08, default: 0 }),
+    color: colors.mutedForeground,
+    textAlign: 'center',
+  },
+  legal: {
+    fontSize: 13,
+    lineHeight: 18,
+    letterSpacing: Platform.select({ ios: -0.08, default: 0 }),
+    color: colors.mutedForeground,
+    textAlign: 'center',
+    paddingHorizontal: 8,
+  },
+  legalLink: {
+    color: colors.primary,
+  },
+});

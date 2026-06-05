@@ -31,7 +31,8 @@ export interface LessonDoc {
 }
 
 export interface UserDoc {
-  username: string;
+  /** Set during username onboarding; absent until claimed. */
+  username?: string;
   displayName: string;
   email: string;
   photoURL?: string;
@@ -46,5 +47,12 @@ export interface UserDoc {
     students: number;
     reviews: number;
   };
+  onboardingComplete: boolean;
+  createdAt: FirestoreTimestamp;
+  updatedAt?: FirestoreTimestamp;
+}
+
+export interface UsernameClaimDoc {
+  uid: string;
   createdAt: FirestoreTimestamp;
 }

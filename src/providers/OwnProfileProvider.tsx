@@ -17,6 +17,7 @@ import {
 } from '@/lib/ownProfileStorage';
 import { isValidUsername, usernameFromDisplayName } from '@/lib/username';
 import { useAuth } from '@/providers/AuthProvider';
+import type { UserProfile } from '@/types/userProfile';
 
 const DEFAULT_OWN_PROFILE: OwnProfileData = {
   username: MOCK_OWN_PROFILE_VIEW_MODEL.username,
@@ -40,6 +41,21 @@ function resolveUsername(stored: string, displayName: string): string {
   return usernameFromDisplayName(displayName || MOCK_OWN_PROFILE_VIEW_MODEL.displayName);
 }
 
+function profileDataFromAuth(profile: UserProfile): OwnProfileData {
+  const displayName = profile.displayName || DEFAULT_OWN_PROFILE.displayName;
+  return {
+    username: profile.username
+      ? resolveUsername(profile.username, displayName)
+      : usernameFromDisplayName(displayName),
+    displayName,
+    bio: profile.bio || '',
+    teachTopics:
+      profile.teachTopics.length > 0 ? profile.teachTopics : DEFAULT_OWN_PROFILE.teachTopics,
+    learnTopics:
+      profile.learnTopics.length > 0 ? profile.learnTopics : DEFAULT_OWN_PROFILE.learnTopics,
+  };
+}
+
 function toViewModel(data: OwnProfileData): ProfileViewModel {
   return {
     ...MOCK_OWN_PROFILE_VIEW_MODEL,
@@ -52,7 +68,7 @@ function toViewModel(data: OwnProfileData): ProfileViewModel {
 }
 
 export function OwnProfileProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, profile: authProfile } = useAuth();
   const [profile, setProfile] = useState<OwnProfileData>(DEFAULT_OWN_PROFILE);
   const [loading, setLoading] = useState(true);
 
@@ -69,6 +85,17 @@ export function OwnProfileProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(true);
+
+      if (authProfile?.onboardingComplete) {
+        const fromAuth = profileDataFromAuth(authProfile);
+        if (mounted) {
+          setProfile(fromAuth);
+          setLoading(false);
+        }
+        await saveOwnProfile(user.uid, fromAuth);
+        return;
+      }
+
       const stored = await loadOwnProfile(user.uid);
       if (!mounted) return;
 
@@ -100,7 +127,7 @@ export function OwnProfileProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, [user?.uid]);
+  }, [user?.uid, authProfile]);
 
   const updateProfile = useCallback(
     async (patch: Partial<OwnProfileData>) => {

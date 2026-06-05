@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUsernameDocId(username) {
+      return username.matches('^[a-z0-9_]{3,30}$');
+    }
+
+    // Signed-in user's profile (created on first Google sign-in, updated at username onboarding)
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId)
+        && request.resource.data.onboardingComplete == false;
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // Username uniqueness claims: usernames/{normalizedUsername} -> { uid, createdAt }
+    match /usernames/{username} {
+      allow read: if isSignedIn() && isValidUsernameDocId(username);
+      allow create: if isSignedIn()
+        && isValidUsernameDocId(username)
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Not used in the app yet — keep locked until you add Firestore-backed features
+    match /lessons/{lessonId} {
+      allow read, write: if false;
+    }
+
+    match /bookings/{bookingId} {
+      allow read, write: if false;
+    }
+
+    match /reviews/{reviewId} {
+      allow read, write: if false;
+    }
+  }
+}

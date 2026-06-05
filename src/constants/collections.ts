@@ -1,5 +1,6 @@
 export const collections = {
   users: 'users',
+  usernames: 'usernames',
   lessons: 'lessons',
   bookings: 'bookings',
   reviews: 'reviews',

@@ -1,10 +1,12 @@
 import '../global.css';
 
 import { Stack } from 'expo-router';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { colors } from '@/constants/theme';
+import { colors, stackContentStyle } from '@/constants/theme';
 import { ActivityEngagementProvider } from '@/providers/ActivityEngagementProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { OwnProfileProvider } from '@/providers/OwnProfileProvider';
@@ -16,6 +18,10 @@ import { DiscoverFiltersProvider } from '@/providers/DiscoverFiltersProvider';
 import { DiscoverLocationProvider } from '@/providers/DiscoverLocationProvider';
 
 export default function RootLayout() {
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(colors.background);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AuthProvider>
@@ -31,7 +37,7 @@ export default function RootLayout() {
             <Stack
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: colors.background },
+              contentStyle: stackContentStyle,
             }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />

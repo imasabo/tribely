@@ -7,6 +7,7 @@ import { ProfileFriendsEntry } from '@/features/profile/components/ProfileFriend
 import { UserProfilePage } from '@/features/profile/components/UserProfilePage';
 import { ProfileHeaderIconButton } from '@/features/profile/components/ProfileHeader';
 import { OWN_PROFILE_STATS_USER_ID } from '@/features/profile/lib/ownProfileStats';
+import { isFirebaseNativeAvailable } from '@/lib/firebase';
 import { MOCK_OWN_PROFILE_ACTIVITY } from '@/features/profile/lib/profileViewModel';
 import { useFriendConnections } from '@/providers/FriendConnectionsProvider';
 import { useOwnProfile } from '@/providers/OwnProfileProvider';
@@ -27,11 +28,13 @@ export function ProfileScreen() {
 
   const openEditProfile = () => router.push('/edit-profile');
   const openFriends = () => router.push('/friends');
+  const profileUserId =
+    isFirebaseNativeAvailable && user?.uid ? user.uid : OWN_PROFILE_STATS_USER_ID;
 
   return (
     <UserProfilePage
       profile={viewModel}
-      profileUserId={OWN_PROFILE_STATS_USER_ID}
+      profileUserId={profileUserId}
       initials={initials}
       teachSectionTitle="I Teach"
       learnSectionTitle="I Want to Learn"

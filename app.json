@@ -40,7 +40,13 @@
         }
       ],
       "./plugins/withFirebaseIos.js",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.852841024367-hlfu7292jgdoi8c5f29c1t3ij4b60uso"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

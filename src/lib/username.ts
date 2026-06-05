@@ -21,6 +21,14 @@ export function isValidUsername(username: string): boolean {
   );
 }
 
+export function validateUsernameForClaim(username: string): string | null {
+  const normalized = normalizeUsernameInput(username);
+  if (!isValidUsername(normalized)) {
+    return 'Use 3–30 characters: lowercase letters, numbers, and underscores only.';
+  }
+  return null;
+}
+
 export function formatUsernameLabel(username: string): string {
   return `@${username}`;
 }
