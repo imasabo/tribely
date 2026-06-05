@@ -55,6 +55,7 @@ export default function RootLayout() {
             <Stack.Screen name="lesson/[id]/index" options={{ presentation: 'card' }} />
             <Stack.Screen name="lesson/[id]/chat" options={{ presentation: 'card' }} />
             <Stack.Screen name="lesson/[id]/complete" options={{ presentation: 'card' }} />
+            <Stack.Screen name="lesson/[id]/rate-learners" options={{ presentation: 'card' }} />
             <Stack.Screen
               name="lesson/[id]/slides"
               options={{ presentation: 'fullScreenModal', animation: 'fade' }}

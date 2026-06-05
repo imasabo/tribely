@@ -99,6 +99,14 @@ export function canShareLessonCompletion(lesson: Lesson, now = new Date()): bool
   return isSessionEnded(session, lesson.durationMinutes, now);
 }
 
+/** True when at least one session on the lesson has ended (hosts can rate learners). */
+export function hasEndedSession(lesson: Lesson, now = new Date()): boolean {
+  const sessions = lesson.sessions ?? [
+    { id: `${lesson.id}-s1`, scheduledAtLabel: lesson.scheduledAtLabel },
+  ];
+  return sessions.some((session) => isSessionEnded(session, lesson.durationMinutes, now));
+}
+
 function formatClockTime(date: Date): string {
   const hours = date.getHours();
   const minutes = date.getMinutes();

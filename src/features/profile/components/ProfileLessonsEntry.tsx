@@ -28,11 +28,9 @@ export function ProfileLessonsEntry() {
     bundle.teaching.length + bundle.attending.length + bundle.completed.length;
   const summaryParts: string[] = [];
 
-  if (bundle.teaching.length > 0) {
-    summaryParts.push(`${bundle.teaching.length} teaching`);
-  }
-  if (bundle.attending.length > 0) {
-    summaryParts.push(`${bundle.attending.length} attending`);
+  const upcomingCount = bundle.teaching.length + bundle.attending.length;
+  if (upcomingCount > 0) {
+    summaryParts.push(`${upcomingCount} upcoming`);
   }
   if (bundle.completed.length > 0) {
     summaryParts.push(`${bundle.completed.length} completed`);

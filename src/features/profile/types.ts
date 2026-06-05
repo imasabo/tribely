@@ -93,6 +93,9 @@ export interface UserLessonItem {
   /** Learner can post a completion post (session ended, not yet shared). */
   canShareExperience?: boolean;
   hasSharedExperience?: boolean;
+  /** Host can rate accepted learners after a session ends. */
+  canRateLearners?: boolean;
+  learnersToRateCount?: number;
 }
 
 export interface UserLessonsBundle {

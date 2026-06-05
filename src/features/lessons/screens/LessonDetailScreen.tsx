@@ -19,6 +19,7 @@ import {
 import {
   canShareLessonCompletion,
   getUpcomingSessions,
+  hasEndedSession,
   hasUpcomingSessions,
   lessonCompletionUnlockLabel,
   sessionCountFor,
@@ -26,6 +27,7 @@ import {
 import { useAuth } from '@/providers/AuthProvider';
 import { lessonChatService } from '@/services/lessonChat.service';
 import { lessonCompletionsService } from '@/services/lessonCompletions.service';
+import { learnerRatingsService } from '@/services/learnerRatings.service';
 import { lessonJoinRequestsService } from '@/services/lessonJoinRequests.service';
 import type { LessonJoinRequest } from '@/types/lessonJoinRequest';
 
@@ -53,17 +55,23 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
   const [requestSubmitting, setRequestSubmitting] = useState(false);
   const [canAccessChat, setCanAccessChat] = useState(false);
   const [hasPostedCompletion, setHasPostedCompletion] = useState(false);
+  const [learnersToRateCount, setLearnersToRateCount] = useState(0);
+  const [canRateLearners, setCanRateLearners] = useState(false);
 
   const loadJoinRequests = useCallback(async () => {
     if (!lessonId) return;
-    const [pending, chatAllowed, completed] = await Promise.all([
+    const [pending, chatAllowed, completed, rateAllowed, unrated] = await Promise.all([
       lessonJoinRequestsService.listPendingByLesson(lessonId),
       lessonChatService.canAccess(lessonId, user?.uid),
       lessonCompletionsService.hasCompleted(lessonId, user?.uid),
+      learnerRatingsService.canRateLearners(lessonId, user?.uid),
+      learnerRatingsService.countUnratedLearners(lessonId, user?.uid),
     ]);
     setJoinRequests(pending);
     setCanAccessChat(chatAllowed);
     setHasPostedCompletion(completed);
+    setCanRateLearners(rateAllowed);
+    setLearnersToRateCount(unrated);
 
     if (user?.uid) {
       const mine = await lessonJoinRequestsService.hasPendingRequest(lessonId, user.uid);
@@ -124,6 +132,12 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
   const openCompleteLesson = () => {
     router.push(`/lesson/${lessonId}/complete`);
   };
+
+  const openRateLearners = () => {
+    router.push(`/lesson/${lessonId}/rate-learners`);
+  };
+
+  const sessionEndedForHost = hasEndedSession(lesson);
 
   const handleRequestToJoin = async () => {
     if (!user?.uid || !user.displayName) return;
@@ -344,11 +358,28 @@ export function LessonDetailScreen({ lessonId }: LessonDetailScreenProps) {
         style={{ paddingBottom: footerPadding }}>
         {isOwner ? (
           <>
+            {canRateLearners && learnersToRateCount > 0 ? (
+              <Button
+                title={`Rate learners (${learnersToRateCount})`}
+                fullWidth
+                className="mb-3"
+                onPress={openRateLearners}
+                icon={<Feather name="star" size={16} color="#fff" />}
+              />
+            ) : canRateLearners && learnersToRateCount === 0 ? (
+              <Text className="mb-3 text-center text-xs text-muted-foreground">
+                All accepted learners have been rated.
+              </Text>
+            ) : !sessionEndedForHost ? (
+              <Text className="mb-3 text-center text-xs text-muted-foreground">
+                Rate learners after a session ends.
+              </Text>
+            ) : null}
             {canAccessChat ? (
               <Button
                 title="Open lesson chat"
                 fullWidth
-                variant="outline"
+                variant={canRateLearners ? 'outline' : 'primary'}
                 className="mb-3"
                 onPress={openLessonChat}
                 icon={<Feather name="message-circle" size={16} color={colors.primary} />}

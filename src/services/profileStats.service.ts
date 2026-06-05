@@ -1,4 +1,5 @@
 import { lessonCatalogStore } from '@/data/lessonCatalogStore';
+import { learnerRatingsStore } from '@/data/learnerRatingsStore';
 import { mockProfileStatDetails } from '@/data/mock/profileStatDetails';
 import { mockTeacherProfiles } from '@/data/mock/teacherProfiles';
 import { mockPublicProfiles } from '@/data/mock/users';
@@ -70,7 +71,14 @@ export const profileStatsService = {
   },
 
   async getReviews(userId: string): Promise<ProfileReviewItem[]> {
-    return resolveBundle(userId)?.reviews ?? [];
+    const base = resolveBundle(userId)?.reviews ?? [];
+    const fromTeachers = learnerRatingsStore.listReviewsForLearnerProfile(userId);
+    const seen = new Set(fromTeachers.map((r) => r.id));
+    const merged = [
+      ...fromTeachers,
+      ...base.filter((r) => !seen.has(r.id)),
+    ];
+    return merged;
   },
 
   titleForStat(statKey: ProfileStatKey): string {

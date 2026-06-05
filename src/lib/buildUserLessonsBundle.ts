@@ -1,4 +1,5 @@
 import { activityFeedStore } from '@/data/activityFeedStore';
+import { learnerRatingsStore } from '@/data/learnerRatingsStore';
 import { lessonCatalogStore } from '@/data/lessonCatalogStore';
 import { mockLessonJoinRequests } from '@/data/mock/lessonJoinRequests';
 import { isLessonOwner } from '@/lib/lessonEnrollment';
@@ -6,7 +7,6 @@ import {
   canShareLessonCompletion,
   formatSessionCompletedLabel,
   getCompletionSession,
-  getPastSessions,
   getSessionEndDate,
   getUpcomingSessions,
   hasUpcomingSessions,
@@ -28,6 +28,8 @@ function lessonToUserItem(
     completedAtLabel?: string;
     canShareExperience?: boolean;
     hasSharedExperience?: boolean;
+    canRateLearners?: boolean;
+    learnersToRateCount?: number;
   }
 ): UserLessonItem {
   return {
@@ -48,7 +50,16 @@ function lessonToUserItem(
     completedAtLabel: options.completedAtLabel,
     canShareExperience: options.canShareExperience,
     hasSharedExperience: options.hasSharedExperience,
+    canRateLearners: options.canRateLearners,
+    learnersToRateCount: options.learnersToRateCount,
   };
+}
+
+function countLearnersToRate(lessonId: string): number {
+  const accepted = mockLessonJoinRequests.filter(
+    (r) => r.lessonId === lessonId && r.status === 'accepted'
+  );
+  return accepted.filter((r) => !learnerRatingsStore.hasRated(lessonId, r.requesterId)).length;
 }
 
 function sortBySessionEndDesc(items: UserLessonItem[], lessonsById: Map<string, Lesson>, now: Date) {
@@ -91,13 +102,19 @@ export function buildUserLessonsBundle(userId: string, now = new Date()): UserLe
       );
     }
 
-    for (const session of sessions) {
-      if (!isSessionEnded(session, lesson.durationMinutes, now)) continue;
+    const endedSessions = sessions.filter((session) =>
+      isSessionEnded(session, lesson.durationMinutes, now)
+    );
+    if (endedSessions.length > 0) {
+      const latestEnded = endedSessions[endedSessions.length - 1];
+      const toRate = countLearnersToRate(lesson.id);
       completed.push(
         lessonToUserItem(lesson, 'teaching', {
-          id: `${lesson.id}-completed-${session.id}`,
-          scheduledAtLabel: session.scheduledAtLabel,
-          completedAtLabel: formatSessionCompletedLabel(session, now),
+          id: `${lesson.id}-completed-taught`,
+          scheduledAtLabel: latestEnded.scheduledAtLabel,
+          completedAtLabel: formatSessionCompletedLabel(latestEnded, now),
+          canRateLearners: toRate > 0,
+          learnersToRateCount: toRate,
         })
       );
     }
@@ -120,20 +137,6 @@ export function buildUserLessonsBundle(userId: string, now = new Date()): UserLe
     const hasShared = activityFeedStore.hasUserCompleted(userId, lesson.id);
     const sessionEnded = canShareLessonCompletion(lesson, now);
 
-    if (sessionEnded) {
-      const session = getCompletionSession(lesson, now);
-      completed.push(
-        lessonToUserItem(lesson, 'attending', {
-          id: `${lesson.id}-completed`,
-          scheduledAtLabel: session.scheduledAtLabel,
-          completedAtLabel: formatSessionCompletedLabel(session, now),
-          canShareExperience: true,
-          hasSharedExperience: hasShared,
-        })
-      );
-      continue;
-    }
-
     const upcoming = getUpcomingSessions(sessions, now);
     if (upcoming.length > 0) {
       attending.push(
@@ -142,17 +145,17 @@ export function buildUserLessonsBundle(userId: string, now = new Date()): UserLe
           scheduledAtLabel: upcoming[0].scheduledAtLabel,
         })
       );
-      continue;
     }
 
-    const past = getPastSessions(sessions, now);
-    const lastPast = past[past.length - 1];
-    if (lastPast) {
+    if (sessionEnded) {
+      const session = getCompletionSession(lesson, now);
       completed.push(
         lessonToUserItem(lesson, 'attending', {
-          id: `${lesson.id}-completed`,
-          scheduledAtLabel: lastPast.scheduledAtLabel,
-          completedAtLabel: formatSessionCompletedLabel(lastPast, now),
+          id: `${lesson.id}-completed-learned`,
+          scheduledAtLabel: session.scheduledAtLabel,
+          completedAtLabel: formatSessionCompletedLabel(session, now),
+          canShareExperience: true,
+          hasSharedExperience: hasShared,
         })
       );
     }

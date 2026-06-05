@@ -9,16 +9,25 @@ import type { UserLessonItem } from '@/features/profile/types';
 interface UserLessonRowProps {
   item: UserLessonItem;
   onPress: () => void;
+  /** Show Taught / Learned badge (Completed tab). */
+  showRoleBadge?: boolean;
 }
 
-export function UserLessonRow({ item, onPress }: UserLessonRowProps) {
+export function UserLessonRow({ item, onPress, showRoleBadge = false }: UserLessonRowProps) {
   const isTeaching = item.role === 'teaching';
   const isCompleted = Boolean(item.completedAtLabel);
+  const roleBadgeLabel = isTeaching ? 'Taught' : 'Learned';
   const showShareExperience =
     item.canShareExperience && !item.hasSharedExperience && item.role === 'attending';
+  const showRateLearners =
+    item.role === 'teaching' && item.canRateLearners && (item.learnersToRateCount ?? 0) > 0;
 
   const openShareExperience = () => {
     router.push(`/lesson/${item.lessonId}/complete`);
+  };
+
+  const openRateLearners = () => {
+    router.push(`/lesson/${item.lessonId}/rate-learners`);
   };
 
   return (
@@ -31,9 +40,24 @@ export function UserLessonRow({ item, onPress }: UserLessonRowProps) {
         <GoogleSlidesCardPreview variant="compact" colors={item.slidePreviewColors} />
       </View>
       <View className="flex-1 justify-center">
-        <Text className="text-[11px] text-muted-foreground">
-          {item.categoryEmoji} {item.category} · {item.durationMinutes} min
-        </Text>
+        <View className="flex-row flex-wrap items-center gap-2">
+          <Text className="text-[11px] text-muted-foreground">
+            {item.categoryEmoji} {item.category} · {item.durationMinutes} min
+          </Text>
+          {showRoleBadge && isCompleted ? (
+            <View
+              className={`rounded-full px-2 py-0.5 ${
+                isTeaching ? 'bg-primary/10' : 'bg-accent/15'
+              }`}>
+              <Text
+                className={`text-[10px] font-semibold ${
+                  isTeaching ? 'text-primary' : 'text-accent'
+                }`}>
+                {roleBadgeLabel}
+              </Text>
+            </View>
+          ) : null}
+        </View>
         <Text className="mt-0.5 text-sm font-semibold leading-tight text-foreground" numberOfLines={2}>
           {item.title}
         </Text>
@@ -64,9 +88,25 @@ export function UserLessonRow({ item, onPress }: UserLessonRowProps) {
             </Text>
           </View>
         </View>
-        {showShareExperience ? (
+        {showRateLearners ? (
           <Pressable
-            onPress={openShareExperience}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              openRateLearners();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`Rate learners for ${item.title}`}
+            className="mt-3 self-start rounded-full bg-primary px-3 py-1.5 active:opacity-90">
+            <Text className="text-xs font-semibold text-white">
+              Rate learners ({item.learnersToRateCount})
+            </Text>
+          </Pressable>
+        ) : showShareExperience ? (
+          <Pressable
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              openShareExperience();
+            }}
             accessibilityRole="button"
             accessibilityLabel={`Share your experience for ${item.title}`}
             className="mt-3 self-start rounded-full bg-primary px-3 py-1.5 active:opacity-90">

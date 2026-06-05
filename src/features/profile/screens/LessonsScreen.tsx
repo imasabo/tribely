@@ -98,9 +98,9 @@ export function LessonsScreen() {
 
   const emptyTabMessage =
     activeTab === 'teaching'
-      ? 'No lessons you\'re teaching scheduled.'
+      ? 'No upcoming lessons you\'re teaching.'
       : activeTab === 'attending'
-        ? 'No lessons you\'ve joined yet.'
+        ? 'No upcoming lessons you\'ve joined.'
         : 'No completed lessons yet.';
 
   return (
@@ -140,6 +140,7 @@ export function LessonsScreen() {
                   <UserLessonRow
                     key={item.id}
                     item={item}
+                    showRoleBadge={activeTab === 'completed'}
                     onPress={() => openLesson(item.lessonId)}
                   />
                 ))}
